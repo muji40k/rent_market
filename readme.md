@@ -97,6 +97,9 @@
 ### Главный экран
 ![](res/ui/main.svg)
 
+### Регистрация
+![](res/ui/registration.svg)
+
 ### Каталог
 #### Выбор категории
 ![](res/ui/catalog_category.svg)
