@@ -1,0 +1,20 @@
+{
+    "get": {
+        "tags": [ "Pick up points" ],
+        "summary": "Get list of pick up point photos",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Pick up poin identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

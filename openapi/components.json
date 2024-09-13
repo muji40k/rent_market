@@ -1,0 +1,4 @@
+{
+    "schemas": { "$ref": "./components/schemas.json" },
+    "parameters": { "$ref": "./components/parameters.json" }
+}

@@ -1,0 +1,19 @@
+{
+    "get": {
+        "tags": [ "Categories" ],
+        "summary": "Get list of categories",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "productId",
+                "description": "Product identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

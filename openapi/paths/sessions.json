@@ -1,0 +1,51 @@
+{
+    "post": {
+        "summary": "Login user",
+        "tags": [ "Sessions" ],
+        "requestBody": {
+            "description": "Credential data for the user",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "object",
+                    "properties": {
+                        "email": { "type": "string", "format": "email" },
+                        "password": { "type": "string", "format": "password" },
+                    }
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "object",
+                        "properties": {
+                            "token": { "type": "string" },
+                            "renew_token": { "type": "string" },
+                        }
+                    }}
+                }
+            }
+        }
+    },
+    "put": {
+        "summary": "Renew session",
+        "tags": [ "Sessions" ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "delete": {
+        "summary": "Logout user",
+        "tags": [ "Sessions" ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

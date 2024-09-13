@@ -1,0 +1,58 @@
+[
+    {
+        "name": "Sessions",
+        "description": "Authentication and sessions"
+    },
+    {
+        "name": "Users",
+        "description": "Query user information"
+    },
+    {
+        "name": "Profiles",
+        "description": "Query user profile information"
+    },
+    {
+        "name": "Roles",
+        "description": "Query user role information"
+    },
+    {
+        "name": "Rents",
+        "description": "Query rents"
+    },
+    {
+        "name": "Provisions",
+        "description": "Query provisions"
+    },
+    {
+        "name": "Deliveries",
+        "description": "Query deliveries"
+    },
+    {
+        "name": "Storage",
+        "description": "Query stored instances"
+    },
+    {
+        "name": "Categories",
+        "description": "Query categories"
+    },
+    {
+        "name": "Products",
+        "description": "Query products"
+    },
+    {
+        "name": "Instances",
+        "description": "Query provided instances"
+    },
+    {
+        "name": "Pick up points",
+        "description": "Query pick up points"
+    },
+    {
+        "name": "Photos",
+        "description": "Query photos"
+    },
+    {
+        "name": "Test",
+        "description": "Test tag"
+    }
+]

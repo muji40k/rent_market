@@ -1,0 +1,20 @@
+{
+    "put": {
+        "tags": [ "Provisions" ],
+        "summary": "Change provision request status",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Provision request identifer",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

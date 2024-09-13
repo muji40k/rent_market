@@ -1,0 +1,27 @@
+{
+    "get": {
+        "tags": [ "Rents" ],
+        "summary": "Get list of rents for the user / instance",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "userId",
+                "description": "User identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+            {
+                "in": "query",
+                "name": "instanceId",
+                "description": "Instance identifier",
+                "schema": { "type": "array", "items": {
+                    "type": "string", "format": "uuid"
+                }}
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

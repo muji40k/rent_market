@@ -1,0 +1,35 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get list of instances for the product",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "productId",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            },
+            {
+                "in": "query",
+                "name": "sortBy",
+                "schema": { "type": "string", "enum": [
+                    "ratingAsc",
+                    "ratingDesc",
+                    "dataAsc",
+                    "dataDesc",
+                    "priceAsc",
+                    "priceDesc",
+                    "usageAsc",
+                    "usageDesc"
+                ]}
+            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

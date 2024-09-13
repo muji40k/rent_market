@@ -1,0 +1,28 @@
+{
+    "get": {
+        "tags": [ "Provisions" ],
+        "summary": "Get list of provisions",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "userId",
+                "description": "Renter's user identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+            {
+                "in": "query",
+                "name": "instanceId",
+                "description": "Instance identifier",
+                "schema": { "type": "array", "items": {
+                    "type": "string",
+                    "format": "uuid"
+                }}
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

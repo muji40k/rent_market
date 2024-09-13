@@ -1,0 +1,38 @@
+{
+    "put": {
+        "tags": [ "Provisions" ],
+        "summary": "Change provision request status",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Provision return identifer",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "delete": {
+        "tags": [ "Provisions" ],
+        "summary": "Cancel provision request status",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Provision return identifer",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

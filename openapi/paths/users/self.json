@@ -1,0 +1,20 @@
+{
+    "get": {
+        "tags": [ "Users" ],
+        "summary": "Get information about authenticated user",
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "put": {
+        "tags": [ "Users" ],
+        "summary": "Update information about authenticated user",
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

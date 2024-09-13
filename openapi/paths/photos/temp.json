@@ -1,0 +1,11 @@
+{
+    "post": {
+        "summary": "Create temp photo",
+        "tags": [ "Photos" ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

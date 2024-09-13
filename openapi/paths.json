@@ -1,0 +1,116 @@
+{
+    "/administrators/self": {
+        "$ref": "./paths/administrators/self.json"
+    },
+    "/categories": {
+        "$ref": "./paths/categories.json"
+    },
+    "/deliveries": {
+        "$ref": "./paths/deliveries.json"
+    },
+    "/deliveries/{id}": {
+        "$ref": "./paths/deliveries/{id}.json"
+    },
+    "/instances": {
+        "$ref": "./paths/instances.json"
+    },
+    "/instances/{id}": {
+        "$ref": "./paths/instances/{id}.json"
+    },
+    "/instances/{id}/pay-plans": {
+        "$ref": "./paths/instances/{id}/pay-plans.json"
+    },
+    "/instances/{id}/photos": {
+        "$ref": "./paths/instances/{id}/photos.json"
+    },
+    "/instances/{id}/reviews": {
+        "$ref": "./paths/instances/{id}/reviews.json"
+    },
+    "/photos/temp": {
+        "$ref": "./paths/photos/temp.json"
+    },
+    "/photos/temp/{id}": {
+        "$ref": "./paths/photos/temp/{id}.json"
+    },
+    "/photos/{id}": {
+        "$ref": "./paths/photos/{id}.json"
+    },
+    "/pick-up-points": {
+        "$ref": "./paths/pick-up-points.json"
+    },
+    "/pick-up-points/{id}": {
+        "$ref": "./paths/pick-up-points/{id}.json"
+    },
+    "/pick-up-points/{id}/photos": {
+        "$ref": "./paths/pick-up-points/{id}/photos.json"
+    },
+    "/products": {
+        "$ref": "./paths/products.json"
+    },
+    "/products/{id}": {
+        "$ref": "./paths/products/{id}.json"
+    },
+    "/products/{id}/characteristics": {
+        "$ref": "./paths/products/{id}/characteristics.json"
+    },
+    "/products/{id}/photos": {
+        "$ref": "./paths/products/{id}/photos.json"
+    },
+    "/profiles/self": {
+        "$ref": "./paths/profiles/self.json"
+    },
+    "/profiles/{id}": {
+        "$ref": "./paths/profiles/{id}.json"
+    },
+    "/provisions": {
+        "$ref": "./paths/provisions.json"
+    },
+    "/provisions/requests": {
+        "$ref": "./paths/provisions/requests.json"
+    },
+    "/provisions/requests/{id}": {
+        "$ref": "./paths/provisions/requests/{id}.json"
+    },
+    "/provisions/returns": {
+        "$ref": "./paths/provisions/returns.json"
+    },
+    "/provisions/returns/{id}": {
+        "$ref": "./paths/provisions/returns/{id}.json"
+    },
+    "/renters/self": {
+        "$ref": "./paths/renters/self.json"
+    },
+    "/rents": {
+        "$ref": "./paths/rents.json"
+    },
+    "/rents/requests": {
+        "$ref": "./paths/rents/requests.json"
+    },
+    "/rents/requests/{id}": {
+        "$ref": "./paths/rents/requests/{id}.json"
+    },
+    "/rents/returns": {
+        "$ref": "./paths/rents/returns.json"
+    },
+    "/rents/returns/{id}": {
+        "$ref": "./paths/rents/returns/{id}.json"
+    },
+    "/sessions": {
+        "$ref": "./paths/sessions.json"
+    },
+    "/stored-instances": {
+        "$ref": "./paths/stored-instances.json"
+    },
+    "/storekeepers/self": {
+        "$ref": "./paths/storekeepers/self.json"
+    },
+    "/test": {
+        "$ref": "./paths/test.json"
+    },
+    "/users": {
+        "$ref": "./paths/users.json"
+    },
+    "/users/self": {
+        "$ref": "./paths/users/self.json"
+    }
+}

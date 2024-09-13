@@ -1,0 +1,38 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get information about instance with id",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "put": {
+        "tags": [ "Instances" ],
+        "summary": "Update information about instance with id",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

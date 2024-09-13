@@ -1,0 +1,20 @@
+{
+    "put": {
+        "tags": [ "Rents" ],
+        "summary": "Change rent request status",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Rent request identifer",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "get": {
+        "tags": [ "Photos" ],
+        "summary": "Get photo meta data with identifier",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Photo identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

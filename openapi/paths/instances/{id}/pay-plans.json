@@ -1,0 +1,38 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get list of instance pay-plans",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "put": {
+        "tags": [ "Instances" ],
+        "summary": "Update information about instance pay-plans",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

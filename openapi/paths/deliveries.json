@@ -1,0 +1,36 @@
+{
+    "get": {
+        "tags": [ "Deliveries" ],
+        "summary": "Get information about deliveries",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "pickUpPointId",
+                "description": "Pick up point identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+            {
+                "in": "query",
+                "name": "instanceId",
+                "description": "Instance identifier",
+                "schema": { "type": "array", "items": {
+                    "type": "string", "format": "uuid"
+                }}
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "post": {
+        "tags": [ "Deliveries" ],
+        "summary": "Create delivery",
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

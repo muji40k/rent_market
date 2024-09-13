@@ -1,0 +1,19 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Rent service API",
+        "description": "
+            Целью работы является разработка веб сайта для ресурса по аренде
+            товаров. Приложение предоставляет возможность брать / сдавать
+            проверенные предметы в аренду по подписочной модели (дни / недели /
+            месяцы).
+        ",
+        "version": "0.1.0"
+    },
+    "servers": [
+        { "url": "http://localhost/api" }
+    ],
+    "tags": { "$ref": "./tags.json" },
+    "paths": { "$ref": "./paths.json" },
+    "components": { "$ref": "./components.json" }
+}

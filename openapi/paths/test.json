@@ -1,0 +1,11 @@
+{
+    "get": {
+        "tags": [ "Test" ],
+        "summary": "Rabotaem",
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

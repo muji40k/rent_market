@@ -1,0 +1,20 @@
+{
+    "put": {
+        "tags": [ "Deliveries" ],
+        "summary": "Change delivery state",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Delivery identifer",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

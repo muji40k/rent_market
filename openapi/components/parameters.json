@@ -1,0 +1,24 @@
+{
+    "offset": {
+        "in": "query",
+        "name": "offset",
+        "description": "Number of items to skip before returning the results",
+        "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+        }
+    },
+    "size": {
+        "in": "query",
+        "name": "size",
+        "description": "Maximum number of items to return",
+        "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "default": 20
+        }
+    }
+}

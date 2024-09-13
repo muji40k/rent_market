@@ -1,0 +1,36 @@
+{
+    "get": {
+        "tags": [ "Profiles" ],
+        "summary": "Get list of profile categories",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "User identifier, of 'self'",
+                "schema": { "oneOf": [
+                    { "type": "string", "format": "uuid" },
+                    { "type": "string", "enum": [ "self" ] },
+                ]},
+                "required": true
+            },
+            {
+                "in": "query",
+                "name": "category",
+                "description": "Desired category to fetch",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "general",
+                        "favorite",
+                        "pay-methods"
+                    ]
+                }
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

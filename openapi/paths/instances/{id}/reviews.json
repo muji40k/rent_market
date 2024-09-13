@@ -1,0 +1,65 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get list of reviews",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            },
+            {
+                "in": "query",
+                "name": "sortBy",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "dateAsc",
+                        "dateDesc",
+                        "ratingAsc",
+                        "ratingDesc"
+                    ]
+                },
+            },
+            {
+                "in": "query",
+                "name": "filterRating",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 5
+                    },
+                },
+            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "post": {
+        "tags": [ "Instances" ],
+        "summary": "Post review for the instance",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

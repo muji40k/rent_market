@@ -1,0 +1,29 @@
+{
+    "get": {
+        "tags": [ "Storage" ],
+        "summary": "Get list of stored instances",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "pickUpPointId",
+                "description": "Pick up poin identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+            {
+                "in": "query",
+                "name": "instanceId",
+                "description": "Instance identifier",
+                "schema": { "type": "array", "items": {
+                    "type": "string", "format": "uuid"
+                }}
+            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

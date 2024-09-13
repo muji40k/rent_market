@@ -1,0 +1,5 @@
+{
+    "Test": {
+        "$ref": "./schemas/Test.json"
+    }
+}

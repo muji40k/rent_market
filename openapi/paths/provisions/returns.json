@@ -1,0 +1,42 @@
+{
+    "get": {
+        "tags": [ "Provisions" ],
+        "summary": "Get list of provision requests",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "userId",
+                "description": "Provider's user identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+            {
+                "in": "query",
+                "name": "instanceId",
+                "description": "Instance identifier",
+                "schema": { "type": "array", "items": {
+                    "type": "string", "format": "uuid"
+                }}
+            },
+            {
+                "in": "query",
+                "name": "pickUpPointId",
+                "description": "Assigned pick up point identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "post": {
+        "tags": [ "Provisions" ],
+        "summary": "Create provision request",
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

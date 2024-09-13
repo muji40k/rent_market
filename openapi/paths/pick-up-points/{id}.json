@@ -1,0 +1,20 @@
+{
+    "get": {
+        "tags": [ "Pick up points" ],
+        "summary": "Get information about pick up point with id",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Pick up point identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

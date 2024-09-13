@@ -1,0 +1,38 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get list of instance photos",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "post": {
+        "tags": [ "Instances" ],
+        "summary": "Add photo of instance",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

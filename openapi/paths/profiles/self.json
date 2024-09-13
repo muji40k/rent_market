@@ -1,0 +1,27 @@
+{
+    "patch": {
+        "tags": [ "Profiles" ],
+        "summary": "Update profile category",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "category",
+                "description": "Desired category to update",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "general",
+                        "favorite",
+                        "pay-methods"
+                    ]
+                },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

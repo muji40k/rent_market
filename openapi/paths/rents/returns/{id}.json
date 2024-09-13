@@ -1,0 +1,43 @@
+{
+    "put": {
+        "tags": [ "Rents" ],
+        "summary": "Change rent returns status",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Rent return identifer",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    },
+    "delete": {
+        "tags": [ "Rents" ],
+        "summary": "Cancel rent request status",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Rent return identifer",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            },
+            409: {
+                "description": "
+                    Can't cancel request, since renter is waiting for return
+                "
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "get": {
+        "tags": [ "Products" ],
+        "summary": "Get information about product with id",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Product identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}

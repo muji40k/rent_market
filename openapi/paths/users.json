@@ -1,0 +1,11 @@
+{
+    "post": {
+        "tags": [ "Users" ],
+        "summary": "Register new user",
+        "responses": {
+            200: {
+                "description": "OK"
+            }
+        }
+    }
+}
