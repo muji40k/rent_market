@@ -46,6 +46,7 @@
     },
     "post": {
         "tags": [ "Instances" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Post review for the instance",
         "parameters": [
             {

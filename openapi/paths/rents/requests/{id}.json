@@ -1,6 +1,7 @@
 {
     "put": {
         "tags": [ "Rents" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Change rent request status",
         "parameters": [
             {

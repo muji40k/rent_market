@@ -1,6 +1,7 @@
 {
     "get": {
         "tags": [ "Storage" ],
+        "security": [ {}, { "ApiKeyAuth": [] } ],
         "summary": "Get list of stored instances",
         "parameters": [
             {

@@ -1,6 +1,7 @@
 {
     "put": {
         "tags": [ "Deliveries" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Change delivery state",
         "parameters": [
             {

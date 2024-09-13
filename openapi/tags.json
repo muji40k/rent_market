@@ -50,9 +50,5 @@
     {
         "name": "Photos",
         "description": "Query photos"
-    },
-    {
-        "name": "Test",
-        "description": "Test tag"
     }
 ]

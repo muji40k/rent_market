@@ -1,6 +1,7 @@
 {
     "post": {
         "summary": "Create temp photo",
+        "security": [ { "ApiKeyAuth": [] } ],
         "tags": [ "Photos" ],
         "responses": {
             200: {

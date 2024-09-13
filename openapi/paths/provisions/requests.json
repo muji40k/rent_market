@@ -1,6 +1,7 @@
 {
     "get": {
         "tags": [ "Provisions" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Get list of provision requests",
         "parameters": [
             {
@@ -32,6 +33,7 @@
     },
     "post": {
         "tags": [ "Provisions" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Create provision request",
         "responses": {
             200: {

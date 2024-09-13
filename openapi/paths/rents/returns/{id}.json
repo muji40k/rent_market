@@ -1,6 +1,7 @@
 {
     "put": {
         "tags": [ "Rents" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Change rent returns status",
         "parameters": [
             {
@@ -19,6 +20,7 @@
     },
     "delete": {
         "tags": [ "Rents" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Cancel rent request status",
         "parameters": [
             {

@@ -1,6 +1,7 @@
 {
     "put": {
         "tags": [ "Provisions" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Change provision request status",
         "parameters": [
             {

@@ -1,24 +1,7 @@
 {
-    "get": {
-        "tags": [ "Photos" ],
-        "summary": "Get temp photo meta data with identifier",
-        "parameters": [
-            {
-                "in": "path",
-                "name": "id",
-                "description": "Photo identifier",
-                "schema": { "type": "string", "format": "uuid" },
-                "required": true
-            }
-        ],
-        "responses": {
-            200: {
-                "description": "OK"
-            }
-        }
-    },
     "post": {
         "tags": [ "Photos" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Upload temp photo to the server",
         "parameters": [
             {

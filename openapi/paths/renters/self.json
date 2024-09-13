@@ -1,6 +1,7 @@
 {
     "get": {
         "summary": "Check if user is a renter",
+        "security": [ { "ApiKeyAuth": [] } ],
         "tags": [ "Roles" ],
         "responses": {
             200: {
@@ -10,6 +11,7 @@
     },
     "post": {
         "summary": "Register user as renter",
+        "security": [ { "ApiKeyAuth": [] } ],
         "tags": [ "Roles" ],
         "responses": {
             200: {

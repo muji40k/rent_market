@@ -1,6 +1,7 @@
 {
     "put": {
         "tags": [ "Provisions" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Change provision request status",
         "parameters": [
             {
@@ -19,6 +20,7 @@
     },
     "delete": {
         "tags": [ "Provisions" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Cancel provision request status",
         "parameters": [
             {

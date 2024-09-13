@@ -1,6 +1,7 @@
 {
     "get": {
         "tags": [ "Rents" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Get list of rents for the user / instance",
         "parameters": [
             {

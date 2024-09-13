@@ -1,4 +1,5 @@
 {
     "schemas": { "$ref": "./components/schemas.json" },
-    "parameters": { "$ref": "./components/parameters.json" }
+    "parameters": { "$ref": "./components/parameters.json" },
+    "securitySchemes": { "$ref": "./components/securitySchemes.json" }
 }

@@ -1,6 +1,7 @@
 {
     "get": {
         "tags": [ "Provisions" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Get list of provisions",
         "parameters": [
             {

@@ -19,6 +19,7 @@
     },
     "post": {
         "tags": [ "Instances" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Add photo of instance",
         "parameters": [
             {

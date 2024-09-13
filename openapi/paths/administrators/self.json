@@ -1,6 +1,7 @@
 {
     "get": {
         "summary": "Check if user is administrator",
+        "security": [ { "ApiKeyAuth": [] } ],
         "tags": [ "Roles" ],
         "responses": {
             200: {

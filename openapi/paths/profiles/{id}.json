@@ -1,6 +1,7 @@
 {
     "get": {
         "tags": [ "Profiles" ],
+        "security": [ {}, { "ApiKeyAuth": [] } ],
         "summary": "Get list of profile categories",
         "parameters": [
             {

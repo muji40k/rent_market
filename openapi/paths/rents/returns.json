@@ -1,6 +1,7 @@
 {
     "get": {
         "tags": [ "Rents" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Get list of rent returns",
         "parameters": [
             {
@@ -32,6 +33,7 @@
     },
     "post": {
         "tags": [ "Rents" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Create rent returns",
         "responses": {
             200: {

@@ -1,6 +1,7 @@
 {
     "get": {
         "tags": [ "Deliveries" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Get information about deliveries",
         "parameters": [
             {
@@ -26,6 +27,7 @@
     },
     "post": {
         "tags": [ "Deliveries" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Create delivery",
         "responses": {
             200: {

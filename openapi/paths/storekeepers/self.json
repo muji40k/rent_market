@@ -1,6 +1,7 @@
 {
     "get": {
         "summary": "Check if user is a storekeeper and return pick up point id",
+        "security": [ { "ApiKeyAuth": [] } ],
         "tags": [ "Roles" ],
         "responses": {
             200: {

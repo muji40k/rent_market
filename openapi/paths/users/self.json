@@ -1,6 +1,7 @@
 {
     "get": {
         "tags": [ "Users" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Get information about authenticated user",
         "responses": {
             200: {
@@ -10,6 +11,7 @@
     },
     "put": {
         "tags": [ "Users" ],
+        "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Update information about authenticated user",
         "responses": {
             200: {

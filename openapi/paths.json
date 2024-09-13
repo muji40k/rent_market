@@ -104,9 +104,6 @@
     "/storekeepers/self": {
         "$ref": "./paths/storekeepers/self.json"
     },
-    "/test": {
-        "$ref": "./paths/test.json"
-    },
     "/users": {
         "$ref": "./paths/users.json"
     },
