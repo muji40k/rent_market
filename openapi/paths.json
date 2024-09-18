@@ -5,11 +5,17 @@
     "/categories": {
         "$ref": "./paths/categories.json"
     },
+    "/categories/{id}": {
+        "$ref": "./paths/categories/{id}.json"
+    },
     "/deliveries": {
         "$ref": "./paths/deliveries.json"
     },
     "/deliveries/{id}": {
         "$ref": "./paths/deliveries/{id}.json"
+    },
+    "/delivery-companies/{id}": {
+        "$ref": "./paths/delivery-companies/{id}.json"
     },
     "/instances": {
         "$ref": "./paths/instances.json"
@@ -25,6 +31,15 @@
     },
     "/instances/{id}/reviews": {
         "$ref": "./paths/instances/{id}/reviews.json"
+    },
+    "/pay-methods": {
+        "$ref": "./paths/pay-methods.json"
+    },
+    "/payments": {
+        "$ref": "./paths/payments.json"
+    },
+    "/periods": {
+        "$ref": "./paths/periods.json"
     },
     "/photos/temp": {
         "$ref": "./paths/photos/temp.json"
@@ -43,6 +58,9 @@
     },
     "/pick-up-points/{id}/photos": {
         "$ref": "./paths/pick-up-points/{id}/photos.json"
+    },
+    "/pick-up-points/{id}/working-hours": {
+        "$ref": "./paths/pick-up-points/{id}/working-hours.json"
     },
     "/products": {
         "$ref": "./paths/products.json"

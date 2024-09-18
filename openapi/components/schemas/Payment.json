@@ -1,0 +1,19 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "rent": { "type": "string", "format": "uuid" },
+        "pay_method": { "type": "string", "format": "uuid" },
+        "period_start": { "type": "string", "format": "date" },
+        "period_end": { "type": "string", "format": "date" },
+        "price": { "$ref": "#/components/schemas/Currency" },
+        "status": { "type": "string", "enum": [
+            "created",
+            "success",
+            "refused",
+            "error"
+        ]},
+        "create_date": { "type": "string", "format": "date" },
+        "payment_date": { "type": "string", "format": "date" },
+    }
+}

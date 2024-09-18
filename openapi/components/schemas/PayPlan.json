@@ -1,0 +1,8 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "period": { "type": "string", "format": "uuid" },
+        "price": { "$ref": "#/components/schemas/Currency" },
+    }
+}

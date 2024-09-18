@@ -2,7 +2,7 @@
     "get": {
         "tags": [ "Deliveries" ],
         "security": [ { "ApiKeyAuth": [] } ],
-        "summary": "Get information about deliveries",
+        "summary": "Get information about active deliveries",
         "parameters": [
             {
                 "in": "query",
@@ -21,18 +21,59 @@
         ],
         "responses": {
             200: {
-                "description": "OK"
-            }
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Delivery"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     },
     "post": {
         "tags": [ "Deliveries" ],
         "security": [ { "ApiKeyAuth": [] } ],
         "summary": "Create delivery",
+        "requestBody": {
+            "description": "Delivery form",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "object",
+                    "properties": {
+                        "instance": { "type": "string", "format": "uuid" },
+                        "from": { "type": "string", "format": "uuid" },
+                        "to": { "type": "string", "format": "uuid" },
+                    }
+                }}
+            },
+            "required": true,
+        },
         "responses": {
-            200: {
-                "description": "OK"
-            }
+            201: {
+                "description": "Created",
+                "content": {
+                    "application/json": { "schema": {
+                        "$ref": "#/components/schemas/Delivery"
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            409: {
+                "description": "
+                    Instance isn't stored in 'from' pick up point or is already
+                    being transported
+                "
+            },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     }
 }

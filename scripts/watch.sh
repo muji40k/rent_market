@@ -20,7 +20,8 @@ function get_last_modified {
     if [ 0 -eq ${#dirs[@]} ]; then
         echo $1
     else
-        get_last_modified ${dirs[0]}
+        sorted=($(ls -dt ${dirs[@]}))
+        echo ${sorted[0]}
     fi
 }
 

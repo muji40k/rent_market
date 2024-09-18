@@ -1,0 +1,21 @@
+{
+    "get": {
+        "tags": [ "Payment" ],
+        "summary": "Get list of availble pay methods",
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PayMethod"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

@@ -5,8 +5,23 @@
         "tags": [ "Roles" ],
         "responses": {
             200: {
-                "description": "OK"
-            }
+                "description": "User is a storekeeper",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "object",
+                        "properties": {
+                            "pick_up_point": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     }
 }

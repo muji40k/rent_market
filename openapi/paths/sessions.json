@@ -17,7 +17,7 @@
         },
         "responses": {
             200: {
-                "description": "OK",
+                "description": "Successful login",
                 "content": {
                     "application/json": { "schema": {
                         "type": "object",
@@ -27,17 +27,41 @@
                         }
                     }}
                 }
-            }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "description": "Wrong authentication data", },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     },
     "put": {
         "summary": "Renew session",
         "security": [ { "ApiKeyAuth": [] } ],
         "tags": [ "Sessions" ],
+        "parameters": [
+            {
+                "in": "header",
+                "name": "X-API-RENEW",
+                "description": "Renew token",
+                "schema": { "type": "string" },
+                "required": true
+            }
+        ],
         "responses": {
             200: {
-                "description": "OK"
-            }
+                "description": "Successful renew",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "object",
+                        "properties": {
+                            "token": { "type": "string" },
+                            "renew_token": { "type": "string" },
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     },
     "delete": {
@@ -45,9 +69,10 @@
         "security": [ { "ApiKeyAuth": [] } ],
         "tags": [ "Sessions" ],
         "responses": {
-            200: {
-                "description": "OK"
-            }
+            200: { "description": "Successful logout" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     }
 }

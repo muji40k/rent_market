@@ -1,0 +1,6 @@
+{
+    "type": "object",
+    "properties": {
+        "pick_up_point": { "type": "string", "format": "uuid" }
+    }
+}

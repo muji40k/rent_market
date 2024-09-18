@@ -1,0 +1,17 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "product": { "type": "string", "format": "uuid" },
+        "user": { "type": "string", "format": "uuid" },
+        "pick_up_point": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "condition": { "type": "string" },
+        "pay_plans": { "type": "array", "items": {
+            "$ref": "#/components/schemas/PayPlan"
+        }},
+        "verification_code": { "type": "string", "format": "password" },
+        "create_date": { "type": "string", "format": "date" },
+    }
+}

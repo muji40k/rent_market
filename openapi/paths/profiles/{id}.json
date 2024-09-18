@@ -19,19 +19,34 @@
                 "name": "category",
                 "description": "Desired category to fetch",
                 "schema": {
-                    "type": "string",
-                    "enum": [
-                        "general",
-                        "favorite",
-                        "pay-methods"
-                    ]
+                    "$ref": "#/components/schemas/ProfileCategoriesList"
                 }
             }
         ],
         "responses": {
             200: {
-                "description": "OK"
-            }
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "category": {
+                                    "$ref": "#/components/schemas/ProfileCategoriesList"
+                                },
+                                "content": {
+                                    "$ref": "#/components/schemas/ProfileCategory"
+                                }
+                            }
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     }
 }

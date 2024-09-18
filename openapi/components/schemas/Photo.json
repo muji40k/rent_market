@@ -1,0 +1,11 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "mime": { "type": "string" },
+        "placeholder": { "type": "string" },
+        "description": { "type": "string" },
+        "href": { "type": "string", "format": "uri" },
+        "date": { "type": "string", "format": "date" },
+    }
+}

@@ -1,5 +1,89 @@
 {
-    "Test": {
-        "$ref": "./schemas/Test.json"
+    "Category": {
+        "$ref": "./schemas/Category.json"
+    },
+    "Rating": {
+        "$ref": "./schemas/Rating.json"
+    },
+    "PayMethod": {
+        "$ref": "./schemas/PayMethod.json"
+    },
+    "PayPlan": {
+        "$ref": "./schemas/PayPlan.json"
+    },
+    "Payment": {
+        "$ref": "./schemas/Payment.json"
+    },
+    "Delivery": {
+        "$ref": "./schemas/Delivery.json"
+    },
+    "DeliveryCompany": {
+        "$ref": "./schemas/DeliveryCompany.json"
+    },
+    "Rent": {
+        "$ref": "./schemas/Rent.json"
+    },
+    "RentRequest": {
+        "$ref": "./schemas/RentRequest.json"
+    },
+    "RentReturn": {
+        "$ref": "./schemas/RentReturn.json"
+    },
+    "Period": {
+        "$ref": "./schemas/Period.json"
+    },
+    "Review": {
+        "$ref": "./schemas/Review.json"
+    },
+    "Photo": {
+        "$ref": "./schemas/Photo.json"
+    },
+    "PickUpPoint": {
+        "$ref": "./schemas/PickUpPoint.json"
+    },
+    "Instance": {
+        "$ref": "./schemas/Instance.json"
+    },
+    "WorkingHours": {
+        "$ref": "./schemas/WorkingHours.json"
+    },
+    "Product": {
+        "$ref": "./schemas/Product.json"
+    },
+    "ProductCharacteristic": {
+        "$ref": "./schemas/ProductCharacteristic.json"
+    },
+    "ProfileCategoriesList": {
+        "$ref": "./schemas/ProfileCategoriesList.json"
+    },
+    "ProfileCategory": {
+        "$ref": "./schemas/ProfileCategory.json"
+    },
+    "ProfileFavorite": {
+        "$ref": "./schemas/ProfileFavorite.json"
+    },
+    "ProfileGeneral": {
+        "$ref": "./schemas/ProfileGeneral.json"
+    },
+    "ProfilePayMethods": {
+        "$ref": "./schemas/ProfilePayMethods.json"
+    },
+    "Provision": {
+        "$ref": "./schemas/Provision.json"
+    },
+    "ProvisionRequest": {
+        "$ref": "./schemas/ProvisionRequest.json"
+    },
+    "ProvisionReturn": {
+        "$ref": "./schemas/ProvisionReturn.json"
+    },
+    "UserData": {
+        "$ref": "./schemas/UserData.json"
+    },
+    "StoredInstance": {
+        "$ref": "./schemas/StoredInstance.json"
+    },
+    "Currency": {
+        "$ref": "./schemas/Currency.json"
     }
 }

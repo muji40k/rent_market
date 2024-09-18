@@ -1,0 +1,21 @@
+{
+    "get": {
+        "tags": [ "Periods" ],
+        "summary": "Get list of periods",
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Period"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

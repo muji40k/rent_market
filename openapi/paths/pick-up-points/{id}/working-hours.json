@@ -1,0 +1,31 @@
+{
+    "get": {
+        "tags": [ "Pick up points" ],
+        "summary": "Get list of pick up point working hours",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Pick up poin identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WorkingHours"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

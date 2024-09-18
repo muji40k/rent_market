@@ -12,10 +12,55 @@
                 "required": true
             }
         ],
+        "requestBody": {
+            "description": "Action to be taken on the request",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "object",
+                    "properties": {
+                        "action": { "type": "string", "enum": [
+                            "satisfy",
+                            "reject"
+                        ]},
+                        "overrides": { "type": "object", "properties": {
+                            "product": { "type": "string", "format": "uuid" },
+                            "name": { "type": "string" },
+                            "description": { "type": "string" },
+                            "condition": { "type": "string" },
+                            "pay_plans": { "type": "array", "items": {
+                                "type": "object",
+                                "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "period": { "type": "string", "format": "uuid" },
+                                    "price": { "$ref": "#/components/schemas/Currency" },
+                                }
+                            }}
+                        }},
+                        "state_photos": { "type": "array", "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }},
+                        "verification_code": {
+                            "type": "string",
+                            "format": "password"
+                        }
+                    }
+                }}
+            },
+            "required": true
+        },
         "responses": {
-            200: {
-                "description": "OK"
-            }
+            200: { "description": "OK" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            409: {
+                "description": "
+                    Taking action on request conflicts with internal state
+                "
+            },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     }
 }

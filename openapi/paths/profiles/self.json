@@ -9,20 +9,46 @@
                 "name": "category",
                 "description": "Desired category to update",
                 "schema": {
-                    "type": "string",
-                    "enum": [
-                        "general",
-                        "favorite",
-                        "pay-methods"
-                    ]
+                    "$ref": "#/components/schemas/ProfileCategoriesList"
                 },
                 "required": true
             }
         ],
+        "requestBody": {
+            "description": "Category to be updated",
+            "content": {
+                "application/json": { "schema": {
+                    "oneOf": [
+                        { "$ref": "#/components/schemas/ProfileGeneral" },
+                        { "$ref": "#/components/schemas/ProfileFavorite" },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "move": { "type": "object", "properties": {
+                                        "id": { "type": "string", "format": "uuid" }
+                                    }},
+                                    "delete": { "type": "object", "properties": {
+                                        "id": { "type": "string", "format": "uuid" }
+                                    }},
+                                    "register": { "type": "object", "properties": {
+                                        "pay_method_id": { "type": "string", "format": "uuid" },
+                                        "payer_id" : { "type": "string" },
+                                    }}
+                                }
+                            }
+                        }
+                    ]
+                }}
+            },
+            "required": true
+        },
         "responses": {
-            200: {
-                "description": "OK"
-            }
+            200: { "description": "Category was updated" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     }
 }

@@ -1,0 +1,10 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "instance": { "type": "string", "format": "uuid" },
+        "user": { "type": "string", "format": "uuid" },
+        "start_date": { "type": "string", "format": "date" },
+        "end_date": { "type": "string", "format": "date" }
+    }
+}

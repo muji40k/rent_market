@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "company": { "type": "string", "format": "uuid" },
+        "instance": { "type": "string", "format": "uuid" },
+        "from": { "type": "string", "format": "uuid" },
+        "to": { "type": "string", "format": "uuid" },
+        "begin": { "type": "object", "properties": {
+            "scheduled": { "type": "string", "format": "date" },
+            "actual": { "type": "string", "format": "date" },
+        }},
+        "end": { "type": "object", "properties": {
+            "scheduled": { "type": "string", "format": "date" },
+            "actual": { "type": "string", "format": "date" },
+        }},
+        "verification_code": { "type": "string", "format": "passowrd" },
+        "create_date": { "type": "string", "format": "date" },
+    }
+}

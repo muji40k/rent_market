@@ -13,8 +13,19 @@
         ],
         "responses": {
             200: {
-                "description": "OK"
-            }
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PayPlan"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     },
     "put": {
@@ -30,10 +41,29 @@
                 "required": true
             }
         ],
+        "requestBody": {
+            "description": "List of new pay plans",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "array", "items": {
+                        "type": "object",
+                        "properties": {
+                            "period": { "type": "string", "format": "uuid" },
+                            "price": { "$ref": "#/components/schemas/Currency" },
+                        }
+                    }
+                }}
+            },
+            "required": true
+        },
         "responses": {
-            200: {
-                "description": "OK"
-            }
+            200: { "description": "OK" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            409: { "description": "Can't change pay plans during rent" },
+            500: { "$ref": "#/components/responses/Internal" }
         }
     }
 }
