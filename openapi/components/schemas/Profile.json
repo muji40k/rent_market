@@ -1,0 +1,8 @@
+{
+    "type": "object",
+    "properties": {
+        "general": { "$ref": "#/components/schemas/ProfileGeneral" },
+        "favorite": { "$ref": "#/components/schemas/ProfileFavorite"  },
+        "pay_methods": { "$ref": "#/components/schemas/ProfilePayMethods"  },
+    }
+}

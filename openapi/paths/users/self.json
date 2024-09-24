@@ -28,7 +28,10 @@
                     "type": "object",
                     "properties": {
                         "data": { "$ref": "#/components/schemas/UserData" },
-                        "password": { "type": "string", "format": "password" }
+                        "password": { "type": "object", "properties": {
+                            "old": { "type": "string", "format": "password" },
+                            "new": { "type": "string", "format": "password" },
+                        }}
                     }
                 }}
             },

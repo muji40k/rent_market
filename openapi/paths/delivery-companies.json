@@ -2,22 +2,20 @@
     "get": {
         "tags": [ "Deliveries" ],
         "security": [ { "ApiKeyAuth": [] } ],
-        "summary": "Get delivery company by id",
+        "summary": "Get list of delivery companies",
         "parameters": [
-            {
-                "in": "path",
-                "name": "id",
-                "description": "Company identifier",
-                "schema": { "type": "string", "format": "uuid" },
-                "required": true
-            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" },
         ],
         "responses": {
             200: {
                 "description": "OK",
                 "content": {
                     "application/json": { "schema": {
-                        "$ref": "#/components/schemas/DeliveryCompany"
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeliveryCompany"
+                        }
                     }}
                 }
             },

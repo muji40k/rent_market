@@ -2,7 +2,7 @@
     "patch": {
         "tags": [ "Profiles" ],
         "security": [ { "ApiKeyAuth": [] } ],
-        "summary": "Update profile category",
+        "summary": "Update part of profile",
         "parameters": [
             {
                 "in": "query",

@@ -14,6 +14,9 @@
     "/deliveries/{id}": {
         "$ref": "./paths/deliveries/{id}.json"
     },
+    "/delivery-companies": {
+        "$ref": "./paths/delivery-companies.json"
+    },
     "/delivery-companies/{id}": {
         "$ref": "./paths/delivery-companies/{id}.json"
     },
@@ -80,38 +83,38 @@
     "/profiles/{id}": {
         "$ref": "./paths/profiles/{id}.json"
     },
+    "/provision-requests": {
+        "$ref": "./paths/provision-requests.json"
+    },
+    "/provision-requests/{id}": {
+        "$ref": "./paths/provision-requests/{id}.json"
+    },
+    "/provision-returns": {
+        "$ref": "./paths/provision-returns.json"
+    },
+    "/provision-returns/{id}": {
+        "$ref": "./paths/provision-returns/{id}.json"
+    },
     "/provisions": {
         "$ref": "./paths/provisions.json"
     },
-    "/provisions/requests": {
-        "$ref": "./paths/provisions/requests.json"
+    "/rent-requests": {
+        "$ref": "./paths/rent-requests.json"
     },
-    "/provisions/requests/{id}": {
-        "$ref": "./paths/provisions/requests/{id}.json"
+    "/rent-requests/{id}": {
+        "$ref": "./paths/rent-requests/{id}.json"
     },
-    "/provisions/returns": {
-        "$ref": "./paths/provisions/returns.json"
+    "/rent-returns": {
+        "$ref": "./paths/rent-returns.json"
     },
-    "/provisions/returns/{id}": {
-        "$ref": "./paths/provisions/returns/{id}.json"
+    "/rent-returns/{id}": {
+        "$ref": "./paths/rent-returns/{id}.json"
     },
     "/renters/self": {
         "$ref": "./paths/renters/self.json"
     },
     "/rents": {
         "$ref": "./paths/rents.json"
-    },
-    "/rents/requests": {
-        "$ref": "./paths/rents/requests.json"
-    },
-    "/rents/requests/{id}": {
-        "$ref": "./paths/rents/requests/{id}.json"
-    },
-    "/rents/returns": {
-        "$ref": "./paths/rents/returns.json"
-    },
-    "/rents/returns/{id}": {
-        "$ref": "./paths/rents/returns/{id}.json"
     },
     "/sessions": {
         "$ref": "./paths/sessions.json"

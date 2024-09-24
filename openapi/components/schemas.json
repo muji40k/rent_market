@@ -53,6 +53,9 @@
     "ProductCharacteristic": {
         "$ref": "./schemas/ProductCharacteristic.json"
     },
+    "Profile": {
+        "$ref": "./schemas/Profile.json"
+    },
     "ProfileCategoriesList": {
         "$ref": "./schemas/ProfileCategoriesList.json"
     },

@@ -2,7 +2,7 @@
     "get": {
         "tags": [ "Profiles" ],
         "security": [ {}, { "ApiKeyAuth": [] } ],
-        "summary": "Get list of profile categories",
+        "summary": "Get user profile",
         "parameters": [
             {
                 "in": "path",
@@ -13,14 +13,6 @@
                     { "type": "string", "enum": [ "self" ] },
                 ]},
                 "required": true
-            },
-            {
-                "in": "query",
-                "name": "category",
-                "description": "Desired category to fetch",
-                "schema": {
-                    "$ref": "#/components/schemas/ProfileCategoriesList"
-                }
             }
         ],
         "responses": {
@@ -28,18 +20,7 @@
                 "description": "OK",
                 "content": {
                     "application/json": { "schema": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "category": {
-                                    "$ref": "#/components/schemas/ProfileCategoriesList"
-                                },
-                                "content": {
-                                    "$ref": "#/components/schemas/ProfileCategory"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/schemas/Profile"
                     }}
                 }
             },
