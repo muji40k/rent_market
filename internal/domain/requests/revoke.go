@@ -1,17 +1,16 @@
-
 package requests
 
 import (
-    "time"
-    "github.com/google/uuid"
+	"github.com/google/uuid"
+	"time"
 )
 
-type RevokeRequest struct {
-    Id uuid.UUID
-    InstanceId uuid.UUID
-    RenterId uuid.UUID
-    PickUpPointId uuid.UUID
-    VerificationCode string
-    CreateDate time.Time
+type Revoke struct {
+	Id               uuid.UUID
+	InstanceId       uuid.UUID
+	RenterId         uuid.UUID
+	PickUpPointId    uuid.UUID
+	VerificationCode string
+	CreateDate       time.Time
 }
 

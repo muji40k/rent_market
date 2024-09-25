@@ -1,38 +1,31 @@
-
 package models
 
 import (
-    "github.com/google/uuid"
+	"github.com/google/uuid"
 )
 
 type Product struct {
-    Id uuid.UUID
-    Name string
-    Category []Category
-    Description string
+	Id          uuid.UUID
+	Name        string
+	Category    []Category
+	Description string
 }
 
 type Charachteristic struct {
-    Id uuid.UUID
-    Name string
-    Value string
+	Id    uuid.UUID
+	Name  string
+	Value string
 }
 
 type ProductCharacteristics struct {
-    ProductId uuid.UUID
-    Map map[string]Charachteristic
-}
-
-type ProductPhoto struct {
-    Id uuid.UUID
-    ProductId uuid.UUID
-    Photo Photo
+	ProductId uuid.UUID
+	Map       map[string]Charachteristic
 }
 
 func NewProductCharacteristics() ProductCharacteristics {
-    out := ProductCharacteristics{}
-    out.Map = make(map[string]Charachteristic)
+	out := ProductCharacteristics{}
+	out.Map = make(map[string]Charachteristic)
 
-    return out
+	return out
 }
 

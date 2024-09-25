@@ -1,15 +1,15 @@
 package records
 
 import (
-    "time"
-    "github.com/google/uuid"
+	"github.com/google/uuid"
+	"time"
 )
 
 type Storage struct {
-    Id uuid.UUID
-    PickUpPointId uuid.UUID
-    InstanceId uuid.UUID
-    InDate time.Time
-    OutDate *time.Time
+	Id            uuid.UUID
+	PickUpPointId uuid.UUID
+	InstanceId    uuid.UUID
+	InDate        time.Time
+	OutDate       *time.Time
 }
 

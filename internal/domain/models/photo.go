@@ -1,16 +1,16 @@
-
 package models
 
 import (
-    "time"
-    "github.com/google/uuid"
+	"github.com/google/uuid"
+	"time"
 )
 
 type Photo struct {
-    Id uuid.UUID
-    Path string
-    Placeholder string
-    Description string
-    Date time.Time
+	Id          uuid.UUID
+	Path        string
+	Mime        string
+	Placeholder string
+	Description string
+	Date        time.Time
 }
 

@@ -1,12 +1,12 @@
-
 package models
 
 import (
-    "github.com/google/uuid"
+	"github.com/google/uuid"
 )
 
 type Category struct {
-    Id uuid.UUID
-    Name string
+	Id       uuid.UUID
+	ParentId uuid.UUID
+	Name     string
 }
 

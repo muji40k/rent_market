@@ -1,16 +1,16 @@
 package records
 
 import (
-    "time"
-    "github.com/google/uuid"
+	"github.com/google/uuid"
+	"time"
 )
 
 type Rent struct {
-    Id uuid.UUID
-    UserId uuid.UUID
-    InstanceId uuid.UUID
-    StartDate time.Time
-    EndDate *time.Time
-    PaymentPeriodId uuid.UUID
+	Id              uuid.UUID
+	UserId          uuid.UUID
+	InstanceId      uuid.UUID
+	StartDate       time.Time
+	EndDate         *time.Time
+	PaymentPeriodId uuid.UUID
 }
 

@@ -1,18 +1,17 @@
-
 package requests
 
 import (
-    "time"
-    "github.com/google/uuid"
+	"github.com/google/uuid"
+	"time"
 )
 
-type RentRequest struct {
-    Id uuid.UUID
-    InstanceId uuid.UUID
-    UserId uuid.UUID
-    PickUpPointId uuid.UUID
-    PaymentPeriodId uuid.UUID
-    VerificationCode string
-    CreateDate time.Time
+type Rent struct {
+	Id               uuid.UUID
+	InstanceId       uuid.UUID
+	UserId           uuid.UUID
+	PickUpPointId    uuid.UUID
+	PaymentPeriodId  uuid.UUID
+	VerificationCode string
+	CreateDate       time.Time
 }
 
