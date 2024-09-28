@@ -1,4 +1,4 @@
-package services
+package delivery
 
 import (
 	"rent_service/internal/domain/models"
@@ -8,49 +8,49 @@ import (
 	"github.com/google/uuid"
 )
 
-type DeliveryCreateForm struct {
+type CreateForm struct {
 	InstanceId uuid.UUID
 	From       uuid.UUID
 	To         uuid.UUID
 }
 
-type DeliverySendForm struct {
+type SendForm struct {
 	DeliveryId       uuid.UUID
 	VerificationCode string
 	TempPhotos       Collection[uuid.UUID]
 }
 
-type DeliveryAcceptForm struct {
+type AcceptForm struct {
 	DeliveryId       uuid.UUID
 	Comment          *string
 	VerificationCode string
 	TempPhotos       Collection[uuid.UUID]
 }
 
-type IDeliveryService interface {
+type IService interface {
 	ListDeliveriesByPickUpPoint(
-		token Token,
+		token models.Token,
 		pickUpPointId uuid.UUID,
 	) (Collection[requests.Delivery], error)
 	GetDeliveryByInstance(
-		token Token,
+		token models.Token,
 		instanceId uuid.UUID,
 	) (requests.Delivery, error)
 
 	CreateDelivery(
-		token Token,
-		form DeliveryCreateForm,
+		token models.Token,
+		form CreateForm,
 	) (requests.Delivery, error)
-	SendDelivery(token Token, form DeliverySendForm) error
-	AcceptDelivery(token Token, form DeliveryAcceptForm) error
+	SendDelivery(token models.Token, form SendForm) error
+	AcceptDelivery(token models.Token, form AcceptForm) error
 }
 
-type IDeliveryCompanyService interface {
+type ICompanyService interface {
 	ListDeliveryCompanies(
-		token Token,
+		token models.Token,
 	) (Collection[models.DeliveryCompany], error)
 	GetDeliveryCompanyById(
-		token Token,
+		token models.Token,
 		companyId uuid.UUID,
 	) (models.DeliveryCompany, error)
 }

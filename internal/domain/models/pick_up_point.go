@@ -7,7 +7,7 @@ import (
 
 type PickUpPoint struct {
 	Id       uuid.UUID
-	Address  string
+	Address  Address
 	Capacity uint64
 }
 

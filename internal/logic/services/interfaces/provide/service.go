@@ -1,38 +1,16 @@
-package services
+package provide
 
 import (
 	"github.com/google/uuid"
 
+	"rent_service/internal/domain/models"
 	"rent_service/internal/domain/records"
 	"rent_service/internal/domain/requests"
 	. "rent_service/internal/misc/types/collection"
 	"rent_service/internal/misc/types/currency"
 )
 
-type IProvisionSevice interface {
-	ListProvisionsByUser(
-		token Token,
-		userId uuid.UUID,
-	) (Collection[records.Provision], error)
-	GetProvisionByInstance(
-		token Token,
-		instanceId uuid.UUID,
-	) (records.Provision, error)
-}
-
-type ProvisionCreateForm struct {
-	ProductId     uuid.UUID
-	PickUpPointId uuid.UUID
-	Name          string
-	Description   string
-	Condition     string
-	PayPlans      map[uuid.UUID]struct {
-		PeriodId uuid.UUID // Index
-		Price    currency.Currency
-	}
-}
-
-type ProvisionStartForm struct {
+type StartForm struct {
 	RequestId        uuid.UUID
 	VerificationCode string
 	Overrides        struct {
@@ -48,26 +26,57 @@ type ProvisionStartForm struct {
 	TempPhotos Collection[uuid.UUID]
 }
 
-type IProvisionRequestService interface {
+type StopForm struct {
+	RevokeId         uuid.UUID
+	VerificationCode string
+	TempPhotos       Collection[uuid.UUID]
+}
+
+type IService interface {
+	ListProvisionsByUser(
+		token models.Token,
+		userId uuid.UUID,
+	) (Collection[records.Provision], error)
+	GetProvisionByInstance(
+		token models.Token,
+		instanceId uuid.UUID,
+	) (records.Provision, error)
+
+	StartProvision(token models.Token, form StartForm) error
+	RejectProvision(token models.Token, requestId uuid.UUID) error
+	StopProvision(token models.Token, form StopForm) error
+}
+
+type RequestCreateForm struct {
+	ProductId     uuid.UUID
+	PickUpPointId uuid.UUID
+	Name          string
+	Description   string
+	Condition     string
+	PayPlans      map[uuid.UUID]struct {
+		PeriodId uuid.UUID // Index
+		Price    currency.Currency
+	}
+}
+
+type IRequestService interface {
 	ListProvisionRequstsByUser(
-		token Token,
+		token models.Token,
 		userId uuid.UUID,
 	) (Collection[requests.Provide], error)
 	GetProvisionRequestByInstance(
-		token Token,
+		token models.Token,
 		instanceId uuid.UUID,
 	) (requests.Provide, error)
 	ListProvisionRequstsByPickUpPoint(
-		token Token,
+		token models.Token,
 		pickUpPointId uuid.UUID,
 	) (Collection[requests.Provide], error)
 
 	CreateProvisionRequest(
-		token Token,
-		form ProvisionCreateForm,
+		token models.Token,
+		form RequestCreateForm,
 	) (requests.Provide, error)
-	StartProvision(userId uuid.UUID, form ProvisionStartForm) error
-	RejectProvision(userId uuid.UUID, requestId uuid.UUID) error
 }
 
 type RevokeCreateForm struct {
@@ -75,31 +84,24 @@ type RevokeCreateForm struct {
 	PickUpPointId uuid.UUID
 }
 
-type ProvisionStopForm struct {
-	RequestId        uuid.UUID
-	VerificationCode string
-	TempPhotos       Collection[uuid.UUID]
-}
-
-type IRevokeRequestService interface {
-	ListRevokeRequestsByUser(
-		token Token,
+type IRevokeService interface {
+	ListProvisionRevokesByUser(
+		token models.Token,
 		userId uuid.UUID,
 	) (Collection[requests.Revoke], error)
-	GetRevokesRequestByInstance(
-		token Token,
+	GetProvisionRevokeByInstance(
+		token models.Token,
 		instance uuid.UUID,
 	) (requests.Revoke, error)
-	ListRetvokeRequestsByPickUpPoint(
-		token Token,
+	ListProvisionRetvokesByPickUpPoint(
+		token models.Token,
 		pickUpPointId uuid.UUID,
 	) (Collection[requests.Revoke], error)
 
-	CreateRevokeRequest(
-		token Token,
+	CreateProvisionRevoke(
+		token models.Token,
 		form RevokeCreateForm,
 	) (requests.Revoke, error)
-	CancelRevokeRequest(token Token, requestId uuid.UUID) error
-	StopProvision(userId uuid.UUID, form ProvisionStopForm) error
+	CancelProvisionRevoke(token models.Token, requestId uuid.UUID) error
 }
 

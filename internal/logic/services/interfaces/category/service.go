@@ -1,4 +1,4 @@
-package services
+package category
 
 import (
 	"rent_service/internal/domain/models"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type ICategoryService interface {
+type IService interface {
 	ListCategories() (Collection[models.Category], error)
 	GetFullCategory(categoryId uuid.UUID) (Collection[models.Category], error)
 }

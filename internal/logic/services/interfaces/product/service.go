@@ -1,4 +1,4 @@
-package services
+package product
 
 import (
 	"rent_service/internal/domain/models"
@@ -7,15 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type ProductSort uint
+type Sort uint
 
 const (
-	PRODUCT_SORT_NONE ProductSort = iota
-	PRODUCT_SORT_OFFERS_ASC
-	PRODUCT_SORT_OFFERS_DSC
+	SORT_NONE Sort = iota
+	SORT_OFFERS_ASC
+	SORT_OFFERS_DSC
 )
 
-type ProductFilter struct {
+type Filter struct {
 	CategoryId      uuid.UUID
 	Query           *string
 	Characteristics []struct {
@@ -28,21 +28,18 @@ type ProductFilter struct {
 	}
 }
 
-type IProductService interface {
-	ListProducts(
-		filter ProductFilter,
-		sort ProductSort,
-	) (Collection[models.Product], error)
+type IService interface {
+	ListProducts(filter Filter, sort Sort) (Collection[models.Product], error)
 	GetProductById(productId uuid.UUID) (models.Product, error)
 }
 
-type IProductCharacteristicsService interface {
+type ICharacteristicsService interface {
 	GetProductCharacteristics(
 		productId uuid.UUID,
 	) (models.ProductCharacteristics, error)
 }
 
-type IProductPhotoService interface {
+type IPhotoService interface {
 	ListProductPhotos(productId uuid.UUID) (Collection[uuid.UUID], error)
 }
 

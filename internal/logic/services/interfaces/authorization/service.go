@@ -1,7 +1,9 @@
-package services
+package authorization
 
 import (
 	"fmt"
+	"rent_service/internal/domain/models"
+	"rent_service/internal/logic/services/errors/cmnerrors"
 
 	"github.com/google/uuid"
 )
@@ -16,8 +18,8 @@ const (
 	role_max
 )
 
-type IAuthorizationService interface {
-	Authorize(token Token, role Role) error
+type IService interface {
+	Authorize(token models.Token, role Role) error
 }
 
 func (role *Role) String() string {
@@ -37,9 +39,9 @@ func (role *Role) String() string {
 
 func (role *Role) Valid() error {
 	if *role >= role_max {
-		return ErrorUnknown{[]string{
+		return cmnerrors.Unknown([]string{
 			fmt.Sprintf("Role value '%d' >= '%d' [max]", role, role_max),
-		}}
+		})
 	}
 
 	return nil

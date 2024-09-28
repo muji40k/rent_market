@@ -1,4 +1,4 @@
-package services
+package instance
 
 import (
 	"rent_service/internal/domain/models"
@@ -8,34 +8,31 @@ import (
 	"github.com/google/uuid"
 )
 
-type InstanceSort uint
+type Sort uint
 
 const (
-	INSTANCE_SORT_NONE ProductSort = iota
-	INSTANCE_SORT_RATING_ASC
-	INSTANCE_SORT_RATING_DSC
-	INSTANCE_SORT_DATE_ASC
-	INSTANCE_SORT_DATE_DSC
-	INSTANCE_SORT_PRICE_ASC
-	INSTANCE_SORT_PRICE_DSC
-	INSTANCE_SORT_USAGE_ASC
-	INSTANCE_SORT_USAGE_DSC
+	SORT_NONE Sort = iota
+	SORT_RATING_ASC
+	SORT_RATING_DSC
+	SORT_DATE_ASC
+	SORT_DATE_DSC
+	SORT_PRICE_ASC
+	SORT_PRICE_DSC
+	SORT_USAGE_ASC
+	SORT_USAGE_DSC
 )
 
-type InstanceFilter struct {
+type Filter struct {
 	ProductId uuid.UUID
 }
 
-type IInstanceService interface {
-	ListInstances(
-		filter InstanceFilter,
-		sort InstanceSort,
-	) (Collection[models.Instance], error)
+type IService interface {
+	ListInstances(filter Filter, sort Sort) (Collection[models.Instance], error)
 	GetInstanceById(instanceId uuid.UUID) (models.Instance, error)
-	UpdateInstance(token Token, instance models.Instance) error
+	UpdateInstance(token models.Token, instance models.Instance) error
 }
 
-type InstancePayPlans struct {
+type PayPlans struct {
 	InstanceId uuid.UUID
 	Items      map[uuid.UUID]struct {
 		PeriodId uuid.UUID // index
@@ -43,31 +40,31 @@ type InstancePayPlans struct {
 	}
 }
 
-type IInstancePayPlansService interface {
+type IPayPlansService interface {
 	GetInstancePayPlans(instanceId uuid.UUID) (models.InstancePayPlans, error)
 	UpdateInstancePayPlans(
-		token Token,
-		payPlans InstancePayPlans,
+		token models.Token,
+		payPlans PayPlans,
 	) (models.InstancePayPlans, error)
 }
 
-type IInstancePhotoService interface {
+type IPhotoService interface {
 	ListInstancePhotos(instanceId uuid.UUID) (Collection[uuid.UUID], error)
 	AddInstancePhotos(
-		token Token,
+		token models.Token,
 		instanceId uuid.UUID,
 		tempPhotos Collection[uuid.UUID],
 	) error
 }
 
-type InstanceReview struct {
+type Review struct {
 	InstanceId uuid.UUID
 	Content    string
 	Rating     float64
 }
 
-type IInstanceReviewService interface {
+type IReviewService interface {
 	ListInstanceReviews(instanceId uuid.UUID) (Collection[models.Review], error)
-	PostInstanceReview(token Token, review InstanceReview) error
+	PostInstanceReview(token models.Token, review Review) error
 }
 

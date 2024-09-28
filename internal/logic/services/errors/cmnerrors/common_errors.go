@@ -1,4 +1,4 @@
-package services
+package cmnerrors
 
 import "fmt"
 
@@ -16,6 +16,48 @@ type ErrorNoActive struct {
 }
 type ErrorAlreadyExists struct{ What []string }
 
+// Creators
+func Authentication(err error) ErrorAuthentication {
+	return ErrorAuthentication{err}
+}
+
+func Authorization(err error) ErrorAuthorization {
+	return ErrorAuthorization{err}
+}
+
+func Internal(err error) ErrorInternal {
+	return ErrorInternal{err}
+}
+
+func Empty(what []string) ErrorEmpty {
+	return ErrorEmpty{what}
+}
+
+func NotFound(what []string) ErrorNotFound {
+	return ErrorNotFound{what}
+}
+
+func DataAccess(err error) ErrorDataAccess {
+	return ErrorDataAccess{err}
+}
+
+func NoAccess(what []string) ErrorNoAccess {
+	return ErrorNoAccess{what}
+}
+
+func Unknown(what []string) ErrorUnknown {
+	return ErrorUnknown{what}
+}
+
+func NoActive(what string, for_target string) ErrorNoActive {
+	return ErrorNoActive{what, for_target}
+}
+
+func AlreadyExists(what []string) ErrorAlreadyExists {
+	return ErrorAlreadyExists{what}
+}
+
+// Error implementation
 func (e ErrorAuthentication) Error() string {
 	return fmt.Sprintf("Authentication error: %v", e.Err)
 }

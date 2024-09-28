@@ -1,4 +1,4 @@
-package services
+package payment
 
 import (
 	"errors"
@@ -30,14 +30,17 @@ type PayMethodRegistrationForm struct {
 	PayerId  string
 }
 
-type IUserPaymentService interface {
-	GetPayMethods(token Token) (Collection[UserPayMethod], error)
-	RegisterPayMethod(token Token, method PayMethodRegistrationForm) error
+type IUserPayMethodService interface {
+	GetPayMethods(token models.Token) (Collection[UserPayMethod], error)
+	RegisterPayMethod(
+		token models.Token,
+		method PayMethodRegistrationForm,
+	) error
 	UpdatePayMethodsPriority(
-		token Token,
+		token models.Token,
 		methodsOrder Collection[uuid.UUID],
 	) error
-	RemovePayMethod(token Token, methodId uuid.UUID) (bool, error)
+	RemovePayMethod(token models.Token, methodId uuid.UUID) (bool, error)
 }
 
 var ErrorIncompletePayMethodsList = errors.New(
@@ -52,11 +55,11 @@ func (e ErrorWrongPayerId) Error() string {
 
 type IRentPaymentService interface {
 	GetPaymentsByInstance(
-		token Token,
+		token models.Token,
 		instanceId uuid.UUID,
 	) (Collection[models.Payment], error)
 	GetPaymentsByRentId(
-		token Token,
+		token models.Token,
 		rentId uuid.UUID,
 	) (Collection[models.Payment], error)
 }
