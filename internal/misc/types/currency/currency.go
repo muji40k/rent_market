@@ -1,7 +1,7 @@
 package currency
 
 type Currency struct {
-	Name  string
-	Value float64
+	Name  string  `json:"currency"`
+	Value float64 `json:"value"`
 }
 

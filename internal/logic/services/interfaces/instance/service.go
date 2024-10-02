@@ -1,9 +1,9 @@
 package instance
 
 import (
-	"rent_service/internal/domain/models"
+	"fmt"
+	"rent_service/internal/logic/services/types/token"
 	. "rent_service/internal/misc/types/collection"
-	"rent_service/internal/misc/types/currency"
 
 	"github.com/google/uuid"
 )
@@ -27,44 +27,61 @@ type Filter struct {
 }
 
 type IService interface {
-	ListInstances(filter Filter, sort Sort) (Collection[models.Instance], error)
-	GetInstanceById(instanceId uuid.UUID) (models.Instance, error)
-	UpdateInstance(token models.Token, instance models.Instance) error
-}
-
-type PayPlans struct {
-	InstanceId uuid.UUID
-	Items      map[uuid.UUID]struct {
-		PeriodId uuid.UUID // index
-		Price    currency.Currency
-	}
+	ListInstances(filter Filter, sort Sort) (Collection[Instance], error)
+	GetInstanceById(instanceId uuid.UUID) (Instance, error)
+	UpdateInstance(token token.Token, instance Instance) error
 }
 
 type IPayPlansService interface {
-	GetInstancePayPlans(instanceId uuid.UUID) (models.InstancePayPlans, error)
+	GetInstancePayPlans(instanceId uuid.UUID) (Collection[PayPlan], error)
 	UpdateInstancePayPlans(
-		token models.Token,
-		payPlans PayPlans,
-	) (models.InstancePayPlans, error)
+		token token.Token,
+		instanceId uuid.UUID,
+		payPlans PayPlansUpdateForm,
+	) error
 }
 
 type IPhotoService interface {
 	ListInstancePhotos(instanceId uuid.UUID) (Collection[uuid.UUID], error)
 	AddInstancePhotos(
-		token models.Token,
+		token token.Token,
 		instanceId uuid.UUID,
-		tempPhotos Collection[uuid.UUID],
+		tempPhotos []uuid.UUID,
 	) error
 }
 
-type Review struct {
+type ReviewSort uint
+
+const (
+	REVIEW_SORT_NONE ReviewSort = iota
+	REVIEW_SORT_DATE_ASC
+	REVIEW_SORT_DATE_DSC
+	REVIEW_SORT_RATING_ASC
+	REVIEW_SORT_RATING_DSC
+)
+
+type ReviewRating uint
+
+type ReviewFilter struct {
 	InstanceId uuid.UUID
-	Content    string
-	Rating     float64
+	Ratings    []ReviewRating
 }
 
 type IReviewService interface {
-	ListInstanceReviews(instanceId uuid.UUID) (Collection[models.Review], error)
-	PostInstanceReview(token models.Token, review Review) error
+	ListInstanceReviews(filter ReviewFilter, sort ReviewSort) (Collection[Review], error)
+	PostInstanceReview(
+		token token.Token,
+		instanceId uuid.UUID,
+		review ReviewPostForm,
+	) error
+}
+
+type ErrorRatingIncorrectValue struct{ Value ReviewRating }
+
+func (e ErrorRatingIncorrectValue) Error() string {
+	return fmt.Sprintf(
+		"Incorrect rating value '%v' exceeded range [0; 5]",
+		e.Value,
+	)
 }
 

@@ -2,55 +2,41 @@ package user
 
 import (
 	"fmt"
-	"rent_service/internal/domain/models"
+	"rent_service/internal/logic/services/types/token"
 
 	"github.com/google/uuid"
 )
 
-type Info struct {
-	Id    uuid.UUID
-	Name  string
-	Email string
-}
-
 type IService interface {
-	GetSelfUserInfo(token models.Token) (Info, error)
-	UpdateUserInfo(token models.Token, info Info) error
-	UpdateUserPassword(
-		token models.Token,
+	GetSelfUserInfo(token token.Token) (Info, error)
+	UpdateSelfUserInfo(token token.Token, form UpdateForm) error
+	UpdateSelfUserPassword(
+		token token.Token,
 		old_password string,
 		new_password string,
 	) error
 }
 
 type IProfileService interface {
-	GetUserProfile(userId uuid.UUID) (models.UserProfile, error)
-	GetSelfUserProfile(token models.Token) (models.UserProfile, error)
-	UpdateUserProfile(token models.Token, data models.UserProfile) error
+	GetUserProfile(userId uuid.UUID) (UserProfile, error)
+	GetSelfUserProfile(token token.Token) (UserProfile, error)
+	UpdateSelfUserProfile(token token.Token, data UserProfile) error
 }
 
 type IFavoriteService interface {
-	GetUserFavorite(
-		userId uuid.UUID,
-	) (models.UserFavoritePickUpPoint, error)
-	GetSelfUserFavorite(
-		token models.Token,
-	) (models.UserFavoritePickUpPoint, error)
-	UpdateUserFavorite(
-		token models.Token,
-		data models.UserFavoritePickUpPoint,
+	GetUserFavorite(userId uuid.UUID) (UserFavoritePickUpPoint, error)
+	GetSelfUserFavorite(token token.Token) (UserFavoritePickUpPoint, error)
+	UpdateSelfUserFavorite(
+		token token.Token,
+		data UserFavoritePickUpPoint,
 	) error
 }
 
-type StoreKeeper struct {
-	PickUpPointId uuid.UUID
-}
-
 type IRoleService interface {
-	IsRenter(token models.Token) error
-	RegisterAsRenter(token models.Token) error
-	IsAdministrator(token models.Token) error
-	IsStoreKeeper(token models.Token) (StoreKeeper, error)
+	IsRenter(token token.Token) error
+	RegisterAsRenter(token token.Token) error
+	IsAdministrator(token token.Token) error
+	IsStoreKeeper(token token.Token) (StoreKeeper, error)
 }
 
 type ErrorAlreadyRenter struct{ email string }

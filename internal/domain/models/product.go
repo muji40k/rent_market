@@ -7,7 +7,7 @@ import (
 type Product struct {
 	Id          uuid.UUID
 	Name        string
-	Category    []Category
+	CategoryId  uuid.UUID
 	Description string
 }
 

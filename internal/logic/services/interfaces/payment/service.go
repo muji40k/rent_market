@@ -6,61 +6,45 @@ import (
 
 	"github.com/google/uuid"
 
-	"rent_service/internal/domain/models"
+	"rent_service/internal/logic/services/types/token"
 	. "rent_service/internal/misc/types/collection"
 )
-
-type PayMethod struct {
-	Id   uuid.UUID
-	Name string
-}
 
 type IPayMethodService interface {
 	GetPayMethods() (Collection[PayMethod], error)
 }
 
-type UserPayMethod struct {
-	Id     uuid.UUID
-	Method PayMethod
-}
-
-type PayMethodRegistrationForm struct {
-	MethodId uuid.UUID
-	Priority uint
-	PayerId  string
-}
-
 type IUserPayMethodService interface {
-	GetPayMethods(token models.Token) (Collection[UserPayMethod], error)
+	GetPayMethods(token token.Token) (Collection[UserPayMethod], error)
 	RegisterPayMethod(
-		token models.Token,
+		token token.Token,
 		method PayMethodRegistrationForm,
-	) error
+	) (uuid.UUID, error)
 	UpdatePayMethodsPriority(
-		token models.Token,
+		token token.Token,
 		methodsOrder Collection[uuid.UUID],
 	) error
-	RemovePayMethod(token models.Token, methodId uuid.UUID) (bool, error)
+	RemovePayMethod(token token.Token, methodId uuid.UUID) (bool, error)
 }
 
 var ErrorIncompletePayMethodsList = errors.New(
 	"Priority list doesn't use all registered methods",
 )
 
-type ErrorWrongPayerId struct{ id string }
+type ErrorWrongPayerId struct{ Id string }
 
 func (e ErrorWrongPayerId) Error() string {
-	return fmt.Sprintf("Can't verify payer id '%v'", e.id)
+	return fmt.Sprintf("Can't verify payer id '%v'", e.Id)
 }
 
 type IRentPaymentService interface {
 	GetPaymentsByInstance(
-		token models.Token,
+		token token.Token,
 		instanceId uuid.UUID,
-	) (Collection[models.Payment], error)
+	) (Collection[Payment], error)
 	GetPaymentsByRentId(
-		token models.Token,
+		token token.Token,
 		rentId uuid.UUID,
-	) (Collection[models.Payment], error)
+	) (Collection[Payment], error)
 }
 

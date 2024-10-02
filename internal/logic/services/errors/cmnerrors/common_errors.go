@@ -15,6 +15,7 @@ type ErrorNoActive struct {
 	For  string
 }
 type ErrorAlreadyExists struct{ What []string }
+type ErrorConflict struct{ What string }
 
 // Creators
 func Authentication(err error) ErrorAuthentication {
@@ -55,6 +56,10 @@ func NoActive(what string, for_target string) ErrorNoActive {
 
 func AlreadyExists(what []string) ErrorAlreadyExists {
 	return ErrorAlreadyExists{what}
+}
+
+func Conflict(what string) ErrorConflict {
+	return ErrorConflict{what}
 }
 
 // Error implementation
@@ -112,5 +117,9 @@ func (e ErrorNoActive) Error() string {
 
 func (e ErrorAlreadyExists) Error() string {
 	return fmt.Sprintf("'%v' already exists", e.What)
+}
+
+func (e ErrorConflict) Error() string {
+	return fmt.Sprintf("Request reached conflicting state: %v", e.What)
 }
 

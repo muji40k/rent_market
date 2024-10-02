@@ -1,8 +1,7 @@
 package storage
 
 import (
-	"rent_service/internal/domain/models"
-	"rent_service/internal/domain/records"
+	"rent_service/internal/logic/services/types/token"
 	. "rent_service/internal/misc/types/collection"
 
 	"github.com/google/uuid"
@@ -10,12 +9,9 @@ import (
 
 type IService interface {
 	ListStoragesByPickUpPoint(
-		token models.Token,
+		token token.Token,
 		pickUpPointId uuid.UUID,
-	) (Collection[records.Storage], error)
-	GetStorageByInstance(
-		token models.Token,
-		instanceId uuid.UUID,
-	) (records.Storage, error)
+	) (Collection[Storage], error)
+	GetStorageByInstance(instanceId uuid.UUID) (Storage, error)
 }
 

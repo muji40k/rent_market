@@ -2,8 +2,8 @@ package authorization
 
 import (
 	"fmt"
-	"rent_service/internal/domain/models"
 	"rent_service/internal/logic/services/errors/cmnerrors"
+	"rent_service/internal/logic/services/types/token"
 
 	"github.com/google/uuid"
 )
@@ -19,7 +19,7 @@ const (
 )
 
 type IService interface {
-	Authorize(token models.Token, role Role) error
+	Authorize(token token.Token, role Role) error
 }
 
 func (role *Role) String() string {

@@ -1,94 +1,65 @@
 package rent
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 
-	"rent_service/internal/domain/models"
-	"rent_service/internal/domain/records"
-	"rent_service/internal/domain/requests"
+	"rent_service/internal/logic/services/types/token"
 	. "rent_service/internal/misc/types/collection"
 )
 
-type StartForm struct {
-	RequestId        uuid.UUID
-	VerificationCode string
-	TempPhotos       Collection[uuid.UUID]
-}
-
-type StopForm struct {
-	ReturnId         uuid.UUID
-	VerificationCode string
-	Comment          *string
-	TempPhotos       Collection[uuid.UUID]
-}
-
 type IService interface {
 	ListRentsByUser(
-		token models.Token,
+		token token.Token,
 		userId uuid.UUID,
-	) (Collection[records.Rent], error)
+	) (Collection[Rent], error)
 	GetRentByInstance(
-		token models.Token,
+		token token.Token,
 		instanceId uuid.UUID,
-	) (records.Rent, error)
+	) (Rent, error)
 
-	StartRent(userId uuid.UUID, form StartForm) error
-	RejectRent(userId uuid.UUID, requestId uuid.UUID) error
-	StopRent(userId uuid.UUID, form StopForm) error
-}
-
-type RequestCreateForm struct {
-	InstanceId      uuid.UUID
-	PickUpPointId   uuid.UUID
-	PaymentPeriodId uuid.UUID
+	StartRent(token token.Token, form StartForm) error
+	RejectRent(token token.Token, requestId uuid.UUID) error
+	StopRent(token token.Token, form StopForm) error
 }
 
 type IRequestService interface {
 	ListRentRequstsByUser(
-		token models.Token,
+		token token.Token,
 		userId uuid.UUID,
-	) (Collection[requests.Rent], error)
+	) (Collection[RentRequest], error)
 	GetRentRequestByInstance(
-		token models.Token,
+		token token.Token,
 		instanceId uuid.UUID,
-	) (requests.Rent, error)
+	) (RentRequest, error)
 	ListRentRequstsByPickUpPoint(
-		token models.Token,
+		token token.Token,
 		pickUpPointId uuid.UUID,
-	) (Collection[requests.Rent], error)
+	) (Collection[RentRequest], error)
 
 	CreateRentRequest(
-		token models.Token,
+		token token.Token,
 		form RequestCreateForm,
-	) (requests.Rent, error)
-}
-
-type ReturnCreateForm struct {
-	RentId        uuid.UUID
-	PickUpPointId uuid.UUID
-	EndDate       time.Time
+	) (RentRequest, error)
 }
 
 type IReturnService interface {
 	ListRentReturnsByUser(
-		token models.Token,
+		token token.Token,
 		userId uuid.UUID,
-	) (Collection[requests.Return], error)
+	) (Collection[ReturnRequest], error)
 	GetRentReturnByInstance(
-		token models.Token,
+		token token.Token,
 		instance uuid.UUID,
-	) (requests.Return, error)
+	) (ReturnRequest, error)
 	ListRentReturnsByPickUpPoint(
-		token models.Token,
+		token token.Token,
 		pickUpPointId uuid.UUID,
-	) (Collection[requests.Return], error)
+	) (Collection[ReturnRequest], error)
 
 	CreateRentReturn(
-		token models.Token,
+		token token.Token,
 		form ReturnCreateForm,
-	) (requests.Return, error)
-	CancelRentReturn(token models.Token, requestId uuid.UUID) error
+	) (ReturnRequest, error)
+	CancelRentReturn(token token.Token, requestId uuid.UUID) error
 }
 

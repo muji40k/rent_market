@@ -1,7 +1,6 @@
 package product
 
 import (
-	"rent_service/internal/domain/models"
 	. "rent_service/internal/misc/types/collection"
 
 	"github.com/google/uuid"
@@ -18,25 +17,27 @@ const (
 type Filter struct {
 	CategoryId      uuid.UUID
 	Query           *string
-	Characteristics []struct {
-		Key    string
-		Values []string
-		Range  *struct {
-			Min float64
-			Max float64
-		}
+	Characteristics []FilterCharachteristic
+}
+
+type FilterCharachteristic struct {
+	Key    string
+	Values []string
+	Range  *struct {
+		Min float64
+		Max float64
 	}
 }
 
 type IService interface {
-	ListProducts(filter Filter, sort Sort) (Collection[models.Product], error)
-	GetProductById(productId uuid.UUID) (models.Product, error)
+	ListProducts(filter Filter, sort Sort) (Collection[Product], error)
+	GetProductById(productId uuid.UUID) (Product, error)
 }
 
 type ICharacteristicsService interface {
-	GetProductCharacteristics(
+	ListProductCharacteristics(
 		productId uuid.UUID,
-	) (models.ProductCharacteristics, error)
+	) (Collection[Charachteristic], error)
 }
 
 type IPhotoService interface {
