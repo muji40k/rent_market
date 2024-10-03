@@ -58,9 +58,10 @@ func (self *controller) getGetter(ctx *gin.Context) (lister.Method[rent_service.
 	var method lister.Method[rent_service.ReturnRequest]
 
 	service := self.providers.ret.GetRentReturnService()
-	user := ctx.Request.URL.Query().Get(PARAM_USER)
-	instance := ctx.Request.URL.Query()[PARAM_INSTANCE]
-	pickUpPointId := ctx.Request.URL.Query().Get(PARAM_PICK_UP_POINT)
+	query := ctx.Request.URL.Query()
+	user := query.Get(PARAM_USER)
+	instance := query[PARAM_INSTANCE]
+	pickUpPointId := query.Get(PARAM_PICK_UP_POINT)
 
 	if "" != user && "" == pickUpPointId && nil == instance {
 		method, err = lister.ListSingle(user, service.ListRentReturnsByUser)

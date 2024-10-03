@@ -55,8 +55,9 @@ func (self *controller) getGetter(ctx *gin.Context) (lister.Method[delivery_serv
 	var method lister.Method[delivery_service.Delivery]
 
 	service := self.providers.delivery.GetDeliveryService()
-	instance := ctx.Request.URL.Query()[PARAM_INSTANCE]
-	pickUpPointId := ctx.Request.URL.Query().Get(PARAM_PICK_UP_POINT)
+	query := ctx.Request.URL.Query()
+	instance := query[PARAM_INSTANCE]
+	pickUpPointId := query.Get(PARAM_PICK_UP_POINT)
 
 	if "" != pickUpPointId && nil == instance {
 		method, err = lister.ListSingle(pickUpPointId, service.ListDeliveriesByPickUpPoint)

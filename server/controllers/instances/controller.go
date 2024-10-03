@@ -97,13 +97,12 @@ func (self *controller) get(ctx *gin.Context) {
 	var instances collection.Collection[instance.Instance]
 	var iter collection.Iterator[instance.Instance]
 	var err error
+	query := ctx.Request.URL.Query()
 
-	form.ProductId, err = getter_uuid.Parse(
-		ctx.Request.URL.Query().Get(PARAM_PRODUCT),
-	)
+	form.ProductId, err = getter_uuid.Parse(query.Get(PARAM_PRODUCT))
 
 	if nil == err {
-		sortBy, err = getSortBy(ctx.Request.URL.Query().Get(PARAM_SORT_BY))
+		sortBy, err = getSortBy(query.Get(PARAM_SORT_BY))
 	}
 
 	if nil == err {

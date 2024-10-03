@@ -47,8 +47,9 @@ func (self *controller) getGetter(ctx *gin.Context) (lister.Method[rent_service.
 	var method lister.Method[rent_service.Rent]
 
 	service := self.providers.rent.GetRentService()
-	user := ctx.Request.URL.Query().Get(PARAM_USER)
-	instance := ctx.Request.URL.Query()[PARAM_INSTANCE]
+	query := ctx.Request.URL.Query()
+	user := query.Get(PARAM_USER)
+	instance := query[PARAM_INSTANCE]
 
 	if "" != user && nil == instance {
 		method, err = lister.ListSingle(user, service.ListRentsByUser)

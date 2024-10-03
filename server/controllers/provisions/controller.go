@@ -47,8 +47,9 @@ func (self *controller) getGetter(ctx *gin.Context) (lister.Method[provide_servi
 	var method lister.Method[provide_service.Provision]
 
 	service := self.providers.provide.GetProvisionService()
-	user := ctx.Request.URL.Query().Get(PARAM_USER)
-	instance := ctx.Request.URL.Query()[PARAM_INSTANCE]
+	query := ctx.Request.URL.Query()
+	user := query.Get(PARAM_USER)
+	instance := query[PARAM_INSTANCE]
 
 	if "" != user && nil == instance {
 		method, err = lister.ListSingle(user, service.ListProvisionsByUser)

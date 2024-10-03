@@ -50,8 +50,9 @@ func (self *controller) getGetter(ctx *gin.Context) (lister.MethodNA[storage_ser
 	var method lister.MethodNA[storage_service.Storage]
 
 	service := self.providers.storage.GetStorageService()
-	instance := ctx.Request.URL.Query()[PARAM_INSTANCE]
-	pickUpPointId := ctx.Request.URL.Query().Get(PARAM_PICK_UP_POINT)
+	query := ctx.Request.URL.Query()
+	instance := query[PARAM_INSTANCE]
+	pickUpPointId := query.Get(PARAM_PICK_UP_POINT)
 
 	if "" != pickUpPointId && nil == instance {
 		var token token.Token
