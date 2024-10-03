@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 )
 
-type wrap[T any] struct {
+type marshaler[T any] struct {
 	iter Iterator[T]
 }
 
 func Marshaler[T any](iter Iterator[T]) json.Marshaler {
-	return &wrap[T]{iter}
+	return &marshaler[T]{iter}
 }
 
-func (self *wrap[T]) MarshalJSON() ([]byte, error) {
+func (self *marshaler[T]) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteRune('[')
 
