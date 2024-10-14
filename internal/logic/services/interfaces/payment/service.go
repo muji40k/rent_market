@@ -22,9 +22,9 @@ type IUserPayMethodService interface {
 	) (uuid.UUID, error)
 	UpdatePayMethodsPriority(
 		token token.Token,
-		methodsOrder Collection[uuid.UUID],
+		methodsOrder []uuid.UUID,
 	) error
-	RemovePayMethod(token token.Token, methodId uuid.UUID) (bool, error)
+	RemovePayMethod(token token.Token, methodId uuid.UUID) error
 }
 
 var ErrorIncompletePayMethodsList = errors.New(

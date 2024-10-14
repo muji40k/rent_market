@@ -14,11 +14,12 @@ type Delivery struct {
 	ScheduledEndDate   time.Time
 }
 
-type IDelivery interface {
+type ICreator interface {
 	CreateDelivery(
 		from models.Address,
 		to models.Address,
 		verificationCode string,
 	) (Delivery, error)
+	CancelDelivery(companyId uuid.UUID, deliveryId string) error
 }
 

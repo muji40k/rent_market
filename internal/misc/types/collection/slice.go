@@ -1,13 +1,17 @@
 package collection
 
-type SliceCollection[T any] []T
+type sliceCollection[T any] []T
+
+func SliceCollection[T any](slice []T) Collection[T] {
+	return sliceCollection[T](slice)
+}
 
 type sliceIterator[T any] struct {
 	data  []T
 	index uint
 }
 
-func (self SliceCollection[T]) Iter() Iterator[T] {
+func (self sliceCollection[T]) Iter() Iterator[T] {
 	return &sliceIterator[T]{
 		data:  self,
 		index: 0,

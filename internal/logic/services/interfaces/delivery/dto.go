@@ -6,20 +6,19 @@ import (
 	"github.com/google/uuid"
 )
 
+type Dates struct {
+	Scheduled date.Date  `json:"scheduled"`
+	Actual    *date.Date `json:"actual"`
+}
+
 type Delivery struct {
-	Id         uuid.UUID `json:"id"`
-	CompanyId  uuid.UUID `json:"company"`
-	InstanceId uuid.UUID `json:"instance"`
-	FromId     uuid.UUID `json:"from"`
-	ToId       uuid.UUID `json:"to"`
-	BeginDate  struct {
-		Scheduled date.Date  `json:"scheduled"`
-		Actual    *date.Date `json:"actual"`
-	} `json:"begin"`
-	EndDate struct {
-		Scheduled date.Date  `json:"scheduled"`
-		Actual    *date.Date `json:"actual"`
-	} `json:"end"`
+	Id               uuid.UUID `json:"id"`
+	CompanyId        uuid.UUID `json:"company"`
+	InstanceId       uuid.UUID `json:"instance"`
+	FromId           uuid.UUID `json:"from"`
+	ToId             uuid.UUID `json:"to"`
+	BeginDate        Dates     `json:"begin"`
+	EndDate          Dates     `json:"end"`
 	VerificationCode string    `json:"verification_code"`
 	CreateDate       date.Date `json:"create_date"`
 }

@@ -41,6 +41,10 @@ type IRoleService interface {
 
 type ErrorAlreadyRenter struct{ email string }
 
+func AlreadyRenter(email string) ErrorAlreadyRenter {
+	return ErrorAlreadyRenter{email}
+}
+
 func (e ErrorAlreadyRenter) Error() string {
 	return fmt.Sprintf("User with email '%v' is already renter", e.email)
 }

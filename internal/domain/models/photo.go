@@ -14,3 +14,12 @@ type Photo struct {
 	Date        time.Time
 }
 
+type TempPhoto struct {
+	Id          uuid.UUID
+	Path        *string
+	Mime        string
+	Placeholder string
+	Description string
+	Create      time.Time
+}
+

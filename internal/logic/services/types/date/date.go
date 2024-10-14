@@ -9,6 +9,10 @@ type Date struct {
 	Time time.Time
 }
 
+func New(time time.Time) Date {
+	return Date{time}
+}
+
 const FORMAT = "2006-01-02"
 
 func (self *Date) MarshalJSON() ([]byte, error) {

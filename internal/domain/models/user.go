@@ -10,6 +10,7 @@ type User struct {
 	Name     string
 	Email    string
 	Password string
+	Token    Token
 }
 
 type UserProfile struct {
@@ -28,14 +29,16 @@ type UserFavoritePickUpPoint struct {
 	PickUpPointId *uuid.UUID
 }
 
+type UserPayMethod struct {
+	Name     string
+	MethodId uuid.UUID
+	PayerId  string
+	Priority uint
+}
+
 type UserPayMethods struct {
 	UserId uuid.UUID
-	Map    map[uuid.UUID]struct {
-		Name     string
-		MethodId uuid.UUID
-		PayerId  string
-		Priority uint
-	}
+	Map    map[uuid.UUID]UserPayMethod
 }
 
 // func NewUserPayMethods() UserPayMethods {

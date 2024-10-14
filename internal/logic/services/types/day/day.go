@@ -10,6 +10,10 @@ type Day struct {
 	Day time.Weekday
 }
 
+func New(day time.Weekday) Day {
+	return Day{day}
+}
+
 func toMondayStart(incorrect int) int {
 	incorrect -= 1
 

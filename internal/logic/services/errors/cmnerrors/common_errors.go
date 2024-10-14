@@ -6,6 +6,7 @@ type ErrorAuthentication struct{ Err error }
 type ErrorAuthorization struct{ Err error }
 type ErrorInternal struct{ Err error }
 type ErrorEmpty struct{ What []string }
+type ErrorIncorrect struct{ What []string }
 type ErrorNotFound struct{ What []string }
 type ErrorDataAccess struct{ Err error }
 type ErrorNoAccess struct{ What []string }
@@ -30,11 +31,15 @@ func Internal(err error) ErrorInternal {
 	return ErrorInternal{err}
 }
 
-func Empty(what []string) ErrorEmpty {
+func Empty(what ...string) ErrorEmpty {
 	return ErrorEmpty{what}
 }
 
-func NotFound(what []string) ErrorNotFound {
+func Incorrect(what ...string) ErrorIncorrect {
+	return ErrorIncorrect{what}
+}
+
+func NotFound(what ...string) ErrorNotFound {
 	return ErrorNotFound{what}
 }
 
@@ -42,11 +47,11 @@ func DataAccess(err error) ErrorDataAccess {
 	return ErrorDataAccess{err}
 }
 
-func NoAccess(what []string) ErrorNoAccess {
+func NoAccess(what ...string) ErrorNoAccess {
 	return ErrorNoAccess{what}
 }
 
-func Unknown(what []string) ErrorUnknown {
+func Unknown(what ...string) ErrorUnknown {
 	return ErrorUnknown{what}
 }
 
@@ -54,7 +59,7 @@ func NoActive(what string, for_target string) ErrorNoActive {
 	return ErrorNoActive{what, for_target}
 }
 
-func AlreadyExists(what []string) ErrorAlreadyExists {
+func AlreadyExists(what ...string) ErrorAlreadyExists {
 	return ErrorAlreadyExists{what}
 }
 
@@ -89,6 +94,10 @@ func (e ErrorInternal) Unwrap() error {
 
 func (e ErrorEmpty) Error() string {
 	return fmt.Sprintf("Following information can't be empty: %v", e.What)
+}
+
+func (e ErrorIncorrect) Error() string {
+	return fmt.Sprintf("Data format error: %v", e.What)
 }
 
 func (e ErrorNotFound) Error() string {

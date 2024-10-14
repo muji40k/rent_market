@@ -21,10 +21,12 @@ type PayPlan struct {
 	Price      currency.Currency `json:"price"`
 }
 
-type PayPlansUpdateForm []struct {
+type PayPlanUpdateForm struct {
 	PeriodId uuid.UUID         `json:"period"`
 	Price    currency.Currency `json:"price"`
 }
+
+type PayPlansUpdateForm []PayPlanUpdateForm
 
 type Review struct {
 	Id         uuid.UUID `json:"id"`

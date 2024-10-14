@@ -9,6 +9,20 @@ type Time struct {
 	Time time.Time
 }
 
+func New(time time.Time) Time {
+	return Time{time}
+}
+
+func NewDuration(duration time.Duration) Time {
+	var base time.Time
+
+	return Time{base.Add(duration)}
+}
+
+func (self *Time) ToDuration() time.Duration {
+	return self.Time.Sub(self.Time.Truncate(24 * time.Hour))
+}
+
 const FORMAT = "15:04"
 
 func (self *Time) MarshalJSON() ([]byte, error) {

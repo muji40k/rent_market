@@ -7,6 +7,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type ErrorDeliveryAlreadySent struct {
+	company    uuid.UUID
+	DeliveryId string
+}
+type ErrorForeignDelivery struct {
+	DeliveryId string
+}
 type ErrorAddressCantBeReached struct {
 	company uuid.UUID
 	Address models.Address
@@ -19,6 +26,19 @@ type ErrorRejected struct {
 type ErrorInternal struct{ Err error }
 
 // Creators
+func DeliveryAlreadySent(
+	company uuid.UUID,
+	deliveryId string,
+) ErrorDeliveryAlreadySent {
+	return ErrorDeliveryAlreadySent{company, deliveryId}
+}
+
+func ForeignDelivery(
+	deliveryId string,
+) ErrorForeignDelivery {
+	return ErrorForeignDelivery{deliveryId}
+}
+
 func AddressCantBeReached(
 	company uuid.UUID,
 	address models.Address,
@@ -39,9 +59,20 @@ func Internal(err error) ErrorInternal {
 }
 
 // Error implementation
+func (self ErrorDeliveryAlreadySent) Error() string {
+	return fmt.Sprintf(
+		"Delivery '%v' is already sent by company '%v'",
+		self.DeliveryId, self.company,
+	)
+}
+
+func (self ErrorForeignDelivery) Error() string {
+	return fmt.Sprintf("Delivery '%v' is unknown", self.DeliveryId)
+}
+
 func (self ErrorAddressCantBeReached) Error() string {
 	return fmt.Sprintf(
-		"Address '%v' can't be reached by company '%d'",
+		"Address '%v' can't be reached by company '%v'",
 		self.Address, self.company,
 	)
 }

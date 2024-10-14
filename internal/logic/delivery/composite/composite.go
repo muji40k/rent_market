@@ -5,18 +5,35 @@ import (
 	"rent_service/internal/domain/models"
 	"rent_service/internal/logic/delivery"
 	"rent_service/internal/logic/delivery/errors"
+
+	"github.com/google/uuid"
 )
 
 type DeliveryComposite struct {
-	deliveries []delivery.IDelivery
+	deliveries map[uuid.UUID]delivery.ICreator
 }
 
-func New(deliveries []delivery.IDelivery) DeliveryComposite {
-	return DeliveryComposite{deliveries}
+type Dpair struct {
+	id      uuid.UUID
+	creator delivery.ICreator
 }
 
-func (self *DeliveryComposite) Add(delivery delivery.IDelivery) {
-	self.deliveries = append(self.deliveries, delivery)
+func Pair(id uuid.UUID, creator delivery.ICreator) Dpair {
+	return Dpair{id, creator}
+}
+
+func New(deliveries ...Dpair) DeliveryComposite {
+	m := make(map[uuid.UUID]delivery.ICreator, len(deliveries))
+
+	for _, v := range deliveries {
+		m[v.id] = v.creator
+	}
+
+	return DeliveryComposite{m}
+}
+
+func (self *DeliveryComposite) Add(id uuid.UUID, creator delivery.ICreator) {
+	self.deliveries[id] = creator
 }
 
 func (self *DeliveryComposite) CreateDelivery(
@@ -35,6 +52,17 @@ func (self *DeliveryComposite) CreateDelivery(
 	}
 
 	return delivery.Delivery{}, errors.Internal(ErrorComposition{errs})
+}
+
+func (self *DeliveryComposite) CancelDelivery(
+	companyId uuid.UUID,
+	deliveryId string,
+) error {
+	if delivery, found := self.deliveries[companyId]; found {
+		return delivery.CancelDelivery(companyId, deliveryId)
+	} else {
+		return errors.ForeignDelivery(deliveryId)
+	}
 }
 
 type ErrorComposition struct{ Errors []error }

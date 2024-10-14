@@ -11,7 +11,6 @@ import (
 type IService interface {
 	CreateTempPhoto(token token.Token, photo Description) (uuid.UUID, error)
 	UploadTempPhoto(token token.Token, photoId uuid.UUID, content []byte) error
-	SavePhotoFromTemp(token token.Token, photoId uuid.UUID) (Photo, error)
 
 	GetTempPhoto(token token.Token, photoId uuid.UUID) (TempPhoto, error)
 	GetPhoto(photoId uuid.UUID) (Photo, error)
