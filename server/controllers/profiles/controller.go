@@ -112,7 +112,7 @@ func updatePayMethods(
 
 	// Delete
 	for i := 0; nil == err && len(methods.Delete) > i; i++ {
-		_, err = service.RemovePayMethod(token, methods.Delete[i])
+		err = service.RemovePayMethod(token, methods.Delete[i])
 	}
 
 	// Compose new order of methods and register new ones
@@ -139,10 +139,7 @@ func updatePayMethods(
 
 	// Apply new order
 	if nil == err {
-		err = service.UpdatePayMethodsPriority(
-			token,
-			collection.SliceCollection[uuid.UUID](order),
-		)
+		err = service.UpdatePayMethodsPriority(token, order)
 	}
 
 	return err
@@ -202,21 +199,32 @@ func (self *controller) getSelf(ctx *gin.Context) (profile, error) {
 	if nil == err {
 		service := self.providers.profile.GetUserProfileService()
 		profile.General, err = service.GetSelfUserProfile(token)
+
+		if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = nil
+		}
 	}
 
 	if nil == err {
 		service := self.providers.favorite.GetUserFavoriteService()
 		profile.Favorite, err = service.GetSelfUserFavorite(token)
+
+		if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = nil
+		}
 	}
 
 	if nil == err {
 		service := self.providers.payMethod.GetUserPayMethodService()
 		methods, cerr := service.GetPayMethods(token)
 
-		if nil == cerr {
-			*profile.PayMethods = collection.Collect(methods.Iter())
-		} else {
+		if cnferr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cnferr) {
+			err = nil
+		} else if nil != cerr {
 			err = cerr
+		} else {
+			profile.PayMethods = new([]payment_service.UserPayMethod)
+			*profile.PayMethods = collection.Collect(methods.Iter())
 		}
 	}
 
@@ -232,9 +240,17 @@ func (self *controller) getById(
 	service := self.providers.profile.GetUserProfileService()
 	profile.General, err = service.GetUserProfile(uuid)
 
+	if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		err = nil
+	}
+
 	if nil == err {
 		service := self.providers.favorite.GetUserFavoriteService()
 		profile.Favorite, err = service.GetUserFavorite(uuid)
+
+		if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = nil
+		}
 	}
 
 	return profile, err

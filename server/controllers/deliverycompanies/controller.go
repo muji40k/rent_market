@@ -88,10 +88,10 @@ func (self *controller) getById(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}

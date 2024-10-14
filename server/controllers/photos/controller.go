@@ -63,10 +63,10 @@ func (self *controller) createTemp(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
-	} else if cerr := (photo_service.ErrorUnsupportedMime{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnsupportedMediaType)
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (photo_service.ErrorUnsupportedMime{}); errors.As(err, &cerr) {
+		ctx.Status(http.StatusUnsupportedMediaType)
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -127,12 +127,12 @@ func (self *controller) uploadTemp(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
+	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if errors.Is(err, ErrorMimeDoesntMatch) {
 		ctx.Status(http.StatusUnsupportedMediaType)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -149,10 +149,10 @@ func (self *controller) get(ctx *gin.Context) {
 
 	if nil == err {
 		ctx.JSON(http.StatusOK, photo)
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}

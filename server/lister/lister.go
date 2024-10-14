@@ -49,7 +49,7 @@ func ListMultiple[T any](rawIds []string, base BaseGetMethod[T]) (Method[T], err
 			}
 
 			if nil == err {
-				return SliceCollection[T](items), nil
+				return SliceCollection(items), nil
 			} else {
 				return nil, err
 			}
@@ -102,7 +102,7 @@ func ListMultipleNA[T any](rawIds []string, base BaseGetMethodNA[T]) (MethodNA[T
 			}
 
 			if nil == err {
-				return SliceCollection[T](items), nil
+				return SliceCollection(items), nil
 			} else {
 				return nil, err
 			}

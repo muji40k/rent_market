@@ -116,10 +116,10 @@ func (self *controller) get(ctx *gin.Context) {
 
 	if nil == err {
 		ctx.JSON(http.StatusOK, collection.Marshaler(iter))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -136,10 +136,10 @@ func (self *controller) getById(ctx *gin.Context) {
 
 	if nil == err {
 		ctx.JSON(http.StatusOK, item)
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -182,10 +182,10 @@ func (self *controller) updateById(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -202,10 +202,10 @@ func (self *controller) getPayPlans(ctx *gin.Context) {
 
 	if nil == err {
 		ctx.JSON(http.StatusOK, collection.Marshaler(plans.Iter()))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -236,12 +236,12 @@ func (self *controller) updatePayPlans(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
+	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorConflict{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusConflict)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -258,10 +258,10 @@ func (self *controller) getPhotos(ctx *gin.Context) {
 
 	if nil == err {
 		ctx.JSON(http.StatusOK, collection.Marshaler(photos.Iter()))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -292,10 +292,10 @@ func (self *controller) addPhotos(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -361,10 +361,10 @@ func (self *controller) getReviews(ctx *gin.Context) {
 
 	if nil == err {
 		ctx.JSON(http.StatusOK, collection.Marshaler(iter))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -395,10 +395,10 @@ func (self *controller) addReview(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}

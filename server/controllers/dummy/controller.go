@@ -61,7 +61,7 @@ func (self *controller) Register(engine *gin.Engine) {
 }
 
 func (self *controller) get(ctx *gin.Context) {
-	col := collection.SliceCollection[handle](values)
+	col := collection.SliceCollection(values)
 	iter, err := pagination.Apply(ctx, col.Iter())
 
 	if nil == err {
@@ -138,7 +138,7 @@ func (self *controller) parse(ctx *gin.Context) {
 	if nil == err {
 		iter, err = pagination.Apply(
 			ctx,
-			collection.SliceCollection[Person](person).Iter(),
+			collection.SliceCollection(person).Iter(),
 		)
 	}
 

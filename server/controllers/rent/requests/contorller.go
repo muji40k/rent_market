@@ -131,6 +131,8 @@ func (self *controller) create(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
+	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorAlreadyExists{}); errors.As(err, &cerr) {
@@ -139,8 +141,6 @@ func (self *controller) create(ctx *gin.Context) {
 		} else {
 			ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 		}
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -225,12 +225,12 @@ func (self *controller) update(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusForbidden)
+	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
 	} else if cerr := (cmnerrors.ErrorConflict{}); errors.As(err, &cerr) {
 		ctx.Status(http.StatusConflict)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}

@@ -56,6 +56,8 @@ func (self *controller) register(ctx *gin.Context) {
 
 	if nil == err {
 		ctx.Status(http.StatusCreated)
+	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
+		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else if cerr := (cmnerrors.ErrorAlreadyExists{}); errors.As(err, &cerr) {
 		if slices.Contains(cerr.What, "email") {
 			ctx.Status(http.StatusUnauthorized)
@@ -64,8 +66,6 @@ func (self *controller) register(ctx *gin.Context) {
 				fmt.Errorf("Caught unsupported already exists error: %w", err),
 			))
 		}
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
