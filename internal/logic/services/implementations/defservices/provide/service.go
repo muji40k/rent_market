@@ -145,6 +145,24 @@ func (self *service) GetProvisionByInstance(
 	return self.mapf(&provision), err
 }
 
+func clearOverrides(overrides *provide.Overrides) {
+	if nil != overrides.Name && "" == *overrides.Name {
+		overrides.Name = nil
+	}
+
+	if nil != overrides.Description && "" == *overrides.Description {
+		overrides.Description = nil
+	}
+
+	if nil != overrides.Condition && "" == *overrides.Condition {
+		overrides.Condition = nil
+	}
+
+	if nil != overrides.PayPlans && 0 == len(overrides.PayPlans) {
+		overrides.PayPlans = nil
+	}
+}
+
 func (self *service) StartProvision(
 	token token.Token,
 	form provide.StartForm,
@@ -168,6 +186,8 @@ func (self *service) StartProvision(
 	}
 
 	if nil == err {
+		clearOverrides(&form.Overrides)
+
 		err = states.MapError(self.smachine.AcceptProvisionRequest(
 			request.Id,
 			form,

@@ -23,10 +23,3 @@ type PickUpPointWorkingHours struct {
 	Map           map[time.Weekday]WorkingHours
 }
 
-// func NewPickUpPointWorkingHours() PickUpPointWorkingHours {
-//     out := PickUpPointWorkingHours{}
-//     out.Map = make(map[time.Weekday]WorkingHours)
-//
-//     return out
-// }
-

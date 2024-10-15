@@ -97,7 +97,7 @@ func (self *InstanceStateMachine) actionCreateInstance(
 type instancef func(*models.Instance)
 
 func instanceUpdateDescription(description *string) instancef {
-	if nil == description {
+	if nil == description || "" == *description {
 		return nil
 	}
 

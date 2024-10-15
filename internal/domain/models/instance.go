@@ -17,10 +17,3 @@ type InstancePayPlans struct {
 	Map        map[uuid.UUID]PayPlan // Indexed by Period uuid
 }
 
-// func NewInstancePayPlans() InstancePayPlans {
-//     out := InstancePayPlans{}
-//     out.Map = make(map[uuid.UUID]PayPlan)
-//
-//     return out
-// }
-

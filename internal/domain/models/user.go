@@ -41,15 +41,3 @@ type UserPayMethods struct {
 	Map    map[uuid.UUID]UserPayMethod
 }
 
-// func NewUserPayMethods() UserPayMethods {
-//     out := UserPayMethods{}
-//     out.Map = make(map[uuid.UUID]struct {
-//         Name     string
-//         Method   PayMethod
-//         PayerId  string
-//         Priority uint
-//     })
-//
-//     return out
-// }
-

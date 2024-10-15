@@ -22,10 +22,3 @@ type ProductCharacteristics struct {
 	Map       map[string]Charachteristic
 }
 
-// func NewProductCharacteristics() ProductCharacteristics {
-//     out := ProductCharacteristics{}
-//     out.Map = make(map[string]Charachteristic)
-//
-//     return out
-// }
-

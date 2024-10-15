@@ -20,10 +20,3 @@ type Provide struct {
 	CreateDate       time.Time
 }
 
-func NewProvide() Provide {
-	out := Provide{}
-	out.PayPlans = make(map[uuid.UUID]models.PayPlan)
-
-	return out
-}
-
