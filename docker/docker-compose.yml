@@ -1,0 +1,25 @@
+
+services:
+  postgresql_db:
+    build:
+      context: ../scripts/psql/.
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - /mnt/rent_market:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@domain.org
+      - PGADMIN_DEFAULT_PASSWORD=psswd
+    volumes:
+      - ./pgadmin/:/var/lib/pgadmin
+    ports:
+      - "127.0.0.1:42069:80"
+
