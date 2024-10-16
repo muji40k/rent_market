@@ -7,25 +7,25 @@ drop table if exists photos.photos;
 create table photos.photos
 (
     id uuid primary key,
-    placeholder text,
-    description text,
-    path text,
-    mime text,
-    date timestamptz,
+    placeholder text not null,
+    description text not null,
+    path text not null,
+    mime text not null,
+    date timestamptz not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 drop table if exists photos.temp;
 create table photos.temp
 (
     id uuid primary key,
-    placeholder text,
-    description text,
+    placeholder text not null,
+    description text not null,
     path text,
-    mime text,
-    date timestamptz,
+    mime text not null,
+    date timestamptz not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 

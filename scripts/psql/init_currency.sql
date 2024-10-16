@@ -7,8 +7,8 @@ drop table if exists currencies.currencies;
 create table currencies.currencies
 (
     id uuid primary key,
-    name text,
+    name text not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 

@@ -7,9 +7,9 @@ drop table if exists roles.renters;
 create table roles.renters
 (
     id uuid primary key,
-    user_id uuid,
+    user_id uuid not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table roles.renters add
@@ -21,9 +21,9 @@ drop table if exists roles.administrators;
 create table roles.administrators
 (
     id uuid primary key,
-    user_id uuid,
+    user_id uuid not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table roles.administrators add
@@ -35,10 +35,10 @@ drop table if exists roles.storekeepers;
 create table roles.storekeepers
 (
     id uuid primary key,
-    user_id uuid,
-    pick_up_point_id uuid,
+    user_id uuid not null,
+    pick_up_point_id uuid not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table roles.storekeepers add

@@ -7,12 +7,12 @@ drop table if exists instances.instances;
 create table instances.instances
 (
     id uuid primary key,
-    product_id uuid,
-    name text,
-    description text,
-    condition text,
+    product_id uuid not null,
+    name text not null,
+    description text not null,
+    condition text not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table instances.instances add
@@ -24,12 +24,12 @@ drop table if exists instances.pay_plans;
 create table instances.pay_plans
 (
     id uuid primary key,
-    instance_id uuid,
-    period_id uuid,
-    currency_id uuid,
-    price double precision,
+    instance_id uuid not null,
+    period_id uuid not null,
+    currency_id uuid not null,
+    price double precision not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table instances.pay_plans add
@@ -51,10 +51,10 @@ drop table if exists instances.photos;
 create table instances.photos
 (
     id uuid primary key,
-    instance_id uuid,
-    photo_id uuid,
+    instance_id uuid not null,
+    photo_id uuid not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table instances.photos add
@@ -71,13 +71,13 @@ drop table if exists instances.reviews;
 create table instances.reviews
 (
     id uuid primary key,
-    instance_id uuid,
-    user_id uuid,
-    content text,
-    rating double precision,
-    date timestamptz,
+    instance_id uuid not null,
+    user_id uuid not null,
+    content text not null,
+    rating double precision not null,
+    date timestamptz not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table instances.reviews add

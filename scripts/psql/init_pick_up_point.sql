@@ -7,10 +7,10 @@ drop table if exists pick_up_points.pick_up_points;
 create table pick_up_points.pick_up_points
 (
     id uuid primary key,
-    address_id uuid,
-    capacity integer,
+    address_id uuid not null,
+    capacity integer not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table pick_up_points.pick_up_points add
@@ -22,12 +22,12 @@ drop table if exists pick_up_points.working_hours;
 create table pick_up_points.working_hours
 (
     id uuid primary key,
-    pick_up_point_id uuid,
-    day integer,
-    start_time time,
-    end_time time,
+    pick_up_point_id uuid not null,
+    day integer not null,
+    start_time time not null,
+    end_time time not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table pick_up_points.working_hours add
@@ -39,10 +39,10 @@ drop table if exists pick_up_points.photos;
 create table pick_up_points.photos
 (
     id uuid primary key,
-    pick_up_point_id uuid,
-    photo_id uuid,
+    pick_up_point_id uuid not null,
+    photo_id uuid not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table pick_up_points.photos add

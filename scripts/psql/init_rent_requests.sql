@@ -7,14 +7,14 @@ drop table if exists rents.requests;
 create table rents.requests
 (
     id uuid primary key,
-    instance_id uuid,
-    user_id uuid,
-    pick_up_point_id uuid,
-    payment_period_id uuid,
-    verification_code text,
-    create_date timestamptz,
+    instance_id uuid not null,
+    user_id uuid not null,
+    pick_up_point_id uuid not null,
+    payment_period_id uuid not null,
+    verification_code text not null,
+    create_date timestamptz not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table rents.requests add
@@ -41,14 +41,14 @@ drop table if exists rents.returns;
 create table rents.returns
 (
     id uuid primary key,
-    instance_id uuid,
-    user_id uuid,
-    pick_up_point_id uuid,
-    rent_end_date timestamptz,
-    verification_code text,
-    create_date timestamptz,
+    instance_id uuid not null,
+    user_id uuid not null,
+    pick_up_point_id uuid not null,
+    rent_end_date timestamptz not null,
+    verification_code text not null,
+    create_date timestamptz not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table rents.returns add

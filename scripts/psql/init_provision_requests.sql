@@ -7,16 +7,16 @@ drop table if exists provisions.requests;
 create table provisions.requests
 (
     id uuid primary key,
-    product_id uuid,
-    renter_id uuid,
-    pick_up_point_id uuid,
-    name text,
-    description text,
-    condition text,
-    verification_code text,
-    create_date timestamptz,
+    product_id uuid not null,
+    renter_id uuid not null,
+    pick_up_point_id uuid not null,
+    name text not null,
+    description text not null,
+    condition text not null,
+    verification_code text not null,
+    create_date timestamptz not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table provisions.requests add
@@ -38,12 +38,12 @@ drop table if exists provisions.requests_pay_plans;
 create table provisions.requests_pay_plans
 (
     id uuid primary key,
-    request_id uuid,
-    period_id uuid,
-    currency_id uuid,
-    value double precision,
+    request_id uuid not null,
+    period_id uuid not null,
+    currency_id uuid not null,
+    value double precision not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table provisions.requests_pay_plans add
@@ -65,13 +65,13 @@ drop table if exists provisions.revokes;
 create table provisions.revokes
 (
     id uuid primary key,
-    instance_id uuid,
-    renter_id uuid,
-    pick_up_point_id uuid,
-    verification_code text,
-    create_date timestamptz,
+    instance_id uuid not null,
+    renter_id uuid not null,
+    pick_up_point_id uuid not null,
+    verification_code text not null,
+    create_date timestamptz not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table provisions.revokes add

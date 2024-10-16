@@ -7,31 +7,31 @@ drop table if exists deliveries.companies;
 create table deliveries.companies
 (
     id uuid primary key,
-    name text,
+    name text not null,
     site text,
     phone_bumber text,
     description text,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 drop table if exists deliveries.deliveries;
 create table deliveries.deliveries
 (
     id uuid primary key,
-    company_id uuid,
-    instance_id uuid,
-    from_id uuid,
-    to_id uuid,
+    company_id uuid not null,
+    instance_id uuid not null,
+    from_id uuid not null,
+    to_id uuid not null,
     delivery_id text,
-    scheduled_begin_date timestamptz,
+    scheduled_begin_date timestamptz not null,
     actual_begin_date timestamptz,
-    scheduled_end_date timestamptz,
+    scheduled_end_date timestamptz not null,
     actual_end_date timestamptz,
-    verification_code text,
-    create_date timestamptz,
+    verification_code text not null,
+    create_date timestamptz not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table deliveries.deliveries add

@@ -7,10 +7,10 @@ drop table if exists categories.categories;
 create table categories.categories
 (
     id uuid primary key,
-    name text,
+    name text not null,
     parent_id uuid,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table categories.categories add

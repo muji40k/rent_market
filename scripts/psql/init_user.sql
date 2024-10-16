@@ -7,24 +7,19 @@ drop table if exists users.users;
 create table users.users
 (
     id uuid primary key,
-    token text,
-    name text,
-    email text,
-    password text,
+    token text not null,
+    name text not null,
+    email text not null,
+    password text not null,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
-
--- alter table categories.categories add
---     constraint "fkey_category_parent_id"
---     foreign key (parent_id)
---     references categories.categories(id);
 
 drop table if exists users.favorite_pick_up_points;
 create table users.favorite_pick_up_points
 (
     id uuid primary key,
-    user_id uuid,
+    user_id uuid not null,
     pick_up_point_id uuid,
     modification_date timestamptz not null default now(),
     modification_source text
@@ -44,14 +39,14 @@ drop table if exists users.profiles;
 create table users.profiles
 (
     id uuid primary key,
-    user_id uuid,
+    user_id uuid not null,
     name text,
     surname text,
     patronymic text,
     birth_date timestamptz,
     photo_id uuid,
     modification_date timestamptz not null default now(),
-    modification_source text
+    modification_source text not null
 );
 
 alter table users.profiles add
