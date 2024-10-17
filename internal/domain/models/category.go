@@ -6,7 +6,7 @@ import (
 
 type Category struct {
 	Id       uuid.UUID
-	ParentId uuid.UUID
+	ParentId *uuid.UUID
 	Name     string
 }
 
