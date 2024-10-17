@@ -41,7 +41,7 @@ create table payments.payments
 (
     id uuid primary key,
     rent_id uuid not null,
-    pay_method_id uuid not null,
+    pay_method_id uuid,
     payment_id text,
     period_strat timestamptz not null,
     period_end timestamptz not null,
