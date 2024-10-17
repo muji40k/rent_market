@@ -16,6 +16,7 @@ import (
 	"rent_service/internal/logic/services/types/date"
 	"rent_service/internal/logic/services/types/token"
 	. "rent_service/internal/misc/types/collection"
+	instance_providers "rent_service/internal/repository/context/providers/instance"
 	provision_providers "rent_service/internal/repository/context/providers/provision"
 	role_providers "rent_service/internal/repository/context/providers/role"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
@@ -26,6 +27,7 @@ type repoproviders struct {
 	provision provision_providers.IProvider
 	request   provision_providers.IRequestProvider
 	revoke    provision_providers.IRevokeProvider
+	photo     instance_providers.IPhotoProvider
 }
 
 type accessors struct {
@@ -51,6 +53,7 @@ func New(
 	provisionProvider provision_providers.IProvider,
 	requestProvider provision_providers.IRequestProvider,
 	revokeProvider provision_providers.IRevokeProvider,
+	photoProvider instance_providers.IPhotoProvider,
 	instanceAcc *access.Instance,
 	userAcc *access.User,
 	requestAcc *access.ProvisionRequest,
@@ -62,6 +65,7 @@ func New(
 			provisionProvider,
 			requestProvider,
 			revokeProvider,
+			photoProvider,
 		},
 		accessors{instanceAcc, userAcc, requestAcc, revokeAcc},
 		smachine,
@@ -168,6 +172,7 @@ func (self *service) StartProvision(
 	form provide.StartForm,
 ) error {
 	var request requests.Provide
+	var provision records.Provision
 	user, err := self.authenticator.LoginWithToken(token)
 
 	if nil == err {
@@ -188,14 +193,28 @@ func (self *service) StartProvision(
 	if nil == err {
 		clearOverrides(&form.Overrides)
 
-		err = states.MapError(self.smachine.AcceptProvisionRequest(
+		provision, err = self.smachine.AcceptProvisionRequest(
 			request.Id,
 			form,
-		))
+		)
+		err = states.MapError(err)
+	}
+
+	var ids []uuid.UUID
+	if nil == err {
+		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
 	}
 
 	if nil == err {
-		_, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		repo := self.repos.photo.GetInstancePhotoRepository()
+
+		for i := 0; len(ids) > i; i++ {
+			cerr := repo.Create(provision.InstanceId, ids[i])
+
+			if nil == err {
+				err = cerr
+			}
+		}
 	}
 
 	return err
@@ -260,8 +279,21 @@ func (self *service) StopProvision(
 		))
 	}
 
+	var ids []uuid.UUID
 	if nil == err {
-		_, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+	}
+
+	if nil == err {
+		repo := self.repos.photo.GetInstancePhotoRepository()
+
+		for i := 0; len(ids) > i; i++ {
+			cerr := repo.Create(revoke.InstanceId, ids[i])
+
+			if nil == err {
+				err = cerr
+			}
+		}
 	}
 
 	return err

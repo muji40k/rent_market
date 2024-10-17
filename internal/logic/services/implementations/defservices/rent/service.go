@@ -16,6 +16,7 @@ import (
 	"rent_service/internal/logic/services/types/date"
 	"rent_service/internal/logic/services/types/token"
 	. "rent_service/internal/misc/types/collection"
+	instance_providers "rent_service/internal/repository/context/providers/instance"
 	rent_providers "rent_service/internal/repository/context/providers/rent"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 )
@@ -24,6 +25,7 @@ type repoproviders struct {
 	rent    rent_providers.IProvider
 	request rent_providers.IRequestProvider
 	ret     rent_providers.IReturnProvider
+	photo   instance_providers.IPhotoProvider
 }
 
 type accessors struct {
@@ -48,13 +50,14 @@ func New(
 	rentProvider rent_providers.IProvider,
 	requestProvider rent_providers.IRequestProvider,
 	retProvider rent_providers.IReturnProvider,
+	photoProvider instance_providers.IPhotoProvider,
 	instanceAcc *access.Instance,
 	userAcc *access.User,
 	requestAcc *access.RentRequest,
 	retAcc *access.RentReturn,
 ) rent.IService {
 	return &service{
-		repoproviders{rentProvider, requestProvider, retProvider},
+		repoproviders{rentProvider, requestProvider, retProvider, photoProvider},
 		accessors{instanceAcc, userAcc, requestAcc, retAcc},
 		smachine,
 		authenticator,
@@ -149,15 +152,29 @@ func (self *service) StartRent(token token.Token, form rent.StartForm) error {
 	}
 
 	if nil == err {
-		err = states.MapError(self.smachine.AcceptRentRequest(
+		_, err = self.smachine.AcceptRentRequest(
 			request.InstanceId,
 			request.Id,
 			form.VerificationCode,
-		))
+		)
+		err = states.MapError(err)
+	}
+
+	var ids []uuid.UUID
+	if nil == err {
+		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
 	}
 
 	if nil == err {
-		_, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		repo := self.repos.photo.GetInstancePhotoRepository()
+
+		for i := 0; len(ids) > i; i++ {
+			cerr := repo.Create(request.InstanceId, ids[i])
+
+			if nil == err {
+				err = cerr
+			}
+		}
 	}
 
 	return err
@@ -212,16 +229,30 @@ func (self *service) StopRent(token token.Token, form rent.StopForm) error {
 	}
 
 	if nil == err {
-		err = states.MapError(self.smachine.AcceptRentReturn(
+		_, err = self.smachine.AcceptRentReturn(
 			request.InstanceId,
 			request.Id,
 			form.Comment,
 			form.VerificationCode,
-		))
+		)
+		err = states.MapError(err)
+	}
+
+	var ids []uuid.UUID
+	if nil == err {
+		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
 	}
 
 	if nil == err {
-		_, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		repo := self.repos.photo.GetInstancePhotoRepository()
+
+		for i := 0; len(ids) > i; i++ {
+			cerr := repo.Create(request.InstanceId, ids[i])
+
+			if nil == err {
+				err = cerr
+			}
+		}
 	}
 
 	return err

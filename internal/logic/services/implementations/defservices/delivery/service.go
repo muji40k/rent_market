@@ -14,6 +14,7 @@ import (
 	"rent_service/internal/logic/services/types/token"
 	. "rent_service/internal/misc/types/collection"
 	delivery_providers "rent_service/internal/repository/context/providers/delivery"
+	instance_providers "rent_service/internal/repository/context/providers/instance"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 
 	"github.com/google/uuid"
@@ -21,6 +22,7 @@ import (
 
 type repoproviders struct {
 	delivery delivery_providers.IProvider
+	photo    instance_providers.IPhotoProvider
 }
 
 type accessors struct {
@@ -41,11 +43,12 @@ func New(
 	authenticator *authenticator.Authenticator,
 	registry *photoregistry.Registry,
 	delivery delivery_providers.IProvider,
+	photo instance_providers.IPhotoProvider,
 	instanceAcc *access.Instance,
 	pickUpPointAcc *access.PickUpPoint,
 ) delivery.IService {
 	return &service{
-		repoproviders{delivery},
+		repoproviders{delivery, photo},
 		accessors{instanceAcc, pickUpPointAcc},
 		smachine,
 		authenticator,
@@ -188,8 +191,21 @@ func (self *service) SendDelivery(
 		))
 	}
 
+	var ids []uuid.UUID
 	if nil == err {
-		_, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+	}
+
+	if nil == err {
+		repo := self.repos.photo.GetInstancePhotoRepository()
+
+		for i := 0; len(ids) > i; i++ {
+			cerr := repo.Create(delivery.InstanceId, ids[i])
+
+			if nil == err {
+				err = cerr
+			}
+		}
 	}
 
 	return err
@@ -226,8 +242,21 @@ func (self *service) AcceptDelivery(
 		))
 	}
 
+	var ids []uuid.UUID
 	if nil == err {
-		_, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+	}
+
+	if nil == err {
+		repo := self.repos.photo.GetInstancePhotoRepository()
+
+		for i := 0; len(ids) > i; i++ {
+			cerr := repo.Create(delivery.InstanceId, ids[i])
+
+			if nil == err {
+				err = cerr
+			}
+		}
 	}
 
 	return err

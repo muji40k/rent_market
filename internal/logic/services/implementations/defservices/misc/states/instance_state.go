@@ -144,7 +144,8 @@ func (self *InstanceStateMachine) RejectProvisionRequest(
 func (self *InstanceStateMachine) AcceptProvisionRequest(
 	requestId uuid.UUID,
 	form provide.StartForm,
-) error {
+) (records.Provision, error) {
+	var provision records.Provision
 	// Validate
 	repo := self.repos.provision.request.GetProvisionRequestRepository()
 	request, err := repo.GetById(requestId)
@@ -168,10 +169,14 @@ func (self *InstanceStateMachine) AcceptProvisionRequest(
 	}
 
 	if nil == err {
+		provision, err = self.actionCreateProvision(instance, request)
+	}
+
+	if nil == err {
 		_, err = self.actionCreateStorage(instance, request.PickUpPointId)
 	}
 
-	return err
+	return provision, err
 }
 
 func (self *InstanceStateMachine) CreateDelivery(
@@ -323,7 +328,8 @@ func (self *InstanceStateMachine) AcceptRentRequest(
 	instanceId uuid.UUID,
 	requestId uuid.UUID,
 	verificationCode string,
-) error {
+) (records.Rent, error) {
+	var rent records.Rent
 	var allowed_states = [...]State{STATE_RENT_AWAIT}
 
 	// Validate
@@ -343,14 +349,14 @@ func (self *InstanceStateMachine) AcceptRentRequest(
 
 	// Transmit
 	if nil == err {
-		_, err = self.actionCreateRent(*rl.rentRequest)
+		rent, err = self.actionCreateRent(*rl.rentRequest)
 	}
 
 	if nil == err {
 		err = self.actionStopStorage(*rl.storage)
 	}
 
-	return err
+	return rent, err
 }
 
 func (self *InstanceStateMachine) RejectRentRequest(
@@ -420,7 +426,8 @@ func (self *InstanceStateMachine) AcceptRentReturn(
 	returnId uuid.UUID,
 	comment *string,
 	verificationCode string,
-) error {
+) (records.Storage, error) {
+	var storage records.Storage
 	var allowed_states = [...]State{
 		STATE_RETURN_AWAIT, STATE_RETURN_FORCED_AWAIT,
 	}
@@ -445,7 +452,6 @@ func (self *InstanceStateMachine) AcceptRentReturn(
 		err = self.actionStopRent(*rl.rent)
 	}
 
-	var storage records.Storage
 	if nil == err {
 		storage, err = self.actionCreateStorage(
 			instance.instance,
@@ -469,7 +475,7 @@ func (self *InstanceStateMachine) AcceptRentReturn(
 		)
 	}
 
-	return err
+	return storage, err
 }
 
 func (self *InstanceStateMachine) CancelRentReturn(
