@@ -1,0 +1,64 @@
+package instance
+
+import (
+	"rent_service/internal/domain/models"
+	. "rent_service/internal/misc/types/collection"
+	"rent_service/internal/repository/implementation/sql/exist"
+
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
+)
+
+type Filter struct {
+	ProductId uuid.UUID
+}
+
+type Sort uint
+
+const (
+	SORT_NONE Sort = iota // Must be consistent
+	SORT_RATING_ASC
+	SORT_RATING_DSC
+	SORT_DATE_ASC
+	SORT_DATE_DSC
+	SORT_PRICE_ASC
+	SORT_PRICE_DSC
+	SORT_USAGE_ASC
+	SORT_USAGE_DSC
+)
+
+type IRepository interface {
+	Create(instance models.Instance) (models.Instance, error)
+
+	Update(instance models.Instance) error
+
+	GetById(instanceId uuid.UUID) (models.Instance, error)
+	GetWithFilter(
+		filter Filter,
+		sort Sort,
+	) (Collection[models.Instance], error)
+}
+
+var count_by_id_query string = exist.GenericCounter("instances.instances")
+
+func CheckExistsById(db *sqlx.DB, id uuid.UUID) error {
+	return exist.Check("instance_id", db, count_by_id_query, id)
+}
+
+type IPayPlansRepository interface {
+	Create(payPlans models.InstancePayPlans) (models.InstancePayPlans, error)
+	AddPayPlan(
+		instanceId uuid.UUID,
+		plan models.PayPlan,
+	) (models.InstancePayPlans, error)
+
+	Update(models.InstancePayPlans) error
+
+	GetByInstanceId(instanceId uuid.UUID) (models.InstancePayPlans, error)
+}
+
+type IPhotoRepository interface {
+	Create(instanceId uuid.UUID, photoId uuid.UUID) error
+	GetByInstanceId(instanceId uuid.UUID) (Collection[uuid.UUID], error)
+}
+
