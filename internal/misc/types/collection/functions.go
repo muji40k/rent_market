@@ -36,7 +36,7 @@ func Count[T any](iterator Iterator[T]) uint {
 
 	var count uint
 
-	for next := iterator.Skip(); next; next = iterator.Skip() {
+	for _, next := iterator.Next(); next; next = iterator.Skip() {
 		count++
 	}
 
