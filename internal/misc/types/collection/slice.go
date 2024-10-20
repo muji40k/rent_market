@@ -6,6 +6,10 @@ func SliceCollection[T any](slice []T) Collection[T] {
 	return sliceCollection[T](slice)
 }
 
+func SliceIterator[T any](slice []T) Iterator[T] {
+	return &sliceIterator[T]{slice, 0}
+}
+
 type sliceIterator[T any] struct {
 	data  []T
 	index uint

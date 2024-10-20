@@ -11,6 +11,10 @@ type map_iterator[T any, F any] struct {
 }
 
 func MapCollection[T any, F any](mapf func(*T) F, col Collection[T]) Collection[F] {
+	if nil == col {
+		return nil
+	}
+
 	return &map_collection[T, F]{col, mapf}
 }
 
@@ -19,6 +23,10 @@ func (self *map_collection[T, F]) Iter() Iterator[F] {
 }
 
 func MapIterator[T any, F any](mapf func(*T) F, iter Iterator[T]) Iterator[F] {
+	if nil == iter {
+		return nil
+	}
+
 	return &map_iterator[T, F]{iter, mapf}
 }
 

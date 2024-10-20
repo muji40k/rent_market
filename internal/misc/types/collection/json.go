@@ -17,18 +17,20 @@ func (self *marshaler[T]) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteRune('[')
 
-	for item, next := self.iter.Next(); next; {
-		content, err := json.Marshal(item)
+	if nil != self.iter {
+		for item, next := self.iter.Next(); next; {
+			content, err := json.Marshal(item)
 
-		if err != nil {
-			return []byte{}, err
-		}
+			if err != nil {
+				return []byte{}, err
+			}
 
-		buf.Write(content)
-		item, next = self.iter.Next()
+			buf.Write(content)
+			item, next = self.iter.Next()
 
-		if next {
-			buf.WriteRune(',')
+			if next {
+				buf.WriteRune(',')
+			}
 		}
 	}
 

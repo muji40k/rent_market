@@ -9,6 +9,10 @@ func FilterIterator[T any](
 	filter func(*T) bool,
 	iterator Iterator[T],
 ) Iterator[T] {
+	if nil == iterator {
+		return iterator
+	}
+
 	return &filterIterator[T]{filter, iterator}
 }
 

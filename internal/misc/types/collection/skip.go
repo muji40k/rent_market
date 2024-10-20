@@ -7,6 +7,10 @@ type skipIterator[T any] struct {
 }
 
 func SkipIterator[T any](skip uint, iterator Iterator[T]) Iterator[T] {
+	if nil == iterator {
+		return nil
+	}
+
 	return &skipIterator[T]{iterator, skip, true}
 }
 

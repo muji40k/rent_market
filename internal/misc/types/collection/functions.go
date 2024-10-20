@@ -1,6 +1,10 @@
 package collection
 
 func Collect[T any](iterator Iterator[T]) []T {
+	if nil == iterator {
+		return nil
+	}
+
 	var out []T
 
 	for value, next := iterator.Next(); next; value, next = iterator.Next() {
@@ -11,17 +15,25 @@ func Collect[T any](iterator Iterator[T]) []T {
 }
 
 func Find[T any](iterator Iterator[T], f func(*T) bool) (T, bool) {
+	var empty T
+	if nil == iterator {
+		return empty, false
+	}
+
 	for value, next := iterator.Next(); next; value, next = iterator.Next() {
 		if f(&value) {
 			return value, true
 		}
 	}
 
-	var empty T
 	return empty, false
 }
 
 func Count[T any](iterator Iterator[T]) uint {
+	if nil == iterator {
+		return 0
+	}
+
 	var count uint
 
 	for next := iterator.Skip(); next; next = iterator.Skip() {
@@ -32,11 +44,14 @@ func Count[T any](iterator Iterator[T]) uint {
 }
 
 func Reduce[T any](iterator Iterator[T], f func(*T, *T) T) T {
-	var value T
-	acc, next := iterator.Next()
+	if nil == iterator {
+		var empty T
+		return empty
+	}
 
-	for next {
-		value, next = iterator.Next()
+	acc, _ := iterator.Next()
+
+	for value, next := iterator.Next(); next; value, next = iterator.Next() {
 		acc = f(&acc, &value)
 	}
 
@@ -44,6 +59,10 @@ func Reduce[T any](iterator Iterator[T], f func(*T, *T) T) T {
 }
 
 func Fold[T any, F any](iterator Iterator[T], acc F, f func(*F, *T) F) F {
+	if nil == iterator {
+		return acc
+	}
+
 	for value, next := iterator.Next(); next; value, next = iterator.Next() {
 		acc = f(&acc, &value)
 	}

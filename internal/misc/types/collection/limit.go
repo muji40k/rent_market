@@ -7,6 +7,10 @@ type limitIterator[T any] struct {
 }
 
 func LimitIterator[T any](limit uint, iterator Iterator[T]) Iterator[T] {
+	if nil == iterator {
+		return nil
+	}
+
 	return &limitIterator[T]{iterator, limit, 0}
 }
 
