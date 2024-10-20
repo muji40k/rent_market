@@ -23,7 +23,7 @@ create table deliveries.deliveries
     instance_id uuid not null,
     from_id uuid not null,
     to_id uuid not null,
-    delivery_id text,
+    delivery_id text not null,
     scheduled_begin_date timestamptz not null,
     actual_begin_date timestamptz,
     scheduled_end_date timestamptz not null,

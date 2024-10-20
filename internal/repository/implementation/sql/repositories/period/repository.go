@@ -36,7 +36,7 @@ func mapPeriod(value *Period) models.Period {
 	}
 }
 
-var get_by_id_query string = `
+const get_by_id_query string = `
     select * from periods.periods where id = $1
 `
 

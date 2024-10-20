@@ -3,6 +3,13 @@
 drop schema if exists products cascade;
 create schema products;
 
+drop function if exists to_tsvector_mutilang;
+create function to_tsvector_multilang(text)
+returns tsvector
+as $$
+    select to_tsvector('english', $1) || to_tsvector('russian', $1)
+$$ language sql immutable;
+
 drop table if exists products.products;
 create table products.products
 (
@@ -11,7 +18,8 @@ create table products.products
     category_id uuid not null,
     description text not null,
     modification_date timestamptz not null default now(),
-    modification_source text not null
+    modification_source text not null,
+    ts tsvector generated always as (to_tsvector_multilang(name || ' ' || description)) stored
 );
 
 alter table products.products add
