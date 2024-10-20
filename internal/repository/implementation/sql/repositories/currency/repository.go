@@ -3,6 +3,7 @@ package currency
 import (
 	"rent_service/internal/misc/types/currency"
 	"rent_service/internal/repository/implementation/sql/exist"
+	"rent_service/misc/mapfuncs"
 	"time"
 
 	"github.com/google/uuid"
@@ -54,6 +55,30 @@ func (self *Repository) GetById(
 	return out, err
 }
 
+const get_by_name_query string = `
+    select id from currencies.currencies where name = $1
+`
+
+func (self *Repository) GetId(currencyName string) (uuid.UUID, error) {
+	now := time.Now()
+
+	id, found := mapfuncs.FindByValueF(self.cache, func(value *cell) bool {
+		return value.currency.Name == currencyName
+	})
+
+	if found && now.After(self.cache[id].validTo) {
+		return id, nil
+	}
+
+	err := CheckExistsByName(self.connection, currencyName)
+
+	if nil == err {
+		err = self.connection.Get(&id, get_by_name_query, currencyName)
+	}
+
+	return id, err
+}
+
 func (self *Repository) CleanCache() {
 	self.cache = make(map[uuid.UUID]cell)
 }
@@ -62,5 +87,13 @@ var count_by_id_query string = exist.GenericCounter("currencies.currencies")
 
 func CheckExistsById(db *sqlx.DB, id uuid.UUID) error {
 	return exist.Check("currency_id", db, count_by_id_query, id)
+}
+
+const count_by_name_query string = `
+    select count(*) from currencies.currencies where name = $1
+`
+
+func CheckExistsByName(db *sqlx.DB, name string) error {
+	return exist.Check("currency_name", db, count_by_name_query, name)
 }
 

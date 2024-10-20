@@ -398,7 +398,7 @@ func (self *requestRepository) GetById(
 }
 
 const get_request_by_user_id_query string = `
-    select * from rents.requests where user_id = $1
+    select * from rents.requests where user_id = $1 offset $2
 `
 
 func (self *requestRepository) GetByUserId(
@@ -446,7 +446,7 @@ func (self *requestRepository) GetByInstanceId(
 }
 
 const get_request_by_pick_up_point_id_query string = `
-    select * from rents.requests where pick_up_point_id = $1
+    select * from rents.requests where pick_up_point_id = $1 offset $2
 `
 
 func (self *requestRepository) GetByPickUpPointId(
@@ -469,7 +469,7 @@ func (self *requestRepository) GetByPickUpPointId(
 }
 
 const delete_request_by_id_query string = `
-    delete from rents.requests where id=$1
+    delete from rents.requests where id = $1
 `
 
 func (self *requestRepository) Remove(requestId uuid.UUID) error {
@@ -605,7 +605,7 @@ func (self *returnRepository) GetById(
 }
 
 const get_return_by_user_id_query string = `
-    select * from rents."returns" where user_id = $1
+    select * from rents."returns" where user_id = $1 offset $2
 `
 
 func (self *returnRepository) GetByUserId(
@@ -653,7 +653,7 @@ func (self *returnRepository) GetByInstanceId(
 }
 
 const get_return_by_pick_up_point_id_query string = `
-    select * from rents."returns" where pick_up_point_id = $1
+    select * from rents."returns" where pick_up_point_id = $1 offset $2
 `
 
 func (self *returnRepository) GetByPickUpPointId(
