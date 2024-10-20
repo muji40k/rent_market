@@ -17,17 +17,17 @@ import (
 )
 
 type Payment struct {
-	Id          uuid.UUID
-	RentId      uuid.UUID
-	PayMethodId uuid.NullUUID
-	PaymentId   sql.NullString
-	PeriodStart time.Time
-	PeriodEnd   time.Time
-	CurrencyId  uuid.UUID
-	Value       float64
-	Status      sql.NullString
-	CreateDate  time.Time
-	PaymentDate sql.NullTime
+	Id          uuid.UUID      `db:"id"`
+	RentId      uuid.UUID      `db:"rent_id"`
+	PayMethodId uuid.NullUUID  `db:"pay_method_id"`
+	PaymentId   sql.NullString `db:"payment_id"`
+	PeriodStart time.Time      `db:"period_strat"`
+	PeriodEnd   time.Time      `db:"period_end"`
+	CurrencyId  uuid.UUID      `db:"currncy_id"`
+	Value       float64        `db:"value"`
+	Status      sql.NullString `db:"status"`
+	CreateDate  time.Time      `db:"create_date"`
+	PaymentDate sql.NullTime   `db:"payment_date"`
 	technical.Info
 }
 

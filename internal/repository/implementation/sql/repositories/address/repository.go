@@ -11,12 +11,12 @@ import (
 )
 
 type Address struct {
-	Id      uuid.UUID
-	Country string
-	City    string
-	Street  string
-	House   string
-	Flat    sql.NullString
+	Id      uuid.UUID      `db:"id"`
+	Country string         `db:"country"`
+	City    string         `db:"city"`
+	Street  string         `db:"street"`
+	House   string         `db:"house"`
+	Flat    sql.NullString `db:"flat"`
 	technical.Info
 }
 
