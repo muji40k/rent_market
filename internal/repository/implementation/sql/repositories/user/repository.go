@@ -880,7 +880,7 @@ func CheckPayMethodExistsByUserId(
 	db *sqlx.DB,
 	userId uuid.UUID,
 ) error {
-	return exist.Check(
+	return exist.CheckMultiple(
 		"user_pay_method_user_id",
 		db,
 		count_pay_method_by_user_id_query,

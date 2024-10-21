@@ -13,6 +13,7 @@ import (
 	gen_uuid "rent_service/internal/repository/implementation/sql/generate/uuid"
 	"rent_service/internal/repository/implementation/sql/repositories/currency"
 	"rent_service/internal/repository/implementation/sql/repositories/instance"
+	"rent_service/internal/repository/implementation/sql/repositories/period"
 	"rent_service/internal/repository/implementation/sql/repositories/pickuppoint"
 	"rent_service/internal/repository/implementation/sql/repositories/product"
 	"rent_service/internal/repository/implementation/sql/repositories/role"
@@ -403,10 +404,33 @@ func (self *requestRepository) Create(
 	}
 
 	if nil == err {
+		for k, _ := range request.PayPlans {
+			if nil == err {
+				err = period.CheckExistsById(self.connection, k)
+			}
+		}
+	}
+
+	if nil == err {
 		request.Id, err = gen_uuid.GenerateAvailable(
 			self.connection,
 			CheckRequestExistsById,
 		)
+	}
+
+	if nil == err {
+		for k, v := range request.PayPlans {
+			if nil == err {
+				v.Id, err = gen_uuid.GenerateAvailable(
+					self.connection,
+					CheckRequestPayPlanExistsById,
+				)
+			}
+
+			if nil == err {
+				request.PayPlans[k] = v
+			}
+		}
 	}
 
 	if nil == err {
@@ -551,6 +575,17 @@ func CheckRequestExistsById(db *sqlx.DB, id uuid.UUID) error {
 		"provision_request_id",
 		db,
 		count_request_by_id_query,
+		id,
+	)
+}
+
+var count_request_pay_plan_by_id_query string = exist.GenericCounter("provisions.requests_pay_plans")
+
+func CheckRequestPayPlanExistsById(db *sqlx.DB, id uuid.UUID) error {
+	return exist.Check(
+		"provision_request_pay_plan_id",
+		db,
+		count_request_pay_plan_by_id_query,
 		id,
 	)
 }
