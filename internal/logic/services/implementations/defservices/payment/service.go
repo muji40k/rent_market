@@ -42,7 +42,7 @@ func mapPayMethod(value *models.PayMethod) payment.PayMethod {
 }
 
 func (self *payMethodService) GetPayMethods() (Collection[payment.PayMethod], error) {
-	repo := self.repos.payMethod.GetPayMethodProvider()
+	repo := self.repos.payMethod.GetPayMethodRepository()
 	methods, err := repo.GetAll()
 
 	if nil != err {
@@ -68,8 +68,18 @@ type IRegistrationChecker interface {
 	CheckPayerId(payerId string) error
 }
 
-func NewUserPayMethod() payment.IUserPayMethodService {
-	return &userPayMethodService{}
+func NewUserPayMethod(
+	authenticator *authenticator.Authenticator,
+	authorizer *authorizer.Authorizer,
+	checkers map[uuid.UUID]IRegistrationChecker,
+	payMethod user_provider.IPayMethodsProvider,
+) payment.IUserPayMethodService {
+	return &userPayMethodService{
+		userPayMethodRepoProviders{payMethod},
+		checkers,
+		authenticator,
+		authorizer,
+	}
 }
 
 func mapUserPayMethods(

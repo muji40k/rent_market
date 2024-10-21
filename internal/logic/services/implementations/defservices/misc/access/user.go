@@ -19,6 +19,10 @@ type User struct {
 	authorizer *authorizer.Authorizer
 }
 
+func NewUser(user user.IProvider, authorizer *authorizer.Authorizer) *User {
+	return &User{userProviders{user}, authorizer}
+}
+
 func (self *User) Access(rqUserId uuid.UUID, userId uuid.UUID) error {
 	repo := self.repos.user.GetUserRepository()
 	_, err := repo.GetById(userId)

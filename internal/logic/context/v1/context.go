@@ -101,11 +101,10 @@ type Context struct {
 }
 
 func New(factories Factories) Context {
-	var out Context
-
-	out.factories = factories
-
-	return out
+	return Context{
+		factories,
+		static{},
+	}
 }
 
 // Provider implementations

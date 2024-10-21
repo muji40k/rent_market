@@ -7,6 +7,7 @@ import (
 	sqlCollection "rent_service/internal/repository/implementation/sql/collection"
 	"rent_service/internal/repository/implementation/sql/exist"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/interfaces/paymethod"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -21,6 +22,10 @@ type PayMethod struct {
 
 type repository struct {
 	connection *sqlx.DB
+}
+
+func New(connection *sqlx.DB) paymethod.IRepository {
+	return &repository{connection}
 }
 
 func mapPayMethod(value *PayMethod) models.PayMethod {

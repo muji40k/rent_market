@@ -8,6 +8,7 @@ import (
 	"rent_service/internal/repository/implementation/sql/exist"
 	gen_uuid "rent_service/internal/repository/implementation/sql/generate/uuid"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/interfaces/photo"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,6 +38,10 @@ type TempPhoto struct {
 type repository struct {
 	connection *sqlx.DB
 	setter     technical.ISetter
+}
+
+func New(connection *sqlx.DB, setter technical.ISetter) photo.IRepository {
+	return &repository{connection, setter}
 }
 
 func mapf(value *Photo) models.Photo {
@@ -123,6 +128,13 @@ func CheckExistsByPath(db *sqlx.DB, path string) error {
 type tempRepository struct {
 	connection *sqlx.DB
 	setter     technical.ISetter
+}
+
+func NewTemp(
+	connection *sqlx.DB,
+	setter technical.ISetter,
+) photo.ITempRepository {
+	return &tempRepository{connection, setter}
 }
 
 func mapTemp(value *TempPhoto) models.TempPhoto {

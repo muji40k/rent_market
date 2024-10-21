@@ -16,6 +16,10 @@ type service struct {
 	repos repoproviders
 }
 
+func New(period period_provider.IProvider) period.IService {
+	return &service{repoproviders{period}}
+}
+
 func mapf(value *models.Period) period.Period {
 	return period.Period{
 		Id:       value.Id,

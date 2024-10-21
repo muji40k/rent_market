@@ -12,6 +12,10 @@ type Renter struct {
 	authorizer *authorizer.Authorizer
 }
 
+func NewRenter(authorizer *authorizer.Authorizer) *Renter {
+	return &Renter{authorizer}
+}
+
 func (self *Renter) Access(userId uuid.UUID, renterUserId uuid.UUID) error {
 	if _, rerr := self.authorizer.IsRenter(renterUserId); nil != rerr {
 		return rerr

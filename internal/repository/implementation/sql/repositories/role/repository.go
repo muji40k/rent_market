@@ -37,7 +37,7 @@ type administratorRepository struct {
 	connection *sqlx.DB
 }
 
-func newAdministrator(connection *sqlx.DB) role.IAdministratorRepository {
+func NewAdministrator(connection *sqlx.DB) role.IAdministratorRepository {
 	return &administratorRepository{connection}
 }
 
