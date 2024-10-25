@@ -14,6 +14,7 @@ import (
 	"rent_service/server/errstructs"
 	"rent_service/server/lister"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,6 +37,10 @@ func New(
 	provide provide.IProvider,
 ) server.IController {
 	return &controller{providers{provide}, authenticator}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get")
 }
 
 func (self *controller) Register(engine *gin.Engine) {

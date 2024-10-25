@@ -18,5 +18,7 @@ type ITempRepository interface {
 	Update(photo models.TempPhoto) error
 
 	GetById(photoId uuid.UUID) (models.TempPhoto, error)
+
+	Remove(photoId uuid.UUID) error
 }
 

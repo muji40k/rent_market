@@ -202,14 +202,14 @@ func (self *repository) GetById(rentId uuid.UUID) (records.Rent, error) {
 	return mapf(&out), err
 }
 
-const get_active_by_user_id_query string = `
+const get_by_user_id_query string = `
     select *
     from records.users_rents
-    where end_date is null and user_id = $1
+    where user_id = $1
     offset $2
 `
 
-func (self *repository) GetActiveByUserId(
+func (self *repository) GetByUserId(
 	userId uuid.UUID,
 ) (collection.Collection[records.Rent], error) {
 	if err := user.CheckExistsById(self.connection, userId); nil != err {
@@ -219,7 +219,7 @@ func (self *repository) GetActiveByUserId(
 	return collection.MapCollection(
 		mapf,
 		sqlCollection.New[Rent](func(offset uint) (*sqlx.Rows, error) {
-			return self.connection.Queryx(get_active_by_user_id_query, userId, offset)
+			return self.connection.Queryx(get_by_user_id_query, userId, offset)
 		}),
 	), nil
 }
@@ -227,7 +227,7 @@ func (self *repository) GetActiveByUserId(
 const get_active_by_instance_id_query string = `
     select *
     from records.users_rents
-    where end_date id null and instance_id = $1
+    where end_date is null and instance_id = $1
 `
 
 func (self *repository) GetActiveByInstanceId(
@@ -581,7 +581,7 @@ func (self *returnRepository) Create(
 	if nil == err {
 		mapped := unmapReturn(&request)
 		self.setter.Update(&mapped.Info)
-		_, err = self.connection.NamedExec(insert_request_query, mapped)
+		_, err = self.connection.NamedExec(insert_return_query, mapped)
 	}
 
 	return request, err

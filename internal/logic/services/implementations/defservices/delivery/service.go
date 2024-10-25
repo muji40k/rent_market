@@ -15,14 +15,16 @@ import (
 	. "rent_service/internal/misc/types/collection"
 	delivery_providers "rent_service/internal/repository/context/providers/delivery"
 	instance_providers "rent_service/internal/repository/context/providers/instance"
+	rent_providers "rent_service/internal/repository/context/providers/rent"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 
 	"github.com/google/uuid"
 )
 
 type repoproviders struct {
-	delivery delivery_providers.IProvider
-	photo    instance_providers.IPhotoProvider
+	delivery    delivery_providers.IProvider
+	photo       instance_providers.IPhotoProvider
+	rentRequest rent_providers.IRequestProvider
 }
 
 type accessors struct {
@@ -44,11 +46,12 @@ func New(
 	registry *photoregistry.Registry,
 	delivery delivery_providers.IProvider,
 	photo instance_providers.IPhotoProvider,
+	rentRequest rent_providers.IRequestProvider,
 	instanceAcc *access.Instance,
 	pickUpPointAcc *access.PickUpPoint,
 ) delivery.IService {
 	return &service{
-		repoproviders{delivery, photo},
+		repoproviders{delivery, photo, rentRequest},
 		accessors{instanceAcc, pickUpPointAcc},
 		smachine,
 		authenticator,
@@ -120,6 +123,17 @@ func (self *service) GetDeliveryByInstance(
 
 	if nil == err {
 		err = self.access.instance.Access(user.Id, instanceId)
+	}
+
+	if aerr := (cmnerrors.ErrorNoAccess{}); errors.As(err, &aerr) {
+		repo := self.repos.rentRequest.GetRentRequestRepository()
+		request, ierr := repo.GetByInstanceId(instanceId)
+
+		if nil == ierr && request.UserId == user.Id {
+			err = nil
+		} else if cerr := (repo_errors.ErrorNotFound{}); !errors.As(ierr, &cerr) {
+			err = cmnerrors.Internal(cmnerrors.DataAccess(ierr))
+		}
 	}
 
 	if nil == err {

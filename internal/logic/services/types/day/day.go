@@ -28,7 +28,7 @@ func toSundayStart(correct int) int {
 	return (correct + 1) % 7
 }
 
-func (self *Day) MarshalJSON() ([]byte, error) {
+func (self Day) MarshalJSON() ([]byte, error) {
 	return []byte(string(strconv.Itoa(toMondayStart(int(self.Day))))), nil
 }
 

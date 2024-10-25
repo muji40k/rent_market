@@ -54,17 +54,6 @@ func (self *DeliveryComposite) CreateDelivery(
 	return delivery.Delivery{}, errors.Internal(ErrorComposition{errs})
 }
 
-func (self *DeliveryComposite) CancelDelivery(
-	companyId uuid.UUID,
-	deliveryId string,
-) error {
-	if delivery, found := self.deliveries[companyId]; found {
-		return delivery.CancelDelivery(companyId, deliveryId)
-	} else {
-		return errors.ForeignDelivery(deliveryId)
-	}
-}
-
 type ErrorComposition struct{ Errors []error }
 
 func (self ErrorComposition) Error() string {

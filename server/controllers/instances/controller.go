@@ -16,6 +16,7 @@ import (
 	"rent_service/server/pagination"
 	"strconv"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -43,6 +44,10 @@ func New(
 		providers{instance, payPlans, photo, review},
 		authenticator,
 	}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get", "put", "post")
 }
 
 const (

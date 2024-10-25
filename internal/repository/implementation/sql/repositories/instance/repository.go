@@ -139,6 +139,34 @@ func (self *repository) GetById(instanceId uuid.UUID) (models.Instance, error) {
 
 type query func(*sqlx.DB, uuid.UUID, uint) (*sqlx.Rows, error)
 
+const count_active_query string = `
+    select count(*)
+    from (
+        select *
+        from records.pick_up_points_instances
+        where out_date is null and instance_id = instances.id
+    ) as storages
+    join (
+        select *
+        from records.renters_instances
+        where end_date is null and instance_id = instances.id
+    ) as provisions
+    on storages.instance_id = provisions.instance_id
+    where not exists(
+        select *
+        from deliveries.deliveries
+        where actual_end_date is null and instance_id = instances.id
+    ) and not exists (
+        select * from rents.requests where instance_id = instances.id
+    ) and not exists (
+        select * from provisions.revokes where instance_id = instances.id
+    ) and not exists (
+        select *
+        from records.users_rents
+        where end_date is null and instance_id = instances.Id
+    )
+`
+
 const base_get_by_category_id_oreder_query string = `
     select id, product_id, "name", description, "condition", modification_date,
            modification_source
@@ -146,10 +174,12 @@ const base_get_by_category_id_oreder_query string = `
         select id, product_id, "name",
                description, "condition",
                modification_date, modification_source,
+               (` + count_active_query + `) as active,
                (%v) as ordering
         from instances.instances
         where product_id = $1
-    ) order by ordering %v
+    ) where active = 1
+    order by ordering %v
     offset $2
 `
 
@@ -206,7 +236,7 @@ func getQueryBySort(sort instance.Sort) query {
 		bquery, direction = get_by_category_id_order_by_date_query, "desc"
 	}
 
-	query := fmt.Sprint(bquery, direction)
+	query := fmt.Sprintf(bquery, direction)
 
 	return func(db *sqlx.DB, productId uuid.UUID, offset uint) (*sqlx.Rows, error) {
 		return db.Queryx(query, productId, offset)
@@ -403,7 +433,11 @@ func (self *payPlansRepository) AddPayPlan(
 
 	var rows *sqlx.Rows
 	var out models.InstancePayPlans
-	mapped, err := self.unmapPayPlan(instanceId, &plan)
+	var mapped InstancePayPlan
+
+	if nil == err {
+		mapped, err = self.unmapPayPlan(instanceId, &plan)
+	}
 
 	if nil == err {
 		mapped.Id, err = gen_uuid.GenerateAvailable(
@@ -529,7 +563,7 @@ func (self *payPlansRepository) getByInstanceId(
 	err := CheckExistsById(self.connection, instanceId)
 
 	if nil == err {
-		CheckPayPlanExistsByInstnaceId(self.connection, instanceId)
+		err = CheckPayPlanExistsByInstnaceId(self.connection, instanceId)
 	}
 
 	if nil == err {

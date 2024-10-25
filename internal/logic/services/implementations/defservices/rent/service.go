@@ -95,7 +95,7 @@ func (self *service) ListRentsByUser(
 
 	if nil == err {
 		repo := self.repos.rent.GetRentRepository()
-		rents, err = repo.GetActiveByUserId(userId)
+		rents, err = repo.GetByUserId(userId)
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			err = cmnerrors.NotFound(cerr.What...)

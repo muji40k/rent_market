@@ -145,7 +145,7 @@ func (self *InstanceStateMachine) actionCreateRentReturn(
 		if start.After(end) {
 			err = cmnerrors.Incorrect("End date before start")
 		} else if offset := duration % period.Duration; 0 != offset {
-			end.Add(period.Duration - offset)
+			end = end.Add(period.Duration - offset)
 		}
 	}
 
@@ -185,7 +185,7 @@ func (self *InstanceStateMachine) actionAcceptRentReturn(
 		err = cmnerrors.Incorrect("verification_code")
 	}
 
-	if request.RentEndDate.After(time.Now()) {
+	if request.RentEndDate.Before(time.Now()) {
 		err = cmnerrors.Incorrect("Rent end date didn't pass")
 	}
 

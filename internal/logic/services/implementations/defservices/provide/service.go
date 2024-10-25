@@ -112,7 +112,7 @@ func (self *service) ListProvisionsByUser(
 
 	if nil == err {
 		repo := self.repos.provision.GetProvisionRepository()
-		provisions, err = repo.GetActiveByRenterUserId(userId)
+		provisions, err = repo.GetByRenterUserId(userId)
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			err = cmnerrors.NotFound(cerr.What...)

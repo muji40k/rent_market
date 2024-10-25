@@ -17,6 +17,7 @@ import (
 	"rent_service/server/pagination"
 	"rent_service/server/rqactions"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -44,6 +45,10 @@ func New(
 	revoke provide.IRevokeProvider,
 ) server.IController {
 	return &controller{providers{provide, revoke}, authenticator}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get", "post", "put", "delete")
 }
 
 func (self *controller) Register(engine *gin.Engine) {
@@ -135,6 +140,8 @@ func (self *controller) create(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
+	} else if cerr := (cmnerrors.ErrorConflict{}); errors.As(err, &cerr) {
+		ctx.Status(http.StatusConflict)
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}
@@ -240,6 +247,8 @@ func (self *controller) delete(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
 	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
 		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
+	} else if cerr := (cmnerrors.ErrorConflict{}); errors.As(err, &cerr) {
+		ctx.Status(http.StatusConflict)
 	} else {
 		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
 	}

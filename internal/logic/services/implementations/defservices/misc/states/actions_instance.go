@@ -7,6 +7,7 @@ import (
 	"rent_service/internal/logic/services/errors/cmnerrors"
 	"rent_service/internal/logic/services/interfaces/provide"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -101,8 +102,10 @@ func instanceUpdateDescription(description *string) instancef {
 		return nil
 	}
 
+	tdescription := strings.TrimSpace(*description)
+
 	return func(instance *models.Instance) {
-		instance.Description += *description + "\n"
+		instance.Description += "\n" + tdescription
 	}
 }
 

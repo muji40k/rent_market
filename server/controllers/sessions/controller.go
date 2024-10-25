@@ -9,6 +9,7 @@ import (
 	"rent_service/server/errstructs"
 	"rent_service/server/headers"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,6 +21,10 @@ func New(authenticator authenticator.IAuthenticator) server.IController {
 	return &controller{authenticator}
 }
 
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("post", "put", "delete")
+}
+
 func (self *controller) Register(engine *gin.Engine) {
 	engine.POST("/sessions", self.login)
 	engine.PUT("/sessions", self.renew)
@@ -28,8 +33,8 @@ func (self *controller) Register(engine *gin.Engine) {
 
 func (self *controller) login(ctx *gin.Context) {
 	var form struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
 	}
 	var token authenticator.ApiToken
 

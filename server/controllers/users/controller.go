@@ -8,11 +8,13 @@ import (
 	"rent_service/internal/logic/context/providers/user"
 	"rent_service/internal/logic/services/errors/cmnerrors"
 	service_user "rent_service/internal/logic/services/interfaces/user"
+	"rent_service/internal/logic/services/types/token"
 	"rent_service/server"
 	"rent_service/server/authenticator"
 	"rent_service/server/errstructs"
 	"slices"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -34,6 +36,10 @@ func New(
 	return &controller{providers{user, login}, authenticator}
 }
 
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get", "post", "put")
+}
+
 func (self *controller) Register(engine *gin.Engine) {
 	engine.POST("/users", self.register)
 	engine.GET("/users/self", self.get)
@@ -42,9 +48,9 @@ func (self *controller) Register(engine *gin.Engine) {
 
 func (self *controller) register(ctx *gin.Context) {
 	var form struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Name     string `json:"name"`
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+		Name     string `json:"name" binding:"required"`
 	}
 
 	err := ctx.ShouldBindJSON(&form)
@@ -94,15 +100,26 @@ func (self *controller) get(ctx *gin.Context) {
 }
 
 func (self *controller) update(ctx *gin.Context) {
+	var token token.Token
 	var form struct {
 		Data     *service_user.UpdateForm `json:"data"`
 		Password *struct {
-			Old string `json:"old"`
-			New string `json:"new"`
+			Old string `json:"old" binding:"required"`
+			New string `json:"new" binding:"required"`
 		} `json:"password"`
 	}
 
-	token, err := authenticator.ExchangeToken(ctx, self.authenticator)
+	err := ctx.ShouldBindJSON(&form)
+
+	if nil == err &&
+		((nil == form.Data && nil == form.Password) ||
+			(nil != form.Data && nil != form.Password)) {
+		err = errors.New("User can update only one thing at at time")
+	}
+
+	if nil == err {
+		token, err = authenticator.ExchangeToken(ctx, self.authenticator)
+	}
 
 	if nil == err && nil != form.Data {
 		service := self.providers.user.GetUserService()

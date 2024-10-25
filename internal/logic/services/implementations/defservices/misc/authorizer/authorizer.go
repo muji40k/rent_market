@@ -35,7 +35,7 @@ func (self *Authorizer) IsAdministrator(userId uuid.UUID) (models.Administrator,
 
 	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 		err = cmnerrors.Authorization(ErrorUnauthorized{userId, "administrator"})
-	} else {
+	} else if nil != err {
 		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 	}
 
@@ -48,7 +48,7 @@ func (self *Authorizer) IsRenter(userId uuid.UUID) (models.Renter, error) {
 
 	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 		err = cmnerrors.Authorization(ErrorUnauthorized{userId, "renter"})
-	} else {
+	} else if nil != err {
 		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 	}
 
@@ -61,7 +61,7 @@ func (self *Authorizer) IsStorekeeper(userId uuid.UUID) (models.Storekeeper, err
 
 	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 		err = cmnerrors.Authorization(ErrorUnauthorized{userId, "storekeeper"})
-	} else {
+	} else if nil != err {
 		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 	}
 

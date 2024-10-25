@@ -20,6 +20,5 @@ type ICreator interface {
 		to models.Address,
 		verificationCode string,
 	) (Delivery, error)
-	CancelDelivery(companyId uuid.UUID, deliveryId string) error
 }
 

@@ -15,6 +15,7 @@ import (
 	getter_uuid "rent_service/server/getters/uuid"
 	"rent_service/server/pagination"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,6 +33,10 @@ func New(
 	authenticator authenticator.IAuthenticator,
 ) server.IController {
 	return &controller{providers{company}, authenticator}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get")
 }
 
 const PARAM_ID string = "id"

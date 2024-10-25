@@ -25,7 +25,7 @@ func (self *Time) ToDuration() time.Duration {
 
 const FORMAT = "15:04"
 
-func (self *Time) MarshalJSON() ([]byte, error) {
+func (self Time) MarshalJSON() ([]byte, error) {
 	return []byte("\"" + self.Time.Format(FORMAT) + "\""), nil
 }
 

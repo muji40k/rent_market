@@ -7,6 +7,7 @@ import (
 	"rent_service/internal/logic/services/implementations/defservices/misc/authenticator"
 	"rent_service/internal/logic/services/implementations/defservices/misc/authorizer"
 	"rent_service/internal/logic/services/implementations/defservices/misc/emptymathcer"
+	"rent_service/internal/logic/services/implementations/defservices/misc/photoregistry"
 	"rent_service/internal/logic/services/interfaces/user"
 	"rent_service/internal/logic/services/types/date"
 	"rent_service/internal/logic/services/types/token"
@@ -113,7 +114,7 @@ func (self *service) UpdateSelfUserInfo(
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			err = cmnerrors.NotFound(cerr.What...)
-		} else {
+		} else if nil != err {
 			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 		}
 	}
@@ -147,7 +148,7 @@ func (self *service) UpdateSelfUserPassword(
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			err = cmnerrors.NotFound(cerr.What...)
-		} else {
+		} else if nil != err {
 			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 		}
 	}
@@ -162,13 +163,15 @@ type repoProfileProviders struct {
 type profileService struct {
 	repos         repoProfileProviders
 	authenticator *authenticator.Authenticator
+	photo         *photoregistry.Registry
 }
 
 func NewProfile(
 	profile user_provider.IProfileProvider,
 	authenticator *authenticator.Authenticator,
+	photo *photoregistry.Registry,
 ) user.IProfileService {
-	return &profileService{repoProfileProviders{profile}, authenticator}
+	return &profileService{repoProfileProviders{profile}, authenticator, photo}
 }
 
 func mapProfile(value *models.UserProfile) user.UserProfile {
@@ -202,7 +205,7 @@ func (self *profileService) GetUserProfile(
 	repo := self.repos.profile.GetUserProfileRepository()
 	muser, err := repo.GetByUserId(userId)
 
-	if nil != err {
+	if nil == err {
 		user = mapProfile(&muser)
 	} else if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 		err = cmnerrors.NotFound(cerr.What...)
@@ -230,11 +233,16 @@ func (self *profileService) UpdateSelfUserProfile(
 	token token.Token,
 	data user.UserProfile,
 ) error {
+	var profile models.UserProfile
 	user, err := self.authenticator.LoginWithToken(token)
+
+	if nil == err && nil != data.PhotoId {
+		*data.PhotoId, err = self.photo.MoveFromTemp(*data.PhotoId)
+	}
 
 	if nil == err {
 		repo := self.repos.profile.GetUserProfileRepository()
-		profile, err := repo.GetByUserId(user.Id)
+		profile, err = repo.GetByUserId(user.Id)
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			unmapProfile(&data, &profile)
@@ -292,7 +300,7 @@ func (self *favoriteService) GetUserFavorite(
 	repo := self.repos.favorite.GetUserFavoriteRepository()
 	mfavorite, err := repo.GetByUserId(userId)
 
-	if nil != err {
+	if nil == err {
 		favorite = mapFavorite(&mfavorite)
 	} else if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 		err = cmnerrors.NotFound(cerr.What...)
@@ -323,8 +331,9 @@ func (self *favoriteService) UpdateSelfUserFavorite(
 	user, err := self.authenticator.LoginWithToken(token)
 
 	if nil == err {
+		var favorite models.UserFavoritePickUpPoint
 		repo := self.repos.favorite.GetUserFavoriteRepository()
-		favorite, err := repo.GetByUserId(user.Id)
+		favorite, err = repo.GetByUserId(user.Id)
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			unmapFavorite(&data, &favorite)

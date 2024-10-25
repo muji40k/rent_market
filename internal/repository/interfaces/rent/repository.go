@@ -14,7 +14,7 @@ type IRepository interface {
 	Update(rent records.Rent) error
 
 	GetById(rentId uuid.UUID) (records.Rent, error)
-	GetActiveByUserId(userId uuid.UUID) (Collection[records.Rent], error)
+	GetByUserId(userId uuid.UUID) (Collection[records.Rent], error)
 	GetActiveByInstanceId(instanceId uuid.UUID) (records.Rent, error)
 	GetPastByUserId(userId uuid.UUID) (Collection[records.Rent], error)
 }

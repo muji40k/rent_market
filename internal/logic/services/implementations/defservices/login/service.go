@@ -64,7 +64,7 @@ func (self *service) Register(email string, password string, name string) error 
 		}
 	}
 
-	return nil
+	return err
 }
 
 func (self *service) Login(email string, password string) (token.Token, error) {

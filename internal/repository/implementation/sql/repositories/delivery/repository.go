@@ -222,7 +222,7 @@ func (self *repository) GetById(
 	err := CheckExistsById(self.connection, deliveryId)
 
 	if nil == err {
-		_, err = self.connection.NamedQuery(get_by_id_query, deliveryId)
+		err = self.connection.Get(&delivery, get_by_id_query, deliveryId)
 	}
 
 	return mapf(&delivery), err

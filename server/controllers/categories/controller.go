@@ -12,6 +12,7 @@ import (
 	"rent_service/server/errstructs"
 	getter_uuid "rent_service/server/getters/uuid"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +26,10 @@ type controller struct {
 
 func New(category category.IProvider) server.IController {
 	return &controller{providers{category}}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get")
 }
 
 const PARAM_ID = "id"

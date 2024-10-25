@@ -1,6 +1,8 @@
 package pickuppoint
 
 import (
+	"database/sql/driver"
+	"errors"
 	"fmt"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/misc/types/collection"
@@ -22,13 +24,44 @@ type PickUpPoint struct {
 	technical.Info
 }
 
+type Time struct {
+	Time time.Duration
+}
+
 type WorkingHours struct {
-	Id            uuid.UUID     `db:"id"`
-	PickUpPointId uuid.UUID     `db:"pick_up_point_id"`
-	Day           time.Weekday  `db:"day"`
-	StartTime     time.Duration `db:"start_time"`
-	EndTime       time.Duration `db:"end_time"`
+	Id            uuid.UUID    `db:"id"`
+	PickUpPointId uuid.UUID    `db:"pick_up_point_id"`
+	Day           time.Weekday `db:"day"`
+	StartTime     Time         `db:"start_time"`
+	EndTime       Time         `db:"end_time"`
 	technical.Info
+}
+
+const FORMAT = "15:04:05"
+
+func (self Time) Value() (driver.Value, error) {
+	return time.Time{}.Add(self.Time).Format(FORMAT), nil
+}
+
+func (self *Time) Scan(src interface{}) error {
+	var source string
+
+	switch src := src.(type) {
+	case string:
+		source = src
+	case []byte:
+		source = string(src)
+	default:
+		return errors.New("Incompatible type for Time")
+	}
+
+	ptime, err := time.Parse(FORMAT, source)
+
+	if nil == err {
+		self.Time = ptime.Sub(time.Time{})
+	}
+
+	return err
 }
 
 type repository struct {
@@ -161,8 +194,8 @@ func (self *workingHoursRepository) GetById(
 					wh.Map[cwh.Day] = models.WorkingHours{
 						Id:    cwh.Id,
 						Day:   cwh.Day,
-						Begin: cwh.StartTime,
-						End:   cwh.EndTime,
+						Begin: cwh.StartTime.Time,
+						End:   cwh.EndTime.Time,
 					}
 				}
 			}

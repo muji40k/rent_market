@@ -14,8 +14,9 @@ type IRepository interface {
 	Update(provision records.Provision) error
 
 	GetById(provisionId uuid.UUID) (records.Provision, error)
+	GetByRenterUserId(userId uuid.UUID) (Collection[records.Provision], error)
+	GetByInstanceId(instanceId uuid.UUID) (Collection[records.Provision], error)
 	GetActiveByInstanceId(instanceId uuid.UUID) (records.Provision, error)
-	GetActiveByRenterUserId(userId uuid.UUID) (Collection[records.Provision], error)
 }
 
 type IRequestRepository interface {

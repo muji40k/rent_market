@@ -21,6 +21,7 @@ import (
 	instance_repository "rent_service/internal/repository/interfaces/instance"
 	review_repository "rent_service/internal/repository/interfaces/review"
 	"rent_service/misc/mapfuncs"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -195,7 +196,7 @@ func mapPayPlans(value *models.InstancePayPlans) Collection[instance.PayPlan] {
 
 	for _, payPlan := range value.Map {
 		out[i] = instance.PayPlan{
-			InstanceId: value.InstanceId,
+			InstanceId: payPlan.Id,
 			PeriodId:   payPlan.PeriodId,
 			Price:      payPlan.Price,
 		}
@@ -282,10 +283,22 @@ func (self *payPlansService) UpdateInstancePayPlans(
 
 	if nil == err {
 		err = repo.Update(reference)
+
+		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = cmnerrors.NotFound(cerr.What...)
+		} else if nil != err {
+			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+		}
 	}
 
 	for i := 0; nil == err && len(notFound) > i; i++ {
 		_, err = repo.AddPayPlan(instanceId, unmapPayPlan(&notFound[i]))
+
+		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = cmnerrors.NotFound(cerr.What...)
+		} else if nil != err {
+			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+		}
 	}
 
 	return err
@@ -517,6 +530,7 @@ func (self *reviewService) PostInstanceReview(
 			UserId:     user.Id,
 			Content:    review.Content,
 			Rating:     review.Rating,
+			Date:       time.Now(),
 		}
 		repo := self.repos.review.GetReviewRepository()
 		_, err = repo.Create(review)

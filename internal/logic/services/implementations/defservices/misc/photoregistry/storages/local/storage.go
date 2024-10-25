@@ -138,6 +138,14 @@ func (self *storage) SaveTempData(tempPath string) (string, error) {
 		file.Close()
 	}
 
+	if nil == err {
+		err = os.Remove(tempPath)
+
+		if nil != err {
+			err = cmnerrors.Internal(err)
+		}
+	}
+
 	return path, err
 }
 

@@ -17,6 +17,7 @@ import (
 	"rent_service/internal/logic/services/types/token"
 	. "rent_service/internal/misc/types/collection"
 	provision_providers "rent_service/internal/repository/context/providers/provision"
+	rent_providers "rent_service/internal/repository/context/providers/rent"
 	role_providers "rent_service/internal/repository/context/providers/role"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 )
@@ -25,6 +26,7 @@ type revokeRepoProviders struct {
 	renter    role_providers.IRenterProvider
 	provision provision_providers.IProvider
 	revoke    provision_providers.IRevokeProvider
+	rent      rent_providers.IProvider
 }
 
 type revokeAccessors struct {
@@ -50,6 +52,7 @@ func NewRevoke(
 	renterProvider role_providers.IRenterProvider,
 	provisionProvider provision_providers.IProvider,
 	revokeProvider provision_providers.IRevokeProvider,
+	rentProvider rent_providers.IProvider,
 	instanceAcc *access.Instance,
 	userAcc *access.User,
 	pickUpPointAcc *access.PickUpPoint,
@@ -61,6 +64,7 @@ func NewRevoke(
 			renterProvider,
 			provisionProvider,
 			revokeProvider,
+			rentProvider,
 		},
 		revokeAccessors{
 			instanceAcc,
@@ -129,6 +133,17 @@ func (self *revokeService) GetProvisionRevokeByInstance(
 
 	if nil == err {
 		err = self.access.instance.Access(user.Id, instance)
+	}
+
+	if aerr := (cmnerrors.ErrorNoAccess{}); errors.As(err, &aerr) {
+		repo := self.repos.rent.GetRentRepository()
+		rent, ierr := repo.GetActiveByInstanceId(instance)
+
+		if nil == ierr && rent.UserId == user.Id {
+			err = nil
+		} else if cerr := (repo_errors.ErrorNotFound{}); !errors.As(ierr, &cerr) {
+			err = cmnerrors.Internal(cmnerrors.DataAccess(ierr))
+		}
 	}
 
 	if nil == err {

@@ -48,9 +48,11 @@ func Collect[T any](
 	i := 0
 	out := make([]T, 1)
 	save := separator
+	any := false
 	separator = func(param *Param) bool {
 		if save(param) {
 			separator = save
+			any = true
 		}
 
 		return false
@@ -79,7 +81,11 @@ func Collect[T any](
 	}
 
 	if nil == err {
-		err = checker(&out[i])
+		if any {
+			err = checker(&out[i])
+		} else {
+			out = nil
+		}
 	}
 
 	if nil == err {

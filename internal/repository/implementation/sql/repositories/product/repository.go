@@ -48,7 +48,10 @@ func mapf(value *Product) models.Product {
 }
 
 const get_by_id_query string = `
-    select * from products.products where id = $1
+    select id, name, category_id, description, modification_date,
+           modification_source
+    from products.products
+    where id = $1
 `
 
 func (self *repository) GetById(productId uuid.UUID) (models.Product, error) {
@@ -121,33 +124,49 @@ func getCharacteristics(ranges []product.Range, selectors []product.Selector) st
 			iter,
 			collection.MapIterator(
 				func(selector *product.Selector) string {
-					return fmt.Sprintf(
-						"(name = '%v' and value in (%v))", selector.Key,
-						collection.Reduce(
-							collection.MapIterator(
-								func(s *string) string {
-									return fmt.Sprintf("'%v'", *s)
-								},
-								collection.SliceIterator(selector.Values),
-							),
-							func(a *string, b *string) string {
-								return *a + ", " + *b
+					filter, any := collection.Reduce(
+						collection.MapIterator(
+							func(s *string) string {
+								return fmt.Sprintf("'%v'", *s)
 							},
+							collection.SliceIterator(selector.Values),
 						),
+						func(a *string, b *string) string {
+							return *a + ", " + *b
+						},
+					)
+
+					if !any {
+						panic("Iterator was filtered from empty selectors...")
+					}
+
+					return fmt.Sprintf(
+						"(name = '%v' and value in (%v))",
+						selector.Key, filter,
 					)
 				},
-				collection.SliceIterator(selectors),
+				collection.FilterIterator(
+					func(item *product.Selector) bool {
+						return nil != item.Values && 0 != len(item.Values)
+					},
+					collection.SliceIterator(selectors),
+				),
 			),
 		)
 	}
 
-	return fmt.Sprintf(
-		exists_characteristics_by_filter_query,
-		len(selectors)+len(ranges),
-		collection.Reduce(iter, func(a *string, b *string) string {
-			return *a + " or " + *b
-		}),
-	)
+	filter, any := collection.Reduce(iter, func(a *string, b *string) string {
+		return *a + " or " + *b
+	})
+
+	if !any {
+		return "true"
+	} else {
+		return fmt.Sprintf(
+			exists_characteristics_by_filter_query,
+			len(selectors)+len(ranges), filter,
+		)
+	}
 }
 
 func getSearch(query *string) string {

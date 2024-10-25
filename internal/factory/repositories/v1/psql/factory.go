@@ -132,7 +132,7 @@ func (self *Factory) CreateInstancePayPlansRepository() repository_instance.IPay
 	return instance.NewPayPlans(
 		self.connection,
 		self.setter,
-		self.createCurrencyRepository(),
+		self.CreateCurrencyRepository(),
 	)
 }
 
@@ -141,7 +141,7 @@ func (self *Factory) CreateInstancePhotoRepository() repository_instance.IPhotoR
 }
 
 func (self *Factory) CreatePaymentRepository() repository_payment.IRepository {
-	return payment.New(self.connection, self.createCurrencyRepository())
+	return payment.New(self.connection, self.CreateCurrencyRepository())
 }
 
 func (self *Factory) CreatePayMethodRepository() repository_paymethod.IRepository {
@@ -161,7 +161,7 @@ func (self *Factory) CreatePhotoTempRepository() repository_photo.ITempRepositor
 }
 
 func (self *Factory) CreatePickUpPointRepository() repository_pickuppoint.IRepository {
-	return pickuppoint.New(self.connection, self.createAddressRepository())
+	return pickuppoint.New(self.connection, self.CreateAddressRepository())
 }
 
 func (self *Factory) CreatePickUpPointPhotoRepository() repository_pickuppoint.IPhotoRepository {
@@ -192,7 +192,7 @@ func (self *Factory) CreateProvisionRequestRepository() repository_provision.IRe
 	return provision.NewRequest(
 		self.connection,
 		self.setter,
-		self.createCurrencyRepository(),
+		self.CreateCurrencyRepository(),
 	)
 }
 

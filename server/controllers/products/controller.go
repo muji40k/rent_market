@@ -15,6 +15,7 @@ import (
 	"rent_service/server/queryparser"
 	"strconv"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -35,6 +36,10 @@ func New(
 	photo product_provider.IPhotoProvider,
 ) server.IController {
 	return &controller{providers{product, characteristics, photo}}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get")
 }
 
 const (

@@ -208,9 +208,43 @@ func (self *repository) GetById(
 	return mapf(&out), err
 }
 
+const get_by_instance_id_query string = `
+    select *
+    from records.renters_instances
+    where instance_id = $1
+    offset $2
+`
+
+func (self *repository) GetByInstanceId(
+	instanceId uuid.UUID,
+) (collection.Collection[records.Provision], error) {
+	// var out Provision
+	err := instance.CheckExistsById(self.connection, instanceId)
+
+	if nil != err {
+		return nil, err
+	}
+
+	// if nil == err {
+	//     err = self.connection.Get(&out, get_by_instance_id_query, instanceId)
+	// }
+	//
+	// return mapf(&out), err
+	return collection.MapCollection(
+		mapf,
+		sqlCollection.New[Provision](func(offset uint) (*sqlx.Rows, error) {
+			return self.connection.Queryx(
+				get_by_instance_id_query,
+				instanceId,
+				offset,
+			)
+		}),
+	), nil
+}
+
 const get_active_by_instance_id_query string = `
     select *
-    form records.renters_instances
+    from records.renters_instances
     where end_date is null and instance_id = $1
 `
 
@@ -231,15 +265,14 @@ func (self *repository) GetActiveByInstanceId(
 	return mapf(&out), err
 }
 
-const get_active_by_renters_user_id_query string = `
+const get_by_renters_user_id_query string = `
     select *
     from records.renters_instances
-    where end_date is null
-          and renter_id = (select id from roles.renters where user_id = $1)
+    where renter_id = (select id from roles.renters where user_id = $1)
     offset $2
 `
 
-func (self *repository) GetActiveByRenterUserId(
+func (self *repository) GetByRenterUserId(
 	userId uuid.UUID,
 ) (collection.Collection[records.Provision], error) {
 	err := user.CheckExistsById(self.connection, userId)
@@ -256,7 +289,7 @@ func (self *repository) GetActiveByRenterUserId(
 		mapf,
 		sqlCollection.New[Provision](func(offset uint) (*sqlx.Rows, error) {
 			return self.connection.Queryx(
-				get_active_by_renters_user_id_query,
+				get_by_renters_user_id_query,
 				userId,
 				offset,
 			)
@@ -404,7 +437,7 @@ func (self *requestRepository) Create(
 	}
 
 	if nil == err {
-		for k, _ := range request.PayPlans {
+		for k := range request.PayPlans {
 			if nil == err {
 				err = period.CheckExistsById(self.connection, k)
 			}
@@ -552,11 +585,11 @@ func (self *requestRepository) Remove(requestId uuid.UUID) error {
 	err := CheckRequestExistsById(self.connection, requestId)
 
 	if nil == err {
-		_, err1 := self.connection.Exec(delete_request_by_id_query, requestId)
 		_, err2 := self.connection.Exec(
 			delete_request_pay_plan_by_request_id_query,
 			requestId,
 		)
+		_, err1 := self.connection.Exec(delete_request_by_id_query, requestId)
 
 		if nil != err1 {
 			err = err1

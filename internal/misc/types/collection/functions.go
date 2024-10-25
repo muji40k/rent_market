@@ -1,5 +1,7 @@
 package collection
 
+import "cmp"
+
 func Collect[T any](iterator Iterator[T]) []T {
 	if nil == iterator {
 		return nil
@@ -16,7 +18,7 @@ func Collect[T any](iterator Iterator[T]) []T {
 
 func Find[T any](iterator Iterator[T], f func(*T) bool) (T, bool) {
 	var empty T
-	if nil == iterator {
+	if nil == iterator || nil == f {
 		return empty, false
 	}
 
@@ -43,23 +45,86 @@ func Count[T any](iterator Iterator[T]) uint {
 	return count
 }
 
-func Reduce[T any](iterator Iterator[T], f func(*T, *T) T) T {
-	if nil == iterator {
-		var empty T
-		return empty
+func Max[T cmp.Ordered](iterator Iterator[T]) (T, bool) {
+	return Reduce(iterator, func(a, b *T) T {
+		if *a > *b {
+			return *a
+		} else {
+			return *b
+		}
+	})
+}
+
+func Min[T cmp.Ordered](iterator Iterator[T]) (T, bool) {
+	return Reduce(iterator, func(a, b *T) T {
+		if *a < *b {
+			return *a
+		} else {
+			return *b
+		}
+	})
+}
+
+func All[T any](iterator Iterator[T], f func(*T) bool) bool {
+	if nil == iterator || nil == f {
+		return false
 	}
 
-	acc, _ := iterator.Next()
+	for v, next := iterator.Next(); next; v, next = iterator.Next() {
+		if !f(&v) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func Any[T any](iterator Iterator[T], f func(*T) bool) bool {
+	if nil == iterator || nil == f {
+		return false
+	}
+
+	for v, next := iterator.Next(); next; v, next = iterator.Next() {
+		if f(&v) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ForEach[T any](iterator Iterator[T], f func(*T)) {
+	if nil == iterator || nil == f {
+		return
+	}
+
+	for v, next := iterator.Next(); next; v, next = iterator.Next() {
+		f(&v)
+	}
+}
+
+func Reduce[T any](iterator Iterator[T], f func(*T, *T) T) (T, bool) {
+	var empty T
+
+	if nil == iterator || nil == f {
+		return empty, false
+	}
+
+	acc, any := iterator.Next()
+
+	if !any {
+		return empty, false
+	}
 
 	for value, next := iterator.Next(); next; value, next = iterator.Next() {
 		acc = f(&acc, &value)
 	}
 
-	return acc
+	return acc, true
 }
 
 func Fold[T any, F any](iterator Iterator[T], acc F, f func(*F, *T) F) F {
-	if nil == iterator {
+	if nil == iterator || nil == f {
 		return acc
 	}
 

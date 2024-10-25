@@ -16,6 +16,7 @@ import (
 	"rent_service/server/errstructs"
 	"slices"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -43,6 +44,10 @@ func New(
 	payMethod payment.IUserPayMethodProvider,
 ) server.IController {
 	return &controller{providers{profile, favorite, payMethod}, authenticator}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get", "patch")
 }
 
 func (self *controller) Register(engine *gin.Engine) {

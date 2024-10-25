@@ -160,7 +160,7 @@ func (self *repository) Update(user models.User) error {
 	err := CheckExistsById(self.connection, user.Id)
 
 	if nil == err {
-		err = CheckExistsByEmail(self.connection, user.Email)
+		err = CheckExistsByIdAndEmail(self.connection, user.Id, user.Email)
 
 		if nil == err {
 			err = cmnerrors.Duplicate("user_email")
@@ -170,7 +170,7 @@ func (self *repository) Update(user models.User) error {
 	}
 
 	if nil == err {
-		err = CheckExistsByName(self.connection, user.Name)
+		err = CheckExistsByIdAndName(self.connection, user.Id, user.Name)
 
 		if nil == err {
 			err = cmnerrors.Duplicate("user_name")
@@ -267,12 +267,28 @@ func CheckExistsByEmail(db *sqlx.DB, email string) error {
 	return exist.Check("user_email", db, count_by_email_query, email)
 }
 
+var count_by_id_and_email_query string = `
+    select count(*) from users.users where id != $1 and email = $2
+`
+
+func CheckExistsByIdAndEmail(db *sqlx.DB, id uuid.UUID, email string) error {
+	return exist.Check("user_email", db, count_by_id_and_email_query, id, email)
+}
+
 var count_by_name_query string = `
     select count(*) from users.users where name = $1
 `
 
 func CheckExistsByName(db *sqlx.DB, name string) error {
 	return exist.Check("user_name", db, count_by_name_query, name)
+}
+
+var count_by_id_and_name_query string = `
+    select count(*) from users.users where id != $1 and name = $2
+`
+
+func CheckExistsByIdAndName(db *sqlx.DB, id uuid.UUID, name string) error {
+	return exist.Check("user_name", db, count_by_id_and_name_query, id, name)
 }
 
 type profileRepository struct {
@@ -458,7 +474,7 @@ func CheckProfileExistsByUserId(db *sqlx.DB, id uuid.UUID) error {
 }
 
 var count_profile_by_id_and_user_id_query string = `
-    select count(*) from users.profiles where id = $1 && user_id = $2
+    select count(*) from users.profiles where id = $1 and user_id = $2
 `
 
 func CheckProfileExistsByIdAndUserId(
@@ -553,7 +569,7 @@ func (self *favoriteRepository) Create(
 	if nil == err {
 		mapped := unmapFavorite(&profile)
 		self.setter.Update(&mapped.Info)
-		_, err = self.connection.NamedExec(insert_query, mapped)
+		_, err = self.connection.NamedExec(insert_favorite_query, mapped)
 	}
 
 	return profile, err
@@ -586,7 +602,7 @@ func (self *favoriteRepository) Update(
 	if nil == err {
 		mapped := unmapFavorite(&profile)
 		self.setter.Update(&mapped.Info)
-		_, err = self.connection.NamedExec(insert_query, mapped)
+		_, err = self.connection.NamedExec(update_favorite_query, mapped)
 	}
 
 	return err

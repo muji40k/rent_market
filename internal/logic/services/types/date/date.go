@@ -15,7 +15,7 @@ func New(time time.Time) Date {
 
 const FORMAT = "2006-01-02"
 
-func (self *Date) MarshalJSON() ([]byte, error) {
+func (self Date) MarshalJSON() ([]byte, error) {
 	return []byte("\"" + self.Time.Format(FORMAT) + "\""), nil
 }
 

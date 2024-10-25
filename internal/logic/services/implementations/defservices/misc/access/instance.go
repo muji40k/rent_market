@@ -3,8 +3,10 @@ package access
 import (
 	"errors"
 	"rent_service/internal/domain/models"
+	"rent_service/internal/domain/records"
 	"rent_service/internal/logic/services/errors/cmnerrors"
 	"rent_service/internal/logic/services/implementations/defservices/misc/authorizer"
+	"rent_service/internal/misc/types/collection"
 	"rent_service/internal/repository/context/providers/instance"
 	"rent_service/internal/repository/context/providers/provision"
 	"rent_service/internal/repository/context/providers/storage"
@@ -91,7 +93,7 @@ func (self *Instance) accessRenter(
 	instanceId uuid.UUID,
 ) error {
 	repo := self.repos.provision.GetProvisionRepository()
-	provision, err := repo.GetActiveByInstanceId(instanceId)
+	provisions, err := repo.GetByInstanceId(instanceId)
 
 	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 		err = cmnerrors.NoAccess()
@@ -99,7 +101,9 @@ func (self *Instance) accessRenter(
 		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 	}
 
-	if nil == err && provision.RenterId != renter.Id {
+	if nil == err && !collection.Any(provisions.Iter(), func(p *records.Provision) bool {
+		return p.RenterId == renter.Id
+	}) {
 		err = cmnerrors.NoAccess()
 	}
 

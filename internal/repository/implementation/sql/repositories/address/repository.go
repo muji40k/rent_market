@@ -46,7 +46,7 @@ func mapf(value *Address) models.Address {
 }
 
 var get_by_id_query string = `
-    select name from addresses.addresses where id = $1
+    select * from addresses.addresses where id = $1
 `
 
 func (self *Repository) GetById(

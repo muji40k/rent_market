@@ -121,6 +121,14 @@ func (self *Registry) MoveFromTemp(tempId uuid.UUID) (uuid.UUID, error) {
 		}
 	}
 
+	if nil == err {
+		err = trepo.Remove(tempId)
+
+		if nil != err {
+			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+		}
+	}
+
 	return photo.Id, err
 }
 

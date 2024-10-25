@@ -8,7 +8,7 @@ create table periods.periods
 (
     id uuid primary key,
     name text not null,
-    duration integer not null,
+    duration bigint not null,
     modification_date timestamptz not null default now(),
     modification_source text not null
 );

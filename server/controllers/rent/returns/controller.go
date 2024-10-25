@@ -17,6 +17,7 @@ import (
 	"rent_service/server/pagination"
 	"rent_service/server/rqactions"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -44,6 +45,10 @@ func New(
 	ret rent.IReturnProvider,
 ) server.IController {
 	return &controller{providers{rent, ret}, authenticator}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get", "post", "put", "delete")
 }
 
 func (self *controller) Register(engine *gin.Engine) {

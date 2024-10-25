@@ -298,6 +298,7 @@ func (self *Factory) CreateDeliveryService() service_delivery.IService {
 		self.CreatePhotoRegistry(),
 		self.repositories,
 		self.repositories,
+		self.repositories,
 		self.CreateInstanceAccessor(),
 		self.CreatePickUpPointAccessor(),
 	)
@@ -442,6 +443,7 @@ func (self *Factory) CreateProvisionRevokeService() service_provide.IRevokeServi
 		self.repositories,
 		self.repositories,
 		self.repositories,
+		self.repositories,
 		self.CreateInstanceAccessor(),
 		self.CreateUserAccessor(),
 		self.CreatePickUpPointAccessor(),
@@ -504,7 +506,11 @@ func (self *Factory) CreateUserService() service_user.IService {
 }
 
 func (self *Factory) CreateUserProfileService() service_user.IProfileService {
-	return user.NewProfile(self.repositories, self.CreateAuthenticator())
+	return user.NewProfile(
+		self.repositories,
+		self.CreateAuthenticator(),
+		self.CreatePhotoRegistry(),
+	)
 }
 
 func (self *Factory) CreateUserFavoriteService() service_user.IFavoriteService {

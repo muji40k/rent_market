@@ -158,7 +158,7 @@ func (self *repository) Create(review models.Review) (models.Review, error) {
 const get_with_filter_query string = `
     select *
     from instances.reviews
-    where id = $1 and %v
+    where instance_id = $1 and %v
     order by %v
     offset $2
 `
@@ -190,7 +190,7 @@ func CheckExistsById(db *sqlx.DB, id uuid.UUID) error {
 }
 
 var count_by_user_id_and_instance_id_query string = `
-    self count(*)
+    select count(*)
     from instances.reviews
     where user_id = $1 and instance_id = $2
 `
@@ -203,7 +203,7 @@ func CheckExistsByUserIdAndInstanceId(
 	return exist.Check(
 		"review_duplicate",
 		db,
-		count_by_id_query,
+		count_by_user_id_and_instance_id_query,
 		userId,
 		instanceId,
 	)

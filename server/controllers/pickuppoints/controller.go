@@ -13,6 +13,7 @@ import (
 	getter_uuid "rent_service/server/getters/uuid"
 	"rent_service/server/pagination"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -33,6 +34,10 @@ func New(
 	wh pickuppoint.IWorkingHoursProvider,
 ) server.IController {
 	return &controller{providers{pickUpPoint, photo, wh}}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get")
 }
 
 const PARAM_ID string = "id"

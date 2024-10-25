@@ -30,7 +30,7 @@ type NotFound struct {
 	What []string `json:"what"`
 }
 
-func NewNotFound(err cmnerrors.ErrorNotFound) Internal {
-	return Internal{err.Error()}
+func NewNotFound(err cmnerrors.ErrorNotFound) NotFound {
+	return NotFound{err.What}
 }
 

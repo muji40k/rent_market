@@ -9,6 +9,7 @@ import (
 	"rent_service/server"
 	"rent_service/server/errstructs"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,6 +23,10 @@ type controller struct {
 
 func New(payment payment.IPayMethodProvider) server.IController {
 	return &controller{providers{payment}}
+}
+
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get")
 }
 
 func (self *controller) Register(engine *gin.Engine) {

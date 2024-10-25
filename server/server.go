@@ -2,14 +2,17 @@ package server
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	engine *gin.Engine
-	host   string
-	port   uint
+	engine     *gin.Engine
+	host       string
+	port       uint
+	corsConfig cors.Config
 }
 
 type IController interface {
@@ -28,14 +31,44 @@ func WithPort(port uint) Configurator {
 		server.port = port
 	}
 }
+func WithController(controller IController) Configurator {
+	return func(server *Server) {
+		server.Extend(controller)
+	}
+}
+
+type CorsFiller func(config *cors.Config)
+
+func WithCors(fillers ...CorsFiller) Configurator {
+	return func(server *Server) {
+		config := cors.Config{
+			AllowHeaders: []string{
+				"Origin",
+				"Content-Length",
+				"Content-Type",
+			},
+			AllowCredentials: false,
+			AllowAllOrigins:  true,
+			MaxAge:           12 * time.Hour,
+		}
+
+		for _, filler := range fillers {
+			filler(&config)
+		}
+
+		server.engine.Use(cors.New(config))
+	}
+}
 
 func New(config ...Configurator) Server {
 	out := Server{
-		engine: gin.New(),
-		host:   "localhost",
-		port:   80,
+		engine:     gin.New(),
+		host:       "localhost",
+		port:       80,
+		corsConfig: cors.Config{},
 	}
 
+	out.engine.SetTrustedProxies(nil)
 	out.engine.Use(gin.Recovery())
 
 	for _, f := range config {
@@ -49,7 +82,9 @@ func (self *Server) Run() {
 	self.engine.Run(fmt.Sprintf("%v:%v", self.host, self.port))
 }
 
-func (self *Server) Extend(controller IController) {
+func (self *Server) Extend(controller IController) *Server {
 	controller.Register(self.engine)
+
+	return self
 }
 

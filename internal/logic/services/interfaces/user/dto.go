@@ -13,8 +13,8 @@ type Info struct {
 }
 
 type UpdateForm struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Name  string `json:"name" binding:"required"`
+	Email string `json:"email" binding:"required"`
 }
 
 type UserProfile struct {

@@ -88,6 +88,7 @@ func (self *repository) Create(photo models.Photo) (models.Photo, error) {
 	}
 
 	if nil == err {
+		photo.Date = time.Now()
 		mapped := unmapf(&photo)
 		self.setter.Update(&mapped.Info)
 		_, err = self.connection.NamedExec(insert_query, mapped)
@@ -183,12 +184,12 @@ func (self *tempRepository) Create(
 
 	if nil != photo.Path {
 		err = CheckTempExistsByPath(self.connection, *photo.Path)
-	}
 
-	if nil == err {
-		err = cmnerrors.Duplicate("photo_temp_path")
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		err = nil
+		if nil == err {
+			err = cmnerrors.Duplicate("photo_temp_path")
+		} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = nil
+		}
 	}
 
 	if nil == err {
@@ -199,6 +200,7 @@ func (self *tempRepository) Create(
 	}
 
 	if nil == err {
+		photo.Create = time.Now()
 		mapped := unmapTemp(&photo)
 		self.setter.Update(&mapped.Info)
 		_, err = self.connection.NamedExec(insert_temp_query, mapped)
@@ -242,6 +244,20 @@ func (self *tempRepository) GetById(
 	}
 
 	return mapTemp(&out), err
+}
+
+const delete_by_id_query string = `
+    delete from photos."temp" where id = $1
+`
+
+func (self *tempRepository) Remove(photoId uuid.UUID) error {
+	err := CheckTempExistsById(self.connection, photoId)
+
+	if nil == err {
+		_, err = self.connection.Exec(delete_by_id_query, photoId)
+	}
+
+	return err
 }
 
 var count_temp_by_id_query string = exist.GenericCounter("photos.temp")

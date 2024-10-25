@@ -10,6 +10,7 @@ import (
 	"rent_service/server/authenticator"
 	"rent_service/server/errstructs"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,11 +30,15 @@ func New(
 	return &controller{providers{role}, authenticator}
 }
 
+func CorsFiller(config *cors.Config) {
+	config.AddAllowMethods("get", "post")
+}
+
 func (self *controller) Register(engine *gin.Engine) {
 	engine.GET("/administrators/self", self.isAdministrator)
 	engine.GET("/renters/self", self.isRenter)
 	engine.POST("/renters/self", self.registerRenter)
-	engine.GET("/storekeeper/self", self.isStorekeeper)
+	engine.GET("/storekeepers/self", self.isStorekeeper)
 }
 
 func (self *controller) isAdministrator(ctx *gin.Context) {

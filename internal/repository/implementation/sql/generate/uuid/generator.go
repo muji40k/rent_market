@@ -15,7 +15,7 @@ func GenerateAvailable(
 	var id uuid.NullUUID
 	var err error
 
-	for nil == err && id.Valid {
+	for nil == err && !id.Valid {
 		id.UUID, err = uuid.NewRandom()
 
 		if nil == err {

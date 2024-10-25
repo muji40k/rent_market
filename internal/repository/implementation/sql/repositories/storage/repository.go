@@ -23,7 +23,7 @@ type Storage struct {
 	Id            uuid.UUID    `db:"id"`
 	PickUpPointId uuid.UUID    `db:"pick_up_point_id"`
 	InstanceId    uuid.UUID    `db:"instance_id"`
-	InDate        time.Time    `db:"id_date"`
+	InDate        time.Time    `db:"in_date"`
 	OutDate       sql.NullTime `db:"out_date"`
 	technical.Info
 }
