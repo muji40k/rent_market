@@ -38,6 +38,7 @@ import (
 	"rent_service/server/controllers/users"
 	"rent_service/server/headers"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -47,12 +48,12 @@ import (
 func main() {
 	db1, err1 := sqlx.Connect(
 		"pgx",
-		"postgres://postgres:postgres@localhost:5432/rent_market",
+		"postgres://postgres:postgres@database:5432/rent_market",
 	)
 
 	db2, err2 := sqlx.Connect(
 		"pgx",
-		"postgres://postgres:postgres@localhost:5432/authentication",
+		"postgres://postgres:postgres@database:5432/authentication",
 	)
 
 	defer func() {
@@ -96,10 +97,11 @@ func main() {
 		},
 	).ToFactories())
 
-	authenticator := apikey.New(&scontext, sql.New(db2))
+	authenticator := apikey.New(&scontext, sql.New(db2), 24*time.Hour, 7*24*time.Hour)
 
 	var s = server.New(
-		server.WithPort(12345),
+		server.WithHost("0.0.0.0"),
+		server.WithPort(80),
 		server.WithCors(
 			categories.CorsFiller,
 			deliveries.CorsFiller,

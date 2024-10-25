@@ -60,7 +60,7 @@ func WithCors(fillers ...CorsFiller) Configurator {
 	}
 }
 
-func New(config ...Configurator) Server {
+func New(config ...Configurator) *Server {
 	out := Server{
 		engine:     gin.New(),
 		host:       "localhost",
@@ -75,7 +75,7 @@ func New(config ...Configurator) Server {
 		f(&out)
 	}
 
-	return out
+	return &out
 }
 
 func (self *Server) Run() {

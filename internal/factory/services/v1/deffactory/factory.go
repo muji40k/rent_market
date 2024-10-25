@@ -122,6 +122,8 @@ func (self *Factory) ToFactories() cv1.Factories {
 	}
 }
 
+func (self *Factory) Clear() {}
+
 func (self *Factory) CreateAuthenticator() *authenticator.Authenticator {
 	if nil == self.static.authenticator {
 		self.static.authenticator = authenticator.New(self.repositories)

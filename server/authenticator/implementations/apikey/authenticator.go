@@ -41,8 +41,10 @@ type auth struct {
 func New(
 	login login.IProvider,
 	repo ITokenRepository,
+	access time.Duration,
+	renew time.Duration,
 ) authenticator.IAuthenticator {
-	return &auth{login, repo, 24 * time.Hour, 7 * 24 * time.Hour}
+	return &auth{login, repo, access, renew}
 }
 
 func (self *auth) GetToken(access string) (token.Token, error) {

@@ -112,6 +112,12 @@ func (self *Factory) ToFactories() cv1.Factories {
 	}
 }
 
+func (self *Factory) Clear() {
+	if nil != self.connection {
+		self.connection.Close()
+	}
+}
+
 func (self *Factory) CreateCategoryRepository() repository_category.IRepository {
 	return category.New(self.connection)
 }
