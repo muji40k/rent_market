@@ -1,5 +1,14 @@
 
 services:
+  backend:
+    build:
+      context: ../
+    restart: always
+    links:
+      - "postgresql_db:database"
+    ports:
+      - "127.0.0.1:12345:80"
+
   postgresql_db:
     build:
       context: ../scripts/psql/.
@@ -22,4 +31,5 @@ services:
       - ./pgadmin/:/var/lib/pgadmin
     ports:
       - "127.0.0.1:42069:80"
+
 
