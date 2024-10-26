@@ -17,7 +17,6 @@ RUN go build ./cmd/main.go
 FROM golang:latest
 
 COPY --from=build /go/main /main
-ADD config.json /
 
 ENTRYPOINT /main
 
