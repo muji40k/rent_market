@@ -15,6 +15,10 @@ type Builder struct {
 	renewTime  time.Duration
 }
 
+func New() *Builder {
+	return &Builder{}
+}
+
 func (self *Builder) WithLogin(login login.IProvider) *Builder {
 	self.login = login
 	return self

@@ -156,3 +156,9 @@ func (self *repository) checkExistsByAccess(access string) error {
 	return err
 }
 
+func (self *repository) Clear() {
+	if nil != self.connection {
+		self.connection.Close()
+	}
+}
+

@@ -108,8 +108,8 @@ type Context struct {
 	repositories static
 }
 
-func New(factories Factories) Context {
-	return Context{
+func New(factories Factories) *Context {
+	return &Context{
 		factories,
 		static{},
 	}

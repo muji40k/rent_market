@@ -13,6 +13,10 @@ type Builder struct {
 	controllers []server.IController
 }
 
+func New() *Builder {
+	return &Builder{}
+}
+
 func (self *Builder) WithHost(host string) *Builder {
 	self.host = host
 	return self

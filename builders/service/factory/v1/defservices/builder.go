@@ -2,8 +2,8 @@ package defservices
 
 import (
 	"errors"
+	v1 "rent_service/internal/factory/services/v1"
 	"rent_service/internal/factory/services/v1/deffactory"
-	v1 "rent_service/internal/logic/context/v1"
 	"rent_service/internal/logic/delivery"
 	"rent_service/internal/logic/services/implementations/defservices/misc/codegen"
 	"rent_service/internal/logic/services/implementations/defservices/misc/photoregistry"
@@ -60,7 +60,7 @@ func (self *Builder) WithPaymentCheckers(checkers map[uuid.UUID]payment.IRegistr
 	return self
 }
 
-func (self *Builder) Build() (v1.Factories, error) {
+func (self *Builder) Build() (v1.IFactory, error) {
 	var factory *deffactory.Factory
 	var err error
 
@@ -94,6 +94,6 @@ func (self *Builder) Build() (v1.Factories, error) {
 		)
 	}
 
-	return factory.ToFactories(), err
+	return factory, err
 }
 

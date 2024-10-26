@@ -82,6 +82,8 @@ func (self *Server) Run() {
 	self.engine.Run(fmt.Sprintf("%v:%v", self.host, self.port))
 }
 
+func (self *Server) Clear() {}
+
 func (self *Server) Extend(controller IController) *Server {
 	controller.Register(self.engine)
 

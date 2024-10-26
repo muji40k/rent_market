@@ -26,6 +26,7 @@ type ITokenRepository interface {
 	GetToken(access string) (token.Token, error)
 	DeleteToken(access string) error
 	RenewToken(token authenticator.ApiToken) (token.Token, error)
+	Clear()
 }
 
 var ErrorNotFound = errors.New("Can't validate token")
@@ -165,5 +166,9 @@ func (self *auth) RenewKey(apiToken authenticator.ApiToken) (authenticator.ApiTo
 	}
 
 	return apiToken, err
+}
+
+func (self *auth) Clear() {
+	self.repo.Clear()
 }
 

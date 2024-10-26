@@ -100,8 +100,8 @@ type Context struct {
 	services  static
 }
 
-func New(factories Factories) Context {
-	return Context{
+func New(factories Factories) *Context {
+	return &Context{
 		factories,
 		static{},
 	}

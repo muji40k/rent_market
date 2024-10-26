@@ -17,6 +17,10 @@ type Builder struct {
 	database string
 }
 
+func New() *Builder {
+	return &Builder{}
+}
+
 func (self *Builder) WithUser(user string) *Builder {
 	self.user = user
 	return self

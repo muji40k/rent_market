@@ -3,8 +3,8 @@ package psql
 import (
 	"errors"
 	"fmt"
+	"rent_service/internal/factory/repositories/v1"
 	"rent_service/internal/factory/repositories/v1/psql"
-	"rent_service/internal/repository/context/v1"
 	"rent_service/internal/repository/implementation/sql/repositories/user"
 	"rent_service/internal/repository/implementation/sql/technical"
 
@@ -74,7 +74,7 @@ func (self *Builder) getConnString() string {
 	)
 }
 
-func (self *Builder) Build() (v1.Factories, error) {
+func (self *Builder) Build() (v1.IFactory, error) {
 	var factory *psql.Factory
 	db, err := sqlx.Connect("pgx", self.getConnString())
 
@@ -94,6 +94,6 @@ func (self *Builder) Build() (v1.Factories, error) {
 		factory = psql.New(db, self.setter, self.hasher)
 	}
 
-	return factory.ToFactories(), err
+	return factory, err
 }
 

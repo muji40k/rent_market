@@ -1,6 +1,9 @@
 
 FROM golang:latest as build
 
+ADD application/ /go/application/
+ADD builders/ /go/builders
+ADD constructors/ /go/constructors
 ADD internal/ /go/internal/
 ADD server/ /go/server/
 ADD cmd/ /go/cmd/

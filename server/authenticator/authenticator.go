@@ -19,6 +19,7 @@ type IAuthenticator interface {
 	GetToken(access string) (token.Token, error)
 	RenewKey(token ApiToken) (ApiToken, error)
 	Logout(access string) error
+	Clear()
 }
 
 func ExchangeToken(
