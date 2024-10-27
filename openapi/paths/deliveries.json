@@ -17,7 +17,9 @@
                 "schema": { "type": "array", "items": {
                     "type": "string", "format": "uuid"
                 }}
-            }
+            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" },
         ],
         "responses": {
             200: {

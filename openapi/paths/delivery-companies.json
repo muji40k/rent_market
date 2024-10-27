@@ -22,7 +22,6 @@
             400: { "$ref": "#/components/responses/WrongRequest" },
             401: { "$ref": "#/components/responses/Unauthenticated" },
             403: { "$ref": "#/components/responses/Unauthorized" },
-            404: { "$ref": "#/components/responses/NotFound" },
             500: { "$ref": "#/components/responses/Internal" }
         }
     }

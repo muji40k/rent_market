@@ -27,7 +27,10 @@
                 "application/json": { "schema": {
                     "type": "object",
                     "properties": {
-                        "data": { "$ref": "#/components/schemas/UserData" },
+                        "data": { "type": "object", "properties": {
+                            "name": { "type": "string" },
+                            "email": { "type": "string", "format": "email" },
+                        }},
                         "password": { "type": "object", "properties": {
                             "old": { "type": "string", "format": "password" },
                             "new": { "type": "string", "format": "password" },

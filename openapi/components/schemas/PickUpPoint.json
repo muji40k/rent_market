@@ -2,7 +2,7 @@
     "type": "object",
     "properties": {
         "id": { "type": "string", "format": "uuid" },
-        "address": { "type": "string" },
+        "address": { "$ref": "#/components/schemas/Address" },
         "capacity": { "type": "integer", "format": "int64" },
     }
 }

@@ -14,6 +14,9 @@
     "Payment": {
         "$ref": "./schemas/Payment.json"
     },
+    "Address": {
+        "$ref": "./schemas/Address.json"
+    },
     "Delivery": {
         "$ref": "./schemas/Delivery.json"
     },

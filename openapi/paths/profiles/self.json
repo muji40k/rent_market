@@ -22,21 +22,22 @@
                         { "$ref": "#/components/schemas/ProfileGeneral" },
                         { "$ref": "#/components/schemas/ProfileFavorite" },
                         {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "move": { "type": "object", "properties": {
-                                        "id": { "type": "string", "format": "uuid" }
-                                    }},
-                                    "delete": { "type": "object", "properties": {
-                                        "id": { "type": "string", "format": "uuid" }
-                                    }},
-                                    "register": { "type": "object", "properties": {
-                                        "pay_method_id": { "type": "string", "format": "uuid" },
-                                        "payer_id" : { "type": "string" },
-                                    }}
-                                }
+                            "type": "object",
+                            "properties": {
+                                "delete": { "type": "array", "items": {
+                                    "type": "string", "format": "uuid"
+                                }},
+                                "items": { "type": "array", "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "move": { "type": "string", "format": "uuid" },
+                                        "register": { "type": "object", "properties": {
+                                            "pay_method": { "type": "string", "format": "uuid" },
+                                            "payer_id" : { "type": "string", "format": "password"},
+                                            "name": {"type": "string"}
+                                        }}
+                                    }
+                                }}
                             }
                         }
                     ]

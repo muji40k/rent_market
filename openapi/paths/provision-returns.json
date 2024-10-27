@@ -24,6 +24,8 @@
                 "description": "Assigned pick up point identifier",
                 "schema": { "type": "string", "format": "uuid" }
             },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" },
         ],
         "responses": {
             200: {
@@ -73,6 +75,11 @@
             401: { "$ref": "#/components/responses/Unauthenticated" },
             403: { "$ref": "#/components/responses/Unauthorized" },
             404: { "$ref": "#/components/responses/NotFound" },
+            409: {
+                "description": "
+                    Taking action on request conflicts with internal state
+                "
+            },
             500: { "$ref": "#/components/responses/Internal" }
         }
     }

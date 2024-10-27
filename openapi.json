@@ -7,7 +7,10 @@
   },
   "servers": [
     {
-      "url": "http://localhost/api"
+      "url": "http://localhost/api/v1"
+    },
+    {
+      "url": "http://localhost:12345"
     }
   ],
   "tags": [
@@ -205,6 +208,12 @@
                 "format": "uuid"
               }
             }
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/size"
           }
         ],
         "responses": {
@@ -381,6 +390,54 @@
         }
       }
     },
+    "/delivery-companies": {
+      "get": {
+        "tags": [
+          "Deliveries"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Get list of delivery companies",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/size"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryCompany"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      }
+    },
     "/delivery-companies/{id}": {
       "get": {
         "tags": [
@@ -391,7 +448,7 @@
             "ApiKeyAuth": []
           }
         ],
-        "summary": "Get list delivery company by id",
+        "summary": "Get delivery company by id",
         "parameters": [
           {
             "in": "path",
@@ -457,8 +514,8 @@
               "enum": [
                 "ratingAsc",
                 "ratingDesc",
-                "dataAsc",
-                "dataDesc",
+                "dateAsc",
+                "dateDesc",
                 "priceAsc",
                 "priceDesc",
                 "usageAsc",
@@ -489,6 +546,9 @@
           },
           "400": {
             "$ref": "#/components/responses/WrongRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/Internal"
@@ -563,7 +623,22 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Instance"
+                "type": "object",
+                "properties": {
+                  "product": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "condition": {
+                    "type": "string"
+                  }
+                }
               }
             }
           },
@@ -1116,6 +1191,9 @@
           "403": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "415": {
+            "description": "Unsupported mime type"
+          },
           "500": {
             "$ref": "#/components/responses/Internal"
           }
@@ -1148,7 +1226,7 @@
         "requestBody": {
           "description": "Photo itself",
           "content": {
-            "image/*": {
+            "image/png": {
               "schema": {
                 "type": "string",
                 "format": "binary"
@@ -1172,6 +1250,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "415": {
+            "description": "Mime doesn't match"
           },
           "500": {
             "$ref": "#/components/responses/Internal"
@@ -1619,7 +1700,7 @@
             "ApiKeyAuth": []
           }
         ],
-        "summary": "Update profile category",
+        "summary": "Update part of profile",
         "parameters": [
           {
             "in": "query",
@@ -1644,37 +1725,39 @@
                     "$ref": "#/components/schemas/ProfileFavorite"
                   },
                   {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "move": {
+                    "type": "object",
+                    "properties": {
+                      "delete": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
                           "type": "object",
                           "properties": {
-                            "id": {
-                              "type": "string",
-                              "format": "uuid"
-                            }
-                          }
-                        },
-                        "delete": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string",
-                              "format": "uuid"
-                            }
-                          }
-                        },
-                        "register": {
-                          "type": "object",
-                          "properties": {
-                            "pay_method_id": {
+                            "move": {
                               "type": "string",
                               "format": "uuid"
                             },
-                            "payer_id": {
-                              "type": "string"
+                            "register": {
+                              "type": "object",
+                              "properties": {
+                                "pay_method": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "payer_id": {
+                                  "type": "string",
+                                  "format": "password"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              }
                             }
                           }
                         }
@@ -1714,7 +1797,7 @@
             "ApiKeyAuth": []
           }
         ],
-        "summary": "Get list of profile categories",
+        "summary": "Get user profile",
         "parameters": [
           {
             "in": "path",
@@ -1735,14 +1818,6 @@
               ]
             },
             "required": true
-          },
-          {
-            "in": "query",
-            "name": "category",
-            "description": "Desired category to fetch",
-            "schema": {
-              "$ref": "#/components/schemas/ProfileCategoriesList"
-            }
           }
         ],
         "responses": {
@@ -1751,18 +1826,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "category": {
-                        "$ref": "#/components/schemas/ProfileCategoriesList"
-                      },
-                      "content": {
-                        "$ref": "#/components/schemas/ProfileCategory"
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/Profile"
                 }
               }
             }
@@ -1773,79 +1837,13 @@
           "401": {
             "$ref": "#/components/responses/Unauthenticated"
           },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
           "500": {
             "$ref": "#/components/responses/Internal"
           }
         }
       }
     },
-    "/provisions": {
-      "get": {
-        "tags": [
-          "Provisions"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "summary": "Get list of provisions",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "userId",
-            "description": "Renter's user identifier",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "in": "query",
-            "name": "instanceId",
-            "description": "Instance identifier",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Provision"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/WrongRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/Internal"
-          }
-        }
-      }
-    },
-    "/provisions/requests": {
+    "/provision-requests": {
       "get": {
         "tags": [
           "Provisions"
@@ -1886,6 +1884,12 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/size"
           }
         ],
         "responses": {
@@ -2000,7 +2004,7 @@
         }
       }
     },
-    "/provisions/requests/{id}": {
+    "/provision-requests/{id}": {
       "put": {
         "tags": [
           "Provisions"
@@ -2116,7 +2120,7 @@
         }
       }
     },
-    "/provisions/returns": {
+    "/provision-returns": {
       "get": {
         "tags": [
           "Provisions"
@@ -2157,6 +2161,12 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/size"
           }
         ],
         "responses": {
@@ -2241,13 +2251,16 @@
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
+          "409": {
+            "description": " Taking action on request conflicts with internal state "
+          },
           "500": {
             "$ref": "#/components/responses/Internal"
           }
         }
       }
     },
-    "/provisions/returns/{id}": {
+    "/provision-returns/{id}": {
       "put": {
         "tags": [
           "Provisions"
@@ -2361,6 +2374,569 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": " Taking action on request conflicts with internal state "
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      }
+    },
+    "/provisions": {
+      "get": {
+        "tags": [
+          "Provisions"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Get list of provisions",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "userId",
+            "description": "Renter's user identifier",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "instanceId",
+            "description": "Instance identifier",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Provision"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      }
+    },
+    "/rent-requests": {
+      "get": {
+        "tags": [
+          "Rents"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Get list of rent requests",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "userId",
+            "description": "User identifier",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "instanceId",
+            "description": "Instance identifier",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "pickUpPointId",
+            "description": "Assigned pick up point identifier",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/size"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RentRequest"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Rents"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Create rent request",
+        "requestBody": {
+          "description": "Creation form",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "instance": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "pick_up_point": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "payment_period": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Request created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RentRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Instance already rented"
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      }
+    },
+    "/rent-requests/{id}": {
+      "put": {
+        "tags": [
+          "Rents"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Change rent request status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Rent request identifer",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "Action to be taken on the request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "satisfy",
+                      "reject"
+                    ]
+                  },
+                  "state_photos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "verification_code": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": " Taking action on request conflicts with internal state "
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      }
+    },
+    "/rent-returns": {
+      "get": {
+        "tags": [
+          "Rents"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Get list of rent returns",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "userId",
+            "description": "User identifier",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "instanceId",
+            "description": "Instance identifier",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "pickUpPointId",
+            "description": "Assigned pick up point identifier",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/size"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RentReturn"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Rents"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Create rent return",
+        "requestBody": {
+          "description": "Return form",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rent": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "pick_up_point": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "rent_end_date": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Request created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RentReturn"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": " Taking action on request conflicts with internal state "
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      }
+    },
+    "/rent-returns/{id}": {
+      "put": {
+        "tags": [
+          "Rents"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Change rent returns status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Rent return identifer",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "Action to be taken on the request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "satisfy"
+                    ]
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "state_photos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "verification_code": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": " Taking action on request conflicts with internal state "
+          },
+          "500": {
+            "$ref": "#/components/responses/Internal"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Rents"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Cancel rent request status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Rent return identifer",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/WrongRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": " Can't cancel request, since renter is waiting for return "
           },
           "500": {
             "$ref": "#/components/responses/Internal"
@@ -2483,484 +3059,8 @@
           "403": {
             "$ref": "#/components/responses/Unauthorized"
           },
-          "500": {
-            "$ref": "#/components/responses/Internal"
-          }
-        }
-      }
-    },
-    "/rents/requests": {
-      "get": {
-        "tags": [
-          "Rents"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "summary": "Get list of rent requests",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "userId",
-            "description": "User identifier",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "in": "query",
-            "name": "instanceId",
-            "description": "Instance identifier",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          },
-          {
-            "in": "query",
-            "name": "pickUpPointId",
-            "description": "Assigned pick up point identifier",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/RentRequest"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/WrongRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/Internal"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Rents"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "summary": "Create rent request",
-        "requestBody": {
-          "description": "Creation form",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "instance": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "pick_up_point": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "payment_period": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Request created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RentRequest"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/WrongRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
           "404": {
             "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "description": "Instance already rented"
-          },
-          "500": {
-            "$ref": "#/components/responses/Internal"
-          }
-        }
-      }
-    },
-    "/rents/requests/{id}": {
-      "put": {
-        "tags": [
-          "Rents"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "summary": "Change rent request status",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "description": "Rent request identifer",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true
-          }
-        ],
-        "requestBody": {
-          "description": "Action to be taken on the request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "action": {
-                    "type": "string",
-                    "enum": [
-                      "satisfy",
-                      "reject"
-                    ]
-                  },
-                  "state_photos": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "verification_code": {
-                    "type": "string",
-                    "format": "password"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "$ref": "#/components/responses/WrongRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "description": " Taking action on request conflicts with internal state "
-          },
-          "500": {
-            "$ref": "#/components/responses/Internal"
-          }
-        }
-      }
-    },
-    "/rents/returns": {
-      "get": {
-        "tags": [
-          "Rents"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "summary": "Get list of rent returns",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "userId",
-            "description": "User identifier",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "in": "query",
-            "name": "instanceId",
-            "description": "Instance identifier",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          },
-          {
-            "in": "query",
-            "name": "pickUpPointId",
-            "description": "Assigned pick up point identifier",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/RentReturn"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/WrongRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/Internal"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Rents"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "summary": "Create rent return",
-        "requestBody": {
-          "description": "Return form",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "rent": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "pick_up_point": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "rent_end_date": {
-                    "type": "string",
-                    "format": "date"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Request created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RentReturn"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/WrongRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/Internal"
-          }
-        }
-      }
-    },
-    "/rents/returns/{id}": {
-      "put": {
-        "tags": [
-          "Rents"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "summary": "Change rent returns status",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "description": "Rent return identifer",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true
-          }
-        ],
-        "requestBody": {
-          "description": "Action to be taken on the request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "action": {
-                    "type": "string",
-                    "enum": [
-                      "satisfy"
-                    ]
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "state_photos": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "verification_code": {
-                    "type": "string",
-                    "format": "password"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "$ref": "#/components/responses/WrongRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "description": " Taking action on request conflicts with internal state "
-          },
-          "500": {
-            "$ref": "#/components/responses/Internal"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Rents"
-        ],
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "summary": "Cancel rent request status",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "description": "Rent return identifer",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "$ref": "#/components/responses/WrongRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "description": " Can't cancel request, since renter is waiting for return "
           },
           "500": {
             "$ref": "#/components/responses/Internal"
@@ -3312,11 +3412,29 @@
                 "type": "object",
                 "properties": {
                   "data": {
-                    "$ref": "#/components/schemas/UserData"
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email"
+                      }
+                    }
                   },
                   "password": {
-                    "type": "string",
-                    "format": "password"
+                    "type": "object",
+                    "properties": {
+                      "old": {
+                        "type": "string",
+                        "format": "password"
+                      },
+                      "new": {
+                        "type": "string",
+                        "format": "password"
+                      }
+                    }
                   }
                 }
               }
@@ -3373,6 +3491,9 @@
             "format": "uuid"
           },
           "name": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         }
@@ -3435,6 +3556,26 @@
           "payment_date": {
             "type": "string",
             "format": "date"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "house": {
+            "type": "string"
+          },
+          "flat": {
+            "type": "string"
           }
         }
       },
@@ -3634,6 +3775,10 @@
             "type": "string",
             "format": "uuid"
           },
+          "instance": {
+            "type": "string",
+            "format": "uuid"
+          },
           "user": {
             "type": "string",
             "format": "uuid"
@@ -3684,7 +3829,7 @@
             "format": "uuid"
           },
           "address": {
-            "type": "string"
+            "$ref": "#/components/schemas/Address"
           },
           "capacity": {
             "type": "integer",
@@ -3779,6 +3924,20 @@
           }
         }
       },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "general": {
+            "$ref": "#/components/schemas/ProfileGeneral"
+          },
+          "favorite": {
+            "$ref": "#/components/schemas/ProfileFavorite"
+          },
+          "pay_methods": {
+            "$ref": "#/components/schemas/ProfilePayMethods"
+          }
+        }
+      },
       "ProfileCategoriesList": {
         "type": "string",
         "enum": [
@@ -3840,7 +3999,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "pay_method_id": {
+            "pay_method": {
               "type": "string",
               "format": "uuid"
             },
@@ -3951,6 +4110,10 @@
       "UserData": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
           "name": {
             "type": "string"
           },

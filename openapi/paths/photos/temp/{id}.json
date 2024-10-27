@@ -15,7 +15,7 @@
         "requestBody": {
             "description": "Photo itself",
             "content": {
-                "image/*": { "schema": {
+                "image/png": { "schema": {
                     "type": "string",
                     "format": "binary"
                 }}

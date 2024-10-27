@@ -4,7 +4,7 @@
         "type": "object",
         "properties": {
             "id": { "type": "string", "format": "uuid" },
-            "pay_method_id": { "type": "string", "format": "uuid" },
+            "pay_method": { "type": "string", "format": "uuid" },
             "name" : { "type": "string" }
         }
     }
