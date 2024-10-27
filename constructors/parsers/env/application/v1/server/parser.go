@@ -13,6 +13,9 @@ func Parser() (server.Config, error) {
 	out.Host, _ = variables.GetOr(
 		avariables.SERVER_HOST, "0.0.0.0", variables.ParseString,
 	)
+	out.SwaggerURL, _ = variables.GetOr(
+		avariables.SWAGGER_URL, "", variables.ParseString,
+	)
 	out.Port, err = variables.GetOr(
 		avariables.SERVER_PORT, 80, variables.ParseUint,
 	)

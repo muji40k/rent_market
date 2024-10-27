@@ -7,10 +7,11 @@ import (
 )
 
 type Builder struct {
-	host        string
-	port        uint
-	corsFillers []server.CorsFiller
-	controllers []server.IController
+	host            string
+	port            uint
+	swaggerSpecsUrl string
+	corsFillers     []server.CorsFiller
+	controllers     []server.IController
 }
 
 func New() *Builder {
@@ -53,6 +54,12 @@ func (self *Builder) WithControllers(controllers []server.IController) *Builder 
 	return self
 }
 
+func (self *Builder) WithSwaggerSpecification(url string) *Builder {
+	self.swaggerSpecsUrl = url
+
+	return self
+}
+
 func (self *Builder) Build() (application.IApplication, error) {
 	configurators := collection.ChainIterator(
 		collection.MapIterator(
@@ -63,27 +70,40 @@ func (self *Builder) Build() (application.IApplication, error) {
 		),
 		collection.ChainIterator(
 			collection.MapIterator(
-				func(port *uint) server.Configurator {
-					return server.WithPort(*port)
+				func(url *string) server.Configurator {
+					return server.WithSwaggerSpecification(*url)
 				},
-				collection.SingleIterator(self.port),
+				collection.FilterIterator(
+					func(url *string) bool {
+						return "" != *url
+					},
+					collection.SingleIterator(self.swaggerSpecsUrl),
+				),
 			),
 			collection.ChainIterator(
 				collection.MapIterator(
-					func(cors *[]server.CorsFiller) server.Configurator {
-						return server.WithCors(*cors...)
+					func(port *uint) server.Configurator {
+						return server.WithPort(*port)
 					},
-					collection.SingleIterator(self.corsFillers),
+					collection.SingleIterator(self.port),
 				),
-				collection.MapIterator(
-					func(controller *server.IController) server.Configurator {
-						return server.WithController(*controller)
-					},
-					collection.FilterIterator(
-						func(controller *server.IController) bool {
-							return nil != *controller
+				collection.ChainIterator(
+					collection.MapIterator(
+						func(cors *[]server.CorsFiller) server.Configurator {
+							return server.WithCors(*cors...)
 						},
-						collection.SliceIterator(self.controllers),
+						collection.SingleIterator(self.corsFillers),
+					),
+					collection.MapIterator(
+						func(controller *server.IController) server.Configurator {
+							return server.WithController(*controller)
+						},
+						collection.FilterIterator(
+							func(controller *server.IController) bool {
+								return nil != *controller
+							},
+							collection.SliceIterator(self.controllers),
+						),
 					),
 				),
 			),

@@ -12,8 +12,9 @@ import (
 )
 
 type Config struct {
-	Host string
-	Port uint
+	Host       string
+	Port       uint
+	SwaggerURL string
 }
 
 type Parser func() (Config, error)
@@ -63,7 +64,8 @@ func newConstructor(
 		if nil == err {
 			builder := builder.New().
 				WithHost(config.Host).
-				WithPort(config.Port)
+				WithPort(config.Port).
+				WithSwaggerSpecification(config.SwaggerURL)
 
 			for _, e := range extenders {
 				cors, cont := e(auth, context)

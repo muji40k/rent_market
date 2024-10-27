@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swag "github.com/go-openapi/runtime/middleware"
 )
 
 type Server struct {
@@ -34,6 +35,20 @@ func WithPort(port uint) Configurator {
 func WithController(controller IController) Configurator {
 	return func(server *Server) {
 		server.Extend(controller)
+	}
+}
+func WithSwaggerSpecification(url string) Configurator {
+	return func(server *Server) {
+		h := swag.SwaggerUI(swag.SwaggerUIOpts{
+			BasePath: "/",
+			Path:     "docs", // AAAAAAAAAAAAAA
+			SpecURL:  url,
+		}, nil)
+
+		server.engine.GET("/", func(c *gin.Context) {
+			c.Request.URL.Path = "/docs" // So... where is no other context to create deep copy
+			h.ServeHTTP(c.Writer, c.Request)
+		})
 	}
 }
 
