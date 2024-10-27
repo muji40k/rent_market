@@ -12,6 +12,7 @@ services:
       APP_PHOTO_BASE_URL: "http://localhost/static"
       APP_PHOTO_PATH_MAIN: "/server/media"
       APP_PHOTO_PATH_TEMP: "/server/temp"
+      APP_SWAGGER_CONF_URL: "http://localhost/docs/openapi.json"
       DB_AUTH_NAME: "authentication"
       DB_MAIN_NAME: "rent_market"
       DB_HOST: "database"
