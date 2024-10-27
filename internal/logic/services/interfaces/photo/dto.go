@@ -6,9 +6,9 @@ import (
 )
 
 type Description struct {
-	Mime        string `json:"mime"`
-	Placeholder string `json:"placeholder"`
-	Description string `json:"description"`
+	Mime        string `json:"mime" binding:"required"`
+	Placeholder string `json:"placeholder" binding:"required"`
+	Description string `json:"description" binding:"required"`
 }
 
 type Photo struct {

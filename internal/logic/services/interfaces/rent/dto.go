@@ -49,14 +49,14 @@ type StopForm struct {
 }
 
 type RequestCreateForm struct {
-	InstanceId      uuid.UUID `json:"instance"`
-	PickUpPointId   uuid.UUID `json:"pick_up_point"`
-	PaymentPeriodId uuid.UUID `json:"payment_period"`
+	InstanceId      uuid.UUID `json:"instance" binding:"required"`
+	PickUpPointId   uuid.UUID `json:"pick_up_point" binding:"required"`
+	PaymentPeriodId uuid.UUID `json:"payment_period" binding:"required"`
 }
 
 type ReturnCreateForm struct {
-	RentId        uuid.UUID `json:"rent"`
-	PickUpPointId uuid.UUID `json:"pick_up_point"`
-	EndDate       date.Date `json:"rent_end_date"`
+	RentId        uuid.UUID `json:"rent" binding:"required"`
+	PickUpPointId uuid.UUID `json:"pick_up_point" binding:"required"`
+	EndDate       date.Date `json:"rent_end_date" binding:"required"`
 }
 

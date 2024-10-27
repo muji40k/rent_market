@@ -32,9 +32,9 @@ type DeliveryCompany struct {
 }
 
 type CreateForm struct {
-	InstanceId uuid.UUID `json:"instance"`
-	From       uuid.UUID `json:"from"`
-	To         uuid.UUID `json:"to"`
+	InstanceId uuid.UUID `json:"instance" binding:"required"`
+	From       uuid.UUID `json:"from" binding:"required"`
+	To         uuid.UUID `json:"to" binding:"required"`
 }
 
 type SendForm struct {

@@ -65,21 +65,21 @@ type StopForm struct {
 }
 
 type PayPlanCreateForm struct {
-	PeriodId uuid.UUID         `json:"period"`
-	Price    currency.Currency `json:"price"`
+	PeriodId uuid.UUID         `json:"period" binding:"required"`
+	Price    currency.Currency `json:"price" binding:"required"`
 }
 
 type RequestCreateForm struct {
-	ProductId     uuid.UUID           `json:"product"`
-	PickUpPointId uuid.UUID           `json:"pick_up_point"`
-	Name          string              `json:"name"`
-	Description   string              `json:"description"`
-	Condition     string              `json:"condition"`
-	PayPlans      []PayPlanCreateForm `json:"pay_plans"`
+	ProductId     uuid.UUID           `json:"product" binding:"required"`
+	PickUpPointId uuid.UUID           `json:"pick_up_point" binding:"required"`
+	Name          string              `json:"name" binding:"required"`
+	Description   string              `json:"description" binding:"required"`
+	Condition     string              `json:"condition" binding:"required"`
+	PayPlans      []PayPlanCreateForm `json:"pay_plans" binding:"required"`
 }
 
 type RevokeCreateForm struct {
-	ProvisionId   uuid.UUID `json:"provision"`
-	PickUpPointId uuid.UUID `json:"pick_up_point"`
+	ProvisionId   uuid.UUID `json:"provision" binding:"required"`
+	PickUpPointId uuid.UUID `json:"pick_up_point" binding:"required"`
 }
 

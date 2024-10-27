@@ -152,10 +152,10 @@ const (
 )
 
 type form struct {
-	ActionName       string                    `json:"action"`
+	ActionName       string                    `json:"action" binding:"required"`
 	Overrides        provide_service.Overrides `json:"overrides"`
-	StatePhotos      []uuid.UUID               `json:"state_photos"`
-	VerificationCode string                    `json:"verification_code"`
+	StatePhotos      []uuid.UUID               `json:"state_photos" binding:"required"`
+	VerificationCode string                    `json:"verification_code" binding:"required"`
 }
 
 func (self *form) Action() string {

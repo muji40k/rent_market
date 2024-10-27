@@ -152,10 +152,10 @@ func (self *controller) getById(ctx *gin.Context) {
 
 func (self *controller) updateById(ctx *gin.Context) {
 	var form struct {
-		ProductId   uuid.UUID `json:"product"`
-		Name        string    `json:"name"`
-		Description string    `json:"description"`
-		Condition   string    `json:"condition"`
+		ProductId   uuid.UUID `json:"product" binding:"required"`
+		Name        string    `json:"name" binding:"required"`
+		Description string    `json:"description" binding:"required"`
+		Condition   string    `json:"condition" binding:"required"`
 	}
 
 	var token token.Token
