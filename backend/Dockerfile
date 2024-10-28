@@ -1,5 +1,5 @@
 
-FROM golang:latest as build
+FROM golang:latest AS build
 
 ADD go.mod /go/
 ADD go.sum /go/

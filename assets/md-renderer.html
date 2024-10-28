@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.7.0/github-markdown.min.css">
+    <style>
+        .markdown-body {
+            border: solid;
+            border-color: #DFE4E9;
+            border-width: 1px;
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+    </style>
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        const FILENAME = location.pathname;
+        const set = (t) => document.getElementById('content').innerHTML = t;
+
+        fetch(FILENAME, {headers: {'Accept': 'text/markdown'}})
+            .then((res) => {
+                if (!res.ok)
+                    throw new Error(`${res.statusText} (${res.status})`);
+
+                return res.text()
+            })
+            .then((text) => set(marked.parse(text)))
+            .catch((err) => set(
+                `<p>Error during processing '${FILENAME}': ${err.message}</p>`
+            ))
+    </script>
+</head>
+<body>
+
+<article class="markdown-body">
+    <div class="container">
+        <div id="content"></div>
+    </div>
+</article>
+
+</body>
+</html>
