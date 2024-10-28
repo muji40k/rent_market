@@ -1,0 +1,55 @@
+{
+    "patch": {
+        "tags": [ "Profiles" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Update part of profile",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "category",
+                "description": "Desired category to update",
+                "schema": {
+                    "$ref": "#/components/schemas/ProfileCategoriesList"
+                },
+                "required": true
+            }
+        ],
+        "requestBody": {
+            "description": "Category to be updated",
+            "content": {
+                "application/json": { "schema": {
+                    "oneOf": [
+                        { "$ref": "#/components/schemas/ProfileGeneral" },
+                        { "$ref": "#/components/schemas/ProfileFavorite" },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "delete": { "type": "array", "items": {
+                                    "type": "string", "format": "uuid"
+                                }},
+                                "items": { "type": "array", "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "move": { "type": "string", "format": "uuid" },
+                                        "register": { "type": "object", "properties": {
+                                            "pay_method": { "type": "string", "format": "uuid" },
+                                            "payer_id" : { "type": "string", "format": "password"},
+                                            "name": {"type": "string"}
+                                        }}
+                                    }
+                                }}
+                            }
+                        }
+                    ]
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            200: { "description": "Category was updated" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

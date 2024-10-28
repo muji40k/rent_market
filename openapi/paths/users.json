@@ -1,0 +1,25 @@
+{
+    "post": {
+        "tags": [ "Users" ],
+        "summary": "Register new user",
+        "requestBody": {
+            "description": "User registration data",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "object", "properties": {
+                        "name": { "type": "string" },
+                        "email": { "type": "string", "format": "email" },
+                        "password": { "type": "string", "format": "password" }
+                    }
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            201: { "description": "User was registered" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "description": "User with such email already exists" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "get" :{
+        "tags": [ "Payment" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Get list of payments",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "instanceId",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+            {
+                "in": "query",
+                "name": "rentId",
+                "description": "Rent identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Payment"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

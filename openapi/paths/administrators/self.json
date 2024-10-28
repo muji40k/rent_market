@@ -1,0 +1,14 @@
+{
+    "get": {
+        "summary": "Check if user is administrator",
+        "security": [ { "ApiKeyAuth": [] } ],
+        "tags": [ "Roles" ],
+        "responses": {
+            200: { "description": "User is administrator" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

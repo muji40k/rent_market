@@ -1,0 +1,29 @@
+{
+    "get": {
+        "tags": [ "Products" ],
+        "summary": "Get list of product photos",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Product identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": { "type": "string", "format": "uuid" }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

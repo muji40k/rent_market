@@ -1,0 +1,10 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "pick_up_point": { "type": "string", "format": "uuid" },
+        "instance": { "type": "string", "format": "uuid" },
+        "in": { "type": "string", "format": "date" },
+        "out": { "type": "string", "format": "date" },
+    }
+}

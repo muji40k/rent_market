@@ -1,0 +1,35 @@
+{
+    "post": {
+        "tags": [ "Photos" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Upload temp photo to the server",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Photo identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "requestBody": {
+            "description": "Photo itself",
+            "content": {
+                "image/png": { "schema": {
+                    "type": "string",
+                    "format": "binary"
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            201: { "description": "Uploaded", },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            415: { "description": "Mime doesn't match" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

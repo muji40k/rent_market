@@ -1,0 +1,31 @@
+{
+    "get": {
+        "tags": [ "Deliveries" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Get delivery company by id",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Company identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            },
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "$ref": "#/components/schemas/DeliveryCompany"
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

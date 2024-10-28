@@ -1,0 +1,86 @@
+{
+    "get": {
+        "tags": [ "Provisions" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Get list of provision requests",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "userId",
+                "description": "Provider's user identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+            {
+                "in": "query",
+                "name": "instanceId",
+                "description": "Instance identifier",
+                "schema": { "type": "array", "items": {
+                    "type": "string", "format": "uuid"
+                }}
+            },
+            {
+                "in": "query",
+                "name": "pickUpPointId",
+                "description": "Assigned pick up point identifier",
+                "schema": { "type": "string", "format": "uuid" }
+            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" },
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProvisionReturn"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    },
+    "post": {
+        "tags": [ "Provisions" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Create provision request",
+        "requestBody": {
+            "description": "Return form",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "object",
+                    "properties": {
+                        "provision": { "type": "string", "format": "uuid" },
+                        "pick_up_point": { "type": "string", "format": "uuid" }
+                    }
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            201: {
+                "description": "Request created",
+                "content": {
+                    "application/json": { "schema": {
+                        "$ref": "#/components/schemas/ProvisionReturn"
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            409: {
+                "description": "
+                    Taking action on request conflicts with internal state
+                "
+            },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

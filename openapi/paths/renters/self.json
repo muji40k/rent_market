@@ -1,0 +1,28 @@
+{
+    "get": {
+        "summary": "Check if user is a renter",
+        "security": [ { "ApiKeyAuth": [] } ],
+        "tags": [ "Roles" ],
+        "responses": {
+            200: { "description": "User is renter" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    },
+    "post": {
+        "summary": "Register user as renter",
+        "security": [ { "ApiKeyAuth": [] } ],
+        "tags": [ "Roles" ],
+        "responses": {
+            200: { "description": "User is already a renter" },
+            201: {
+                "description": "User was successfully registered as renter"
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

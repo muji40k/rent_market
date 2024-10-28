@@ -1,0 +1,43 @@
+{
+    "WrongRequest": {
+        "description": "Wrong request",
+        "content": {
+            "application/json": { "schema": {
+                "type": "object",
+                "properties": {
+                    "error": { "type": "string" }
+                }
+            }}
+        }
+    },
+    "Internal": {
+        "description": "Internal error",
+        "content": {
+            "application/json": { "schema": {
+                "type": "object",
+                "properties": {
+                    "error": { "type": "string" }
+                }
+            }}
+        }
+    },
+    "Unauthenticated": {
+        "description": "Token is expired or unknown",
+    },
+    "Unauthorized": {
+        "description": "User is unauthorized for this operation",
+    },
+    "NotFound": {
+        "description": "Resource wasn't found",
+        "content": {
+            "application/json": { "schema": {
+                "type": "object",
+                "properties": {
+                    "what": { "type": "array", "items": {
+                        "type": "string"
+                    }}
+                }
+            }}
+        }
+    },
+}

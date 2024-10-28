@@ -1,0 +1,10 @@
+{
+    "type": "object",
+    "properties": {
+        "country": { "type": "string" },
+        "city": { "type": "string" },
+        "street": { "type": "string" },
+        "house": { "type": "string" },
+        "flat": { "type": "string" },
+    }
+}

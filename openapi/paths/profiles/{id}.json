@@ -1,0 +1,32 @@
+{
+    "get": {
+        "tags": [ "Profiles" ],
+        "security": [ {}, { "ApiKeyAuth": [] } ],
+        "summary": "Get user profile",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "User identifier, of 'self'",
+                "schema": { "oneOf": [
+                    { "type": "string", "format": "uuid" },
+                    { "type": "string", "enum": [ "self" ] },
+                ]},
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "$ref": "#/components/schemas/Profile"
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

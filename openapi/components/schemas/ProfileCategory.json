@@ -1,0 +1,7 @@
+{
+    "oneOf": [
+        { "$ref": "#/components/schemas/ProfileGeneral" },
+        { "$ref": "#/components/schemas/ProfileFavorite" },
+        { "$ref": "#/components/schemas/ProfilePayMethods" }
+    ]
+}

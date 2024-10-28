@@ -1,0 +1,46 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get list of instances for the product",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "productId",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            },
+            {
+                "in": "query",
+                "name": "sortBy",
+                "schema": { "type": "string", "enum": [
+                    "ratingAsc",
+                    "ratingDesc",
+                    "dateAsc",
+                    "dateDesc",
+                    "priceAsc",
+                    "priceDesc",
+                    "usageAsc",
+                    "usageDesc"
+                ]}
+            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Instance"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

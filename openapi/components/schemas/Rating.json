@@ -1,0 +1,6 @@
+{
+    "type": "number",
+    "format": "double",
+    "minimum": 0.0,
+    "maximum": 5.0
+}

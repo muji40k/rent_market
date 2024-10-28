@@ -1,0 +1,25 @@
+{
+    "get": {
+        "tags": [ "Pick up points" ],
+        "summary": "Get list of pick up points",
+        "parameters": [
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PickUpPoint"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

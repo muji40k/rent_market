@@ -1,0 +1,11 @@
+{
+    "type": "object",
+    "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "instance": { "type": "string", "format": "uuid" },
+        "user": { "type": "string", "format": "uuid" },
+        "pick_up_point": { "type": "string", "format": "uuid" },
+        "verification_code": { "type": "string", "format": "password" },
+        "create_date": { "type": "string", "format": "date" },
+    }
+}

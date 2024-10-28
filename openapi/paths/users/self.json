@@ -1,0 +1,50 @@
+{
+    "get": {
+        "tags": [ "Users" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Get information about authenticated user",
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "$ref": "#/components/schemas/UserData"
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    },
+    "put": {
+        "tags": [ "Users" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Update information about authenticated user",
+        "requestBody": {
+            "description": "User data to be updated",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "object",
+                    "properties": {
+                        "data": { "type": "object", "properties": {
+                            "name": { "type": "string" },
+                            "email": { "type": "string", "format": "email" },
+                        }},
+                        "password": { "type": "object", "properties": {
+                            "old": { "type": "string", "format": "password" },
+                            "new": { "type": "string", "format": "password" },
+                        }}
+                    }
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            200: { "description": "User data was updated" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

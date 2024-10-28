@@ -1,0 +1,10 @@
+{
+    "type": "object",
+    "properties": {
+        "name": { "type": "string" },
+        "surname": { "type": "string" },
+        "patronymic": { "type": "string" },
+        "birth_date": { "type": "string", "format": "date" },
+        "photo": { "type": "string", "format": "uuid" }
+    }
+}

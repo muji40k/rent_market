@@ -1,0 +1,69 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get list of instance pay-plans",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PayPlan"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    },
+    "put": {
+        "tags": [ "Instances" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Update information about instance pay-plans",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "requestBody": {
+            "description": "List of new pay plans",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "array", "items": {
+                        "type": "object",
+                        "properties": {
+                            "period": { "type": "string", "format": "uuid" },
+                            "price": { "$ref": "#/components/schemas/Currency" },
+                        }
+                    }
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            200: { "description": "OK" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            409: { "description": "Can't change pay plans during rent" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

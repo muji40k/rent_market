@@ -1,0 +1,28 @@
+{
+    "get": {
+        "tags": [ "Photos" ],
+        "summary": "Get photo meta data with identifier",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Photo identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "$ref": "#/components/schemas/Photo"
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

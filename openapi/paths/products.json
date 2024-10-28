@@ -1,0 +1,60 @@
+{
+    "get": {
+        "tags": [ "Products" ],
+        "summary": "Get list of products",
+        "parameters": [
+            {
+                "in": "query",
+                "name": "sortBy",
+                "schema": { "type": "string", "enum": [
+                    "offersAsc",
+                    "offersDesc",
+                ]}
+            },
+            {
+                "in": "query",
+                "name": "filter",
+                "schema": { "type": "object", "properties": {
+                        "search": { "type": "string" },
+                        "category": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "characteristics": {
+                            "type": "array", "items": {
+                                "type": "object",
+                                "properties": {
+                                    "key": { "type": "string" },
+                                    "values": { "type": "array", "items": {
+                                        "type": "string"
+                                    }},
+                                    "range": { "type": "object", "properties": {
+                                        "min": { "type": "number" },
+                                        "max": { "type": "number" },
+                                    }}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Product"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

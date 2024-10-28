@@ -1,0 +1,61 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get list of instance photos",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": { "type": "string", "format": "uuid" }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    },
+    "post": {
+        "tags": [ "Instances" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Add photo of instance",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "requestBody": {
+            "description": "List of temp photos to be added",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "uuid" }
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            201: { "description": "OK" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

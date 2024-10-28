@@ -1,0 +1,93 @@
+{
+    "get": {
+        "tags": [ "Instances" ],
+        "summary": "Get list of reviews",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            },
+            {
+                "in": "query",
+                "name": "sortBy",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "dateAsc",
+                        "dateDesc",
+                        "ratingAsc",
+                        "ratingDesc"
+                    ]
+                },
+            },
+            {
+                "in": "query",
+                "name": "filterRating",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 5
+                    },
+                },
+            },
+            { "$ref": "#/components/parameters/offset" },
+            { "$ref": "#/components/parameters/size" }
+        ],
+        "responses": {
+            200: {
+                "description": "OK",
+                "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Review"
+                        }
+                    }}
+                }
+            },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    },
+    "post": {
+        "tags": [ "Instances" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Post review for the instance",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Instance identifier",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "requestBody": {
+            "description": "Create form",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "object",
+                    "properties": {
+                        "content": { "type": "string" },
+                        "rating": { "$ref": "#/components/schemas/Rating" },
+                    }
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            201: { "description": "OK" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}

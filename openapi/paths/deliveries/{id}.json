@@ -1,0 +1,53 @@
+{
+    "put": {
+        "tags": [ "Deliveries" ],
+        "security": [ { "ApiKeyAuth": [] } ],
+        "summary": "Change delivery state",
+        "parameters": [
+            {
+                "in": "path",
+                "name": "id",
+                "description": "Delivery identifer",
+                "schema": { "type": "string", "format": "uuid" },
+                "required": true
+            }
+        ],
+        "requestBody": {
+            "description": "Action to be taken on the delivery",
+            "content": {
+                "application/json": { "schema": {
+                    "type": "object",
+                    "properties": {
+                        "action": { "type": "string", "enum": [
+                            "send",
+                            "accept",
+                        ]},
+                        "description": { "type": "string" },
+                        "state_photos": { "type": "array", "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }},
+                        "verification_code": {
+                            "type": "string",
+                            "format": "password"
+                        }
+                    }
+                }}
+            },
+            "required": true
+        },
+        "responses": {
+            200: { "description": "OK" },
+            400: { "$ref": "#/components/responses/WrongRequest" },
+            401: { "$ref": "#/components/responses/Unauthenticated" },
+            403: { "$ref": "#/components/responses/Unauthorized" },
+            404: { "$ref": "#/components/responses/NotFound" },
+            409: {
+                "description": "
+                    Taking action on request conflicts with internal state
+                "
+            },
+            500: { "$ref": "#/components/responses/Internal" }
+        }
+    }
+}
