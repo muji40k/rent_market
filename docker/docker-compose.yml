@@ -2,20 +2,18 @@
 services:
   backend:
     build:
-      context: ../
+      context: ../backend/
     restart: always
-    links:
-      - "postgresql_db:database"
     ports:
       - "127.0.0.1:12345:80"
     environment:
       APP_PHOTO_BASE_URL: "http://localhost/static"
       APP_PHOTO_PATH_MAIN: "/server/media"
       APP_PHOTO_PATH_TEMP: "/server/temp"
-      APP_SWAGGER_CONF_URL: "http://localhost/docs/openapi.json"
+      APP_SWAGGER_CONF_URL: "/docs/openapi.json"
       DB_AUTH_NAME: "authentication"
       DB_MAIN_NAME: "rent_market"
-      DB_HOST: "database"
+      DB_HOST: "postgresql_db"
       DB_PORT: "5432"
       DB_USER_NAME: "postgres"
       DB_USER_PASSWORD: "postgres"
