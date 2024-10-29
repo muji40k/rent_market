@@ -100,7 +100,7 @@ func (self *service) UploadTempPhoto(
 	_, err := self.authenticator.LoginWithToken(token)
 
 	if nil == err {
-		self.registry.SaveTempPhoto(photoId, content)
+		err = self.registry.SaveTempPhoto(photoId, content)
 	}
 
 	return err

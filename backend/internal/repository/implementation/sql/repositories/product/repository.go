@@ -111,7 +111,7 @@ func getCharacteristics(ranges []product.Range, selectors []product.Selector) st
 		iter = collection.MapIterator(
 			func(rng *product.Range) string {
 				return fmt.Sprintf(
-					"(name = '%v' and value >= '%v'::float8 and value <= '%v'::float8)",
+					"(name = '%v' and value::float8 >= '%v'::float8 and value::float8 <= '%v'::float8)",
 					rng.Key, rng.Min, rng.Max,
 				)
 			},

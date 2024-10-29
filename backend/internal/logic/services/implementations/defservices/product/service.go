@@ -172,6 +172,7 @@ func (self *characteristicsService) ListProductCharacteristics(
 				Name:  char.Name,
 				Value: char.Value,
 			}
+			i++
 		}
 
 		chars = SliceCollection(buf)

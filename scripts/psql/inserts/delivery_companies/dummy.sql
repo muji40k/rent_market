@@ -1,0 +1,1 @@
+../../../../backend/internal/logic/delivery/implementations/dummy/insert.sql
