@@ -14,3 +14,12 @@ create table public.sessions (
     token text not null
 );
 
+revoke all privileges on database authentication from readonly;
+
+grant usage on schema public to readonly;
+grant select on all tables in schema public to readonly;
+alter default privileges in schema public grant select on tables to readonly;
+
+revoke readonly from reader;
+grant readonly to reader;
+

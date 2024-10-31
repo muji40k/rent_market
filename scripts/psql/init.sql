@@ -25,3 +25,5 @@ create database rent_market;
 
 \i /scripts/init_payment.sql
 
+\i /scripts/init_roles.sql
+
