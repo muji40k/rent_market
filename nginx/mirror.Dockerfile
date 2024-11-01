@@ -11,6 +11,7 @@ RUN mkdir -p /static/docs
 RUN mkdir -p /render/md
 
 COPY readme.md /static/docs/
+COPY loadbalance.md /static/docs/
 COPY res/ /static/docs/res/
 COPY openapi.json /static/docs/
 COPY assets/index.html /static/
