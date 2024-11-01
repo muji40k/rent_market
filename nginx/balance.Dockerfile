@@ -1,5 +1,5 @@
 
-FROM nginx
+FROM byjg/nginx-extras
 
 RUN mkdir -p /etc/nginx/sites-enabled/
 
