@@ -1,7 +1,9 @@
 package models
 
 import (
+	"rent_service/builders/misc/nullcommon"
 	"rent_service/internal/domain/models"
+	"rent_service/misc/nullable"
 
 	"github.com/google/uuid"
 )
@@ -21,13 +23,8 @@ func (self *CategoryBuilder) WithId(id uuid.UUID) *CategoryBuilder {
 	return self
 }
 
-func (self *CategoryBuilder) WithParentId(parentId *uuid.UUID) *CategoryBuilder {
-	if nil == parentId {
-		self.parentId = nil
-	} else {
-		self.parentId = new(uuid.UUID)
-		*self.parentId = *parentId
-	}
+func (self *CategoryBuilder) WithParentId(parentId *nullable.Nullable[uuid.UUID]) *CategoryBuilder {
+	self.parentId = nullcommon.CopyPtrIfSome(parentId)
 	return self
 }
 

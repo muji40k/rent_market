@@ -3,6 +3,7 @@ package models
 import (
 	modelsb "rent_service/builders/domain/models"
 	"rent_service/internal/domain/models"
+	"rent_service/misc/nullable"
 
 	"github.com/google/uuid"
 )
@@ -27,7 +28,7 @@ func CategoryWithParentRandomId(parent models.Category) *modelsb.CategoryBuilder
 
 	return modelsb.NewCategory().
 		WithId(id).
-		WithParentId(&parent.Id)
+		WithParentId(nullable.Some(parent.Id))
 }
 
 func CategoryToPath(path []*modelsb.CategoryBuilder) []models.Category {
