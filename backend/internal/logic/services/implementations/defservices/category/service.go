@@ -1,11 +1,13 @@
 package category
 
 import (
+	"errors"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/logic/services/errors/cmnerrors"
 	"rent_service/internal/logic/services/interfaces/category"
 	. "rent_service/internal/misc/types/collection"
 	category_provider "rent_service/internal/repository/context/providers/category"
+	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 
 	"github.com/google/uuid"
 )
@@ -53,6 +55,8 @@ func (self *service) GetFullCategory(
 
 	if nil == err {
 		path = MapCollection(mapf, col)
+	} else if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
+		err = cmnerrors.NotFound(cerr.What...)
 	} else {
 		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 	}
