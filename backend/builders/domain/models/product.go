@@ -93,7 +93,7 @@ func (self *ProductCharacteristicsBuilder) WithProductId(productId uuid.UUID) *P
 	return self
 }
 
-func (self *ProductCharacteristicsBuilder) WithMmap(chars ...models.Charachteristic) *ProductCharacteristicsBuilder {
+func (self *ProductCharacteristicsBuilder) WithCharacteristics(chars ...models.Charachteristic) *ProductCharacteristicsBuilder {
 	self.mmap = make(map[string]models.Charachteristic)
 
 	for _, c := range chars {

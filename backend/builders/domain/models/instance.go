@@ -67,7 +67,7 @@ func (self *InstancePayPlansBuilder) WithInstanceId(instanceId uuid.UUID) *Insta
 	return self
 }
 
-func (self *InstancePayPlansBuilder) WithMmap(plans ...models.PayPlan) *InstancePayPlansBuilder {
+func (self *InstancePayPlansBuilder) WithPayPlans(plans ...models.PayPlan) *InstancePayPlansBuilder {
 	self.mmap = make(map[uuid.UUID]models.PayPlan, len(plans))
 
 	for _, p := range plans {

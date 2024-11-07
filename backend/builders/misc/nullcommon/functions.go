@@ -3,7 +3,7 @@ package nullcommon
 import "rent_service/misc/nullable"
 
 func CopyPtrIfSome[T any](value *nullable.Nullable[T]) *T {
-	return nullable.GerOrInsert(
+	return nullable.GetOr(
 		nullable.Map(value, func(ref *T) *T {
 			out := new(T)
 			*out = *ref

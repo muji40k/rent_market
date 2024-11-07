@@ -61,7 +61,7 @@ func (self *CategoryServiceSuite) TestListCategoriesPositive(t provider.T) {
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
 		t.WithNewStep("Create reference categories", func(sCtx provider.StepCtx) {
-			categories = models_om.CategoryToPath(models_om.CategoryDefaultPath())
+			categories = models_om.CategoryToPath(models_om.CategoryDefaultPath()...)
 			reference = make([]category.Category, len(categories))
 			for i, v := range categories {
 				reference[i] = category.Category{
@@ -141,7 +141,7 @@ func generateDefaultPath(
 	service *category.IService,
 ) {
 	t.WithNewStep("Create reference categories", func(sCtx provider.StepCtx) {
-		*categories = models_om.CategoryToPath(models_om.CategoryDefaultPath())
+		*categories = models_om.CategoryToPath(models_om.CategoryDefaultPath()...)
 		*reference = make([]category.Category, len(*categories))
 		for i, v := range *categories {
 			(*reference)[i] = category.Category{

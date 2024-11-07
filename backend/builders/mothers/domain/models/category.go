@@ -2,6 +2,7 @@ package models
 
 import (
 	modelsb "rent_service/builders/domain/models"
+	"rent_service/builders/misc/uuidgen"
 	"rent_service/internal/domain/models"
 	"rent_service/misc/nullable"
 
@@ -9,29 +10,16 @@ import (
 )
 
 func CategoryRandomId() *modelsb.CategoryBuilder {
-	id, err := uuid.NewRandom()
-
-	if nil != err {
-		panic(err)
-	}
-
 	return modelsb.NewCategory().
-		WithId(id)
+		WithId(uuidgen.Generate())
 }
 
-func CategoryWithParentRandomId(parent models.Category) *modelsb.CategoryBuilder {
-	id, err := uuid.NewRandom()
-
-	if nil != err {
-		panic(err)
-	}
-
-	return modelsb.NewCategory().
-		WithId(id).
-		WithParentId(nullable.Some(parent.Id))
+func CategoryWithParentId(parentId uuid.UUID) *modelsb.CategoryBuilder {
+	return CategoryRandomId().
+		WithParentId(nullable.Some(parentId))
 }
 
-func CategoryToPath(path []*modelsb.CategoryBuilder) []models.Category {
+func CategoryToPath(path ...*modelsb.CategoryBuilder) []models.Category {
 	out := make([]models.Category, len(path))
 
 	for i, c := range path {
@@ -51,7 +39,7 @@ func CategoryPath(path ...string) []*modelsb.CategoryBuilder {
 	out[0] = previous
 
 	for i, name := range path[1:] {
-		previous = CategoryWithParentRandomId(previous.Build()).WithName(name)
+		previous = CategoryWithParentId(previous.Build().Id).WithName(name)
 		out[i+1] = previous
 	}
 
