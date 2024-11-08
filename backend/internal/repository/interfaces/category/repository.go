@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/category/repository.go
+
 type IRepository interface {
 	GetAll() (collection.Collection[models.Category], error)
 	GetPath(leaf uuid.UUID) (collection.Collection[models.Category], error)

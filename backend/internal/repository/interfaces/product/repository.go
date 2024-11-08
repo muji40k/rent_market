@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/product/repository.go
+
 type Sort uint
 
 const (

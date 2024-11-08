@@ -1,32 +1,31 @@
 package category_test
 
 import (
-	// "errors"
+	"errors"
 	models_om "rent_service/builders/mothers/domain/models"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/logic/services/errors/cmnerrors"
-	defcategory "rent_service/internal/logic/services/implementations/defservices/category"
+	defcategory "rent_service/internal/logic/services/implementations/defservices/services/category"
 	"rent_service/internal/logic/services/interfaces/category"
 	"rent_service/internal/misc/types/collection"
 	category_pmock "rent_service/internal/repository/context/mock/category"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
-	category_mock "rent_service/internal/repository/implementation/mock/repositories/category"
-	"slices"
+	category_mock "rent_service/internal/repository/implementation/mock/category"
 
-	// "slices"
+	"slices"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
+	"go.uber.org/mock/gomock"
 )
 
-type CategoryServiceSuite struct {
-	suite.Suite
-}
-
-func getService(f func(repository *category_mock.MockRepository)) category.IService {
-	repo := category_mock.New()
+func GetService(
+	ctrl *gomock.Controller,
+	f func(repository *category_mock.MockIRepository),
+) category.IService {
+	repo := category_mock.NewMockIRepository(ctrl)
 
 	if nil != f {
 		f(repo)
@@ -35,25 +34,77 @@ func getService(f func(repository *category_mock.MockRepository)) category.IServ
 	return defcategory.New(category_pmock.New(repo))
 }
 
-func (self *CategoryServiceSuite) BeforeEach(t provider.T) {
+func generateDefaultPath(
+	t provider.T,
+	ctrl *gomock.Controller,
+) (category.IService, []models.Category, []category.Category) {
+	var service category.IService
+	var categories []models.Category
+	var reference []category.Category
+
+	t.WithNewStep("Create reference categories", func(sCtx provider.StepCtx) {
+		categories = models_om.CategoryToPath(models_om.CategoryDefaultPath()...)
+		reference = make([]category.Category, len(categories))
+		for i, v := range categories {
+			reference[i] = category.Category{
+				Id:       v.Id,
+				ParentId: v.ParentId,
+				Name:     v.Name,
+			}
+		}
+	})
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		service = GetService(ctrl, func(repo *category_mock.MockIRepository) {
+			repo.EXPECT().GetPath(gomock.Any()).
+				DoAndReturn(func(leaf uuid.UUID) (collection.Collection[models.Category], error) {
+					if i := slices.IndexFunc(categories, func(c models.Category) bool {
+						return leaf == c.Id
+					}); 0 <= i {
+						return collection.SliceCollection(categories[0 : i+1]), nil
+					} else {
+						return nil, repo_errors.NotFound("category_id")
+					}
+				}).
+				MinTimes(1)
+		})
+	})
+
+	return service, categories, reference
+}
+
+type CategoryServiceTestSuite struct {
+	suite.Suite
+}
+
+func (self *CategoryServiceTestSuite) BeforeEach(t provider.T) {
 	t.AddParentSuite("DefServices")
 	t.Epic("Default services implementation")
 	t.Feature("Category service")
 }
 
-func (self *CategoryServiceSuite) describeList(t provider.T, title string, description string) {
+func describeListCategories(t provider.T, title string, description string) {
 	t.AddSubSuite("ListCategories")
 	t.Story("List all")
 	t.Title(title)
 	t.Description(description)
 }
 
-func (self *CategoryServiceSuite) TestListCategoriesPositive(t provider.T) {
+func describeGetFullCategory(t provider.T, title string, description string) {
+	t.AddSubSuite("GetFullCategory")
+	t.Story("List path to leaf")
+	t.Title(title)
+	t.Description(description)
+}
+
+func (self *CategoryServiceTestSuite) TestListCategoriesPositive(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 	var categories []models.Category
 	var reference []category.Category
 	var service category.IService
 
-	self.describeList(t,
+	describeListCategories(t,
 		"Simple return all test",
 		"Checks that list method calls repository and doesn't return error",
 	)
@@ -73,10 +124,10 @@ func (self *CategoryServiceSuite) TestListCategoriesPositive(t provider.T) {
 		})
 
 		t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-			service = getService(func(builder *category_mock.MockRepository) {
-				builder.WithGetAll(func() (collection.Collection[models.Category], error) {
-					return collection.SliceCollection(categories), nil
-				})
+			service = GetService(ctrl, func(repo *category_mock.MockIRepository) {
+				repo.EXPECT().GetAll().
+					Return(collection.SliceCollection(categories), nil).
+					MinTimes(1)
 			})
 		})
 	})
@@ -96,10 +147,12 @@ func (self *CategoryServiceSuite) TestListCategoriesPositive(t provider.T) {
 	)
 }
 
-func (self *CategoryServiceSuite) TestListCategoriesInternalError(t provider.T) {
+func (self *CategoryServiceTestSuite) TestListCategoriesInternalError(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 	var service category.IService
 
-	self.describeList(t,
+	describeListCategories(t,
 		"Error mappging",
 		"Checks that any error is mapped to Interanal:DataAccess error",
 	)
@@ -107,7 +160,11 @@ func (self *CategoryServiceSuite) TestListCategoriesInternalError(t provider.T) 
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
 		t.WithNewStep("Create empty service", func(sCtx provider.StepCtx) {
-			service = getService(nil)
+			service = GetService(ctrl, func(repo *category_mock.MockIRepository) {
+				repo.EXPECT().GetAll().
+					Return(nil, errors.New("Some Internal Error")).
+					MinTimes(1)
+			})
 		})
 	})
 
@@ -127,59 +184,21 @@ func (self *CategoryServiceSuite) TestListCategoriesInternalError(t provider.T) 
 	t.Assert().ErrorAs(ierr, &derr, "Error is data access")
 }
 
-func (self *CategoryServiceSuite) describeFull(t provider.T, title string, description string) {
-	t.AddSubSuite("GetFullCategory")
-	t.Story("List path to leaf")
-	t.Title(title)
-	t.Description(description)
-}
-
-func generateDefaultPath(
-	t provider.T,
-	categories *[]models.Category,
-	reference *[]category.Category,
-	service *category.IService,
-) {
-	t.WithNewStep("Create reference categories", func(sCtx provider.StepCtx) {
-		*categories = models_om.CategoryToPath(models_om.CategoryDefaultPath()...)
-		*reference = make([]category.Category, len(*categories))
-		for i, v := range *categories {
-			(*reference)[i] = category.Category{
-				Id:       v.Id,
-				ParentId: v.ParentId,
-				Name:     v.Name,
-			}
-		}
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		*service = getService(func(builder *category_mock.MockRepository) {
-			builder.WithGetPath(func(leaf uuid.UUID) (collection.Collection[models.Category], error) {
-				if i := slices.IndexFunc(*categories, func(c models.Category) bool {
-					return leaf == c.Id
-				}); 0 <= i {
-					return collection.SliceCollection((*categories)[0 : i+1]), nil
-				} else {
-					return nil, repo_errors.NotFound("category_id")
-				}
-			})
-		})
-	})
-}
-
-func (self *CategoryServiceSuite) TestGetFullPathPositive(t provider.T) {
+func (self *CategoryServiceTestSuite) TestGetFullCategoryPositive(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 	var categories []models.Category
 	var reference []category.Category
 	var service category.IService
 
-	self.describeFull(t,
+	describeGetFullCategory(t,
 		"Simple return predefined test",
 		"Checks that list method calls repository and doesn't return error",
 	)
 
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
-		generateDefaultPath(t, &categories, &reference, &service)
+		service, categories, reference = generateDefaultPath(t, ctrl)
 	})
 
 	// Act
@@ -197,20 +216,21 @@ func (self *CategoryServiceSuite) TestGetFullPathPositive(t provider.T) {
 	)
 }
 
-func (self *CategoryServiceSuite) TestGetFullPathNotFound(t provider.T) {
+func (self *CategoryServiceTestSuite) TestGetFullCategoryNotFound(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 	var categories []models.Category
-	var reference []category.Category
 	var service category.IService
 	var id uuid.UUID
 
-	self.describeFull(t,
+	describeGetFullCategory(t,
 		"Category not found",
 		"Not found must be returned if unknown id is specified",
 	)
 
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
-		generateDefaultPath(t, &categories, &reference, &service)
+		service, categories, _ = generateDefaultPath(t, ctrl)
 
 		t.WithNewStep("Generate unknown id", func(sCtx provider.StepCtx) {
 			value, err := uuid.NewRandom()
@@ -245,18 +265,33 @@ func (self *CategoryServiceSuite) TestGetFullPathNotFound(t provider.T) {
 	t.Assert().ErrorAs(err, &nferr, "Error is not found")
 }
 
-func (self *CategoryServiceSuite) TestGetFullPathInternalError(t provider.T) {
-	var service category.IService
+func (self *CategoryServiceTestSuite) TestGetFullCategoryInternalError(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	self.describeFull(t,
+	var service category.IService
+	var id uuid.UUID
+
+	describeGetFullCategory(t,
 		"Error mappging",
 		"Checks that error is mapped to Interanal:DataAccess error",
 	)
 
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
+		t.WithNewStep("Generate some uuid", func(sCtx provider.StepCtx) {
+			var err error
+			id, err = uuid.NewRandom()
+			sCtx.Require().Nil(err)
+		})
+
 		t.WithNewStep("Create empty service", func(sCtx provider.StepCtx) {
-			service = getService(nil)
+			service = GetService(ctrl, func(repo *category_mock.MockIRepository) {
+				repo.EXPECT().GetPath(gomock.Any()).
+					Return(nil, errors.New("Some Internal Error")).
+					MinTimes(1)
+			})
+
 		})
 	})
 
@@ -264,7 +299,7 @@ func (self *CategoryServiceSuite) TestGetFullPathInternalError(t provider.T) {
 	var err error
 
 	t.WithNewStep("Get path to leaf", func(sCtx provider.StepCtx) {
-		_, err = service.ListCategories()
+		_, err = service.GetFullCategory(id)
 	})
 
 	// Assert
@@ -276,7 +311,7 @@ func (self *CategoryServiceSuite) TestGetFullPathInternalError(t provider.T) {
 	t.Assert().ErrorAs(ierr, &derr, "Error is data access")
 }
 
-func TestCategorySuiteRunner(t *testing.T) {
-	suite.RunSuite(t, new(CategoryServiceSuite))
+func TestCategoryServiceTestSuiteRunner(t *testing.T) {
+	suite.RunSuite(t, new(CategoryServiceTestSuite))
 }
 

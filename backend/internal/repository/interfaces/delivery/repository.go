@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/delivery/repository.go
+
 type IRepository interface {
 	Create(delivery requests.Delivery) (requests.Delivery, error)
 

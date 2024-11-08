@@ -2,10 +2,11 @@ package user
 
 import (
 	"rent_service/internal/domain/models"
-	// "rent_service/internal/misc/types/collection"
 
 	"github.com/google/uuid"
 )
+
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/user/repository.go
 
 type IRepository interface {
 	Create(user models.User) (models.User, error)

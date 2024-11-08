@@ -2,10 +2,12 @@ package review
 
 import (
 	"rent_service/internal/domain/models"
-	. "rent_service/internal/misc/types/collection"
+	"rent_service/internal/misc/types/collection"
 
 	"github.com/google/uuid"
 )
+
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/review/repository.go
 
 type Sort uint
 
@@ -27,6 +29,6 @@ type Filter struct {
 type IRepository interface {
 	Create(review models.Review) (models.Review, error)
 
-	GetWithFilter(filter Filter, sort Sort) (Collection[models.Review], error)
+	GetWithFilter(filter Filter, sort Sort) (collection.Collection[models.Review], error)
 }
 

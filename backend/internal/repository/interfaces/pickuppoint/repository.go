@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/pickuppoint/repository.go
+
 type IRepository interface {
 	GetById(pickUpPointId uuid.UUID) (models.PickUpPoint, error)
 	GetAll() (collection.Collection[models.PickUpPoint], error)

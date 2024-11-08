@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/role/repository.go
+
 type IAdministratorRepository interface {
 	GetByUserId(userId uuid.UUID) (models.Administrator, error)
 }

@@ -2,10 +2,12 @@ package instance
 
 import (
 	"rent_service/internal/domain/models"
-	. "rent_service/internal/misc/types/collection"
+	"rent_service/internal/misc/types/collection"
 
 	"github.com/google/uuid"
 )
+
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/instance/repository.go
 
 type Filter struct {
 	ProductId uuid.UUID
@@ -34,7 +36,7 @@ type IRepository interface {
 	GetWithFilter(
 		filter Filter,
 		sort Sort,
-	) (Collection[models.Instance], error)
+	) (collection.Collection[models.Instance], error)
 }
 
 type IPayPlansRepository interface {
@@ -51,6 +53,6 @@ type IPayPlansRepository interface {
 
 type IPhotoRepository interface {
 	Create(instanceId uuid.UUID, photoId uuid.UUID) error
-	GetByInstanceId(instanceId uuid.UUID) (Collection[uuid.UUID], error)
+	GetByInstanceId(instanceId uuid.UUID) (collection.Collection[uuid.UUID], error)
 }
 

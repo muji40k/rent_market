@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=repository.go -destination=../../implementation/mock/photo/repository.go
+
 type IRepository interface {
 	Create(photo models.Photo) (models.Photo, error)
 
