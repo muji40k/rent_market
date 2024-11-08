@@ -5,9 +5,9 @@ import (
 	v1 "rent_service/internal/factory/services/v1"
 	"rent_service/internal/factory/services/v1/deffactory"
 	"rent_service/internal/logic/delivery"
-	"rent_service/internal/logic/services/implementations/defservices/misc/codegen"
-	"rent_service/internal/logic/services/implementations/defservices/misc/photoregistry"
-	"rent_service/internal/logic/services/implementations/defservices/payment"
+	"rent_service/internal/logic/services/implementations/defservices/codegen"
+	"rent_service/internal/logic/services/implementations/defservices/photoregistry/implementations/defregistry"
+	"rent_service/internal/logic/services/implementations/defservices/services/payment"
 	rv1 "rent_service/internal/repository/context/v1"
 
 	"github.com/google/uuid"
@@ -16,7 +16,7 @@ import (
 type Builder struct {
 	repositoryContext *rv1.Context
 	codegen           codegen.IGenerator
-	photoStorage      photoregistry.IStorage
+	photoStorage      defregistry.IStorage
 	deliveryCreator   delivery.ICreator
 	paymentCheckers   map[uuid.UUID]payment.IRegistrationChecker
 }
@@ -37,7 +37,7 @@ func (self *Builder) WithCodegen(codegen codegen.IGenerator) *Builder {
 	return self
 }
 
-func (self *Builder) WithPhotoStorage(photoStorage photoregistry.IStorage) *Builder {
+func (self *Builder) WithPhotoStorage(photoStorage defregistry.IStorage) *Builder {
 	self.photoStorage = photoStorage
 	return self
 }

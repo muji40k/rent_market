@@ -9,8 +9,8 @@ import (
 	// Static initialization
 	delivery_composite "rent_service/internal/logic/delivery/implementations/composite"
 	delivery_dummy "rent_service/internal/logic/delivery/implementations/dummy"
-	checker_dummy "rent_service/internal/logic/services/implementations/defservices/misc/paymentcheckers/dummy"
-	"rent_service/internal/logic/services/implementations/defservices/payment"
+	checker_dummy "rent_service/internal/logic/services/implementations/defservices/paymentcheckers/dummy"
+	"rent_service/internal/logic/services/implementations/defservices/services/payment"
 	"rent_service/internal/repository/implementation/sql/hashers/md5"
 	"rent_service/internal/repository/implementation/sql/repositories/user"
 

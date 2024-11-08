@@ -5,9 +5,9 @@ import (
 	constructor "rent_service/constructors/service/factory/v1"
 	v1 "rent_service/internal/factory/services/v1"
 	"rent_service/internal/logic/delivery"
-	"rent_service/internal/logic/services/implementations/defservices/misc/codegen/simple"
-	"rent_service/internal/logic/services/implementations/defservices/misc/photoregistry/storages/local"
-	"rent_service/internal/logic/services/implementations/defservices/payment"
+	"rent_service/internal/logic/services/implementations/defservices/codegen/simple"
+	"rent_service/internal/logic/services/implementations/defservices/photoregistry/implementations/defregistry/storages/local"
+	"rent_service/internal/logic/services/implementations/defservices/services/payment"
 	rcontext "rent_service/internal/repository/context/v1"
 	"strings"
 

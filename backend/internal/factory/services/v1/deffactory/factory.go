@@ -3,25 +3,30 @@ package deffactory
 import (
 	cv1 "rent_service/internal/logic/context/v1"
 	delivery_creator "rent_service/internal/logic/delivery"
-	"rent_service/internal/logic/services/implementations/defservices/category"
-	"rent_service/internal/logic/services/implementations/defservices/delivery"
-	"rent_service/internal/logic/services/implementations/defservices/instance"
-	"rent_service/internal/logic/services/implementations/defservices/login"
-	"rent_service/internal/logic/services/implementations/defservices/misc/access"
-	"rent_service/internal/logic/services/implementations/defservices/misc/authenticator"
-	"rent_service/internal/logic/services/implementations/defservices/misc/authorizer"
-	"rent_service/internal/logic/services/implementations/defservices/misc/codegen"
-	"rent_service/internal/logic/services/implementations/defservices/misc/photoregistry"
-	"rent_service/internal/logic/services/implementations/defservices/misc/states"
-	"rent_service/internal/logic/services/implementations/defservices/payment"
-	"rent_service/internal/logic/services/implementations/defservices/period"
-	"rent_service/internal/logic/services/implementations/defservices/photo"
-	"rent_service/internal/logic/services/implementations/defservices/pickuppoint"
-	"rent_service/internal/logic/services/implementations/defservices/product"
-	"rent_service/internal/logic/services/implementations/defservices/provide"
-	"rent_service/internal/logic/services/implementations/defservices/rent"
-	"rent_service/internal/logic/services/implementations/defservices/storage"
-	"rent_service/internal/logic/services/implementations/defservices/user"
+	"rent_service/internal/logic/services/implementations/defservices/access"
+	"rent_service/internal/logic/services/implementations/defservices/access/implementations/defaccess"
+	"rent_service/internal/logic/services/implementations/defservices/authenticator"
+	"rent_service/internal/logic/services/implementations/defservices/authenticator/implementations/defauth"
+	"rent_service/internal/logic/services/implementations/defservices/authorizer"
+	"rent_service/internal/logic/services/implementations/defservices/authorizer/implementations/defauthorizer"
+	"rent_service/internal/logic/services/implementations/defservices/codegen"
+	"rent_service/internal/logic/services/implementations/defservices/photoregistry"
+	"rent_service/internal/logic/services/implementations/defservices/photoregistry/implementations/defregistry"
+	"rent_service/internal/logic/services/implementations/defservices/services/category"
+	"rent_service/internal/logic/services/implementations/defservices/services/delivery"
+	"rent_service/internal/logic/services/implementations/defservices/services/instance"
+	"rent_service/internal/logic/services/implementations/defservices/services/login"
+	"rent_service/internal/logic/services/implementations/defservices/services/payment"
+	"rent_service/internal/logic/services/implementations/defservices/services/period"
+	"rent_service/internal/logic/services/implementations/defservices/services/photo"
+	"rent_service/internal/logic/services/implementations/defservices/services/pickuppoint"
+	"rent_service/internal/logic/services/implementations/defservices/services/product"
+	"rent_service/internal/logic/services/implementations/defservices/services/provide"
+	"rent_service/internal/logic/services/implementations/defservices/services/rent"
+	"rent_service/internal/logic/services/implementations/defservices/services/storage"
+	"rent_service/internal/logic/services/implementations/defservices/services/user"
+	"rent_service/internal/logic/services/implementations/defservices/states"
+	"rent_service/internal/logic/services/implementations/defservices/states/implementations/defstates"
 	service_category "rent_service/internal/logic/services/interfaces/category"
 	service_delivery "rent_service/internal/logic/services/interfaces/delivery"
 	service_instance "rent_service/internal/logic/services/interfaces/instance"
@@ -41,30 +46,30 @@ import (
 )
 
 type accessors struct {
-	isntance         *access.Instance
-	pickUpPoint      *access.PickUpPoint
-	provision        *access.Provision
-	provisionRequest *access.ProvisionRequest
-	provisionRevoke  *access.ProvisionRevoke
-	rent             *access.Rent
-	rentRequest      *access.RentRequest
-	rentReturn       *access.RentReturn
-	renter           *access.Renter
-	user             *access.User
+	isntance         access.IInstance
+	pickUpPoint      access.IPickUpPoint
+	provision        access.IProvision
+	provisionRequest access.IProvisionRequest
+	provisionRevoke  access.IProvisionRevoke
+	rent             access.IRent
+	rentRequest      access.IRentRequest
+	rentReturn       access.IRentReturn
+	renter           access.IRenter
+	user             access.IUser
 }
 
 type static struct {
 	accessors     accessors
-	authenticator *authenticator.Authenticator
-	authorizer    *authorizer.Authorizer
-	registry      *photoregistry.Registry
-	stateMachine  *states.InstanceStateMachine
+	authenticator authenticator.IAuthenticator
+	authorizer    authorizer.IAuthorizer
+	stateMachine  states.IInstanceStateMachine
+	registry      photoregistry.IRegistry
 }
 
 type Factory struct {
 	repositories      *rv1.Context
 	generator         codegen.IGenerator
-	photoStorage      photoregistry.IStorage
+	registryStorage   defregistry.IStorage
 	deliveryCreator   delivery_creator.ICreator
 	payMethodCheckers map[uuid.UUID]payment.IRegistrationChecker
 	static            static
@@ -73,14 +78,14 @@ type Factory struct {
 func New(
 	repositories *rv1.Context,
 	generator codegen.IGenerator,
-	photoStorage photoregistry.IStorage,
+	registryStorage defregistry.IStorage,
 	deliveryCreator delivery_creator.ICreator,
 	payMethodCheckers map[uuid.UUID]payment.IRegistrationChecker,
 ) *Factory {
 	return &Factory{
 		repositories,
 		generator,
-		photoStorage,
+		registryStorage,
 		deliveryCreator,
 		payMethodCheckers,
 		static{},
@@ -124,17 +129,17 @@ func (self *Factory) ToFactories() cv1.Factories {
 
 func (self *Factory) Clear() {}
 
-func (self *Factory) CreateAuthenticator() *authenticator.Authenticator {
+func (self *Factory) CreateAuthenticator() authenticator.IAuthenticator {
 	if nil == self.static.authenticator {
-		self.static.authenticator = authenticator.New(self.repositories)
+		self.static.authenticator = defauth.New(self.repositories)
 	}
 
 	return self.static.authenticator
 }
 
-func (self *Factory) CreateAuthorizer() *authorizer.Authorizer {
+func (self *Factory) CreateAuthorizer() authorizer.IAuthorizer {
 	if nil == self.static.authorizer {
-		self.static.authorizer = authorizer.New(
+		self.static.authorizer = defauthorizer.New(
 			self.repositories,
 			self.repositories,
 			self.repositories,
@@ -144,21 +149,9 @@ func (self *Factory) CreateAuthorizer() *authorizer.Authorizer {
 	return self.static.authorizer
 }
 
-func (self *Factory) CreatePhotoRegistry() *photoregistry.Registry {
-	if nil == self.static.registry {
-		self.static.registry = photoregistry.New(
-			self.repositories,
-			self.repositories,
-			self.photoStorage,
-		)
-	}
-
-	return self.static.registry
-}
-
-func (self *Factory) CreateStateMachine() *states.InstanceStateMachine {
+func (self *Factory) CreateStateMachine() states.IInstanceStateMachine {
 	if nil == self.static.stateMachine {
-		self.static.stateMachine = states.New(
+		self.static.stateMachine = defstates.New(
 			self.deliveryCreator,
 			self.generator,
 			self.repositories,
@@ -179,9 +172,21 @@ func (self *Factory) CreateStateMachine() *states.InstanceStateMachine {
 	return self.static.stateMachine
 }
 
-func (self *Factory) CreateInstanceAccessor() *access.Instance {
+func (self *Factory) CreatePhotoRegistry() photoregistry.IRegistry {
+	if nil == self.static.registry {
+		self.static.registry = defregistry.New(
+			self.repositories,
+			self.repositories,
+			self.registryStorage,
+		)
+	}
+
+	return self.static.registry
+}
+
+func (self *Factory) CreateInstanceAccessor() access.IInstance {
 	if nil == self.static.accessors.isntance {
-		self.static.accessors.isntance = access.NewInstance(
+		self.static.accessors.isntance = defaccess.NewInstance(
 			self.CreateAuthorizer(),
 			self.repositories,
 			self.repositories,
@@ -192,9 +197,9 @@ func (self *Factory) CreateInstanceAccessor() *access.Instance {
 	return self.static.accessors.isntance
 }
 
-func (self *Factory) CreatePickUpPointAccessor() *access.PickUpPoint {
+func (self *Factory) CreatePickUpPointAccessor() access.IPickUpPoint {
 	if nil == self.static.accessors.pickUpPoint {
-		self.static.accessors.pickUpPoint = access.NewPickUpPoint(
+		self.static.accessors.pickUpPoint = defaccess.NewPickUpPoint(
 			self.repositories,
 			self.CreateAuthorizer(),
 		)
@@ -203,9 +208,9 @@ func (self *Factory) CreatePickUpPointAccessor() *access.PickUpPoint {
 	return self.static.accessors.pickUpPoint
 }
 
-func (self *Factory) CreateProvisionAccessor() *access.Provision {
+func (self *Factory) CreateProvisionAccessor() access.IProvision {
 	if nil == self.static.accessors.provision {
-		self.static.accessors.provision = access.NewProvision(
+		self.static.accessors.provision = defaccess.NewProvision(
 			self.repositories,
 			self.CreateAuthorizer(),
 		)
@@ -214,9 +219,9 @@ func (self *Factory) CreateProvisionAccessor() *access.Provision {
 	return self.static.accessors.provision
 }
 
-func (self *Factory) CreateProvisionRequestAccessor() *access.ProvisionRequest {
+func (self *Factory) CreateProvisionRequestAccessor() access.IProvisionRequest {
 	if nil == self.static.accessors.provisionRequest {
-		self.static.accessors.provisionRequest = access.NewProvisionRequest(
+		self.static.accessors.provisionRequest = defaccess.NewProvisionRequest(
 			self.repositories,
 			self.CreateAuthorizer(),
 		)
@@ -225,9 +230,9 @@ func (self *Factory) CreateProvisionRequestAccessor() *access.ProvisionRequest {
 	return self.static.accessors.provisionRequest
 }
 
-func (self *Factory) CreateProvisionRevokeAccessor() *access.ProvisionRevoke {
+func (self *Factory) CreateProvisionRevokeAccessor() access.IProvisionRevoke {
 	if nil == self.static.accessors.provisionRevoke {
-		self.static.accessors.provisionRevoke = access.NewProvisionRevoke(
+		self.static.accessors.provisionRevoke = defaccess.NewProvisionRevoke(
 			self.repositories,
 			self.CreateAuthorizer(),
 		)
@@ -236,9 +241,9 @@ func (self *Factory) CreateProvisionRevokeAccessor() *access.ProvisionRevoke {
 	return self.static.accessors.provisionRevoke
 }
 
-func (self *Factory) CreateRentAccessor() *access.Rent {
+func (self *Factory) CreateRentAccessor() access.IRent {
 	if nil == self.static.accessors.rent {
-		self.static.accessors.rent = access.NewRent(
+		self.static.accessors.rent = defaccess.NewRent(
 			self.repositories,
 			self.CreateAuthorizer(),
 		)
@@ -247,9 +252,9 @@ func (self *Factory) CreateRentAccessor() *access.Rent {
 	return self.static.accessors.rent
 }
 
-func (self *Factory) CreateRentRequestAccessor() *access.RentRequest {
+func (self *Factory) CreateRentRequestAccessor() access.IRentRequest {
 	if nil == self.static.accessors.rentRequest {
-		self.static.accessors.rentRequest = access.NewRentRequest(
+		self.static.accessors.rentRequest = defaccess.NewRentRequest(
 			self.repositories,
 			self.CreateAuthorizer(),
 		)
@@ -258,9 +263,9 @@ func (self *Factory) CreateRentRequestAccessor() *access.RentRequest {
 	return self.static.accessors.rentRequest
 }
 
-func (self *Factory) CreateRentReturnAccessor() *access.RentReturn {
+func (self *Factory) CreateRentReturnAccessor() access.IRentReturn {
 	if nil == self.static.accessors.rentReturn {
-		self.static.accessors.rentReturn = access.NewRentReturn(
+		self.static.accessors.rentReturn = defaccess.NewRentReturn(
 			self.repositories,
 			self.CreateAuthorizer(),
 		)
@@ -269,17 +274,19 @@ func (self *Factory) CreateRentReturnAccessor() *access.RentReturn {
 	return self.static.accessors.rentReturn
 }
 
-func (self *Factory) CreateRenterAccessor() *access.Renter {
+func (self *Factory) CreateRenterAccessor() access.IRenter {
 	if nil == self.static.accessors.renter {
-		self.static.accessors.renter = access.NewRenter(self.CreateAuthorizer())
+		self.static.accessors.renter = defaccess.NewRenter(
+			self.CreateAuthorizer(),
+		)
 	}
 
 	return self.static.accessors.renter
 }
 
-func (self *Factory) CreateUserAccessor() *access.User {
+func (self *Factory) CreateUserAccessor() access.IUser {
 	if nil == self.static.accessors.user {
-		self.static.accessors.user = access.NewUser(
+		self.static.accessors.user = defaccess.NewUser(
 			self.repositories,
 			self.CreateAuthorizer(),
 		)
