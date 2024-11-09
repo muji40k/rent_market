@@ -13,6 +13,14 @@ func None[T any]() *Nullable[T] {
 	return &Nullable[T]{}
 }
 
+func FromPtr[T any](ptr *T) *Nullable[T] {
+	if nil == ptr {
+		return &Nullable[T]{}
+	} else {
+		return &Nullable[T]{*ptr, true}
+	}
+}
+
 func And[T any, F any](self *Nullable[T], value *Nullable[F]) *Nullable[F] {
 	if nil == self {
 		return nil

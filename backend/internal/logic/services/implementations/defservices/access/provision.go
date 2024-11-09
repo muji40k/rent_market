@@ -4,6 +4,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=provision.go -destination=implementations/mock/provision.go
+
 type IProvision interface {
 	Access(userId uuid.UUID, provisionId uuid.UUID) error
 }

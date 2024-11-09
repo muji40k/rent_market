@@ -207,7 +207,7 @@ func (self *service) SendDelivery(
 
 	var ids []uuid.UUID
 	if nil == err {
-		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = photoregistry.MoveFromTemps(self.registry, form.TempPhotos...)
 	}
 
 	if nil == err {
@@ -258,7 +258,7 @@ func (self *service) AcceptDelivery(
 
 	var ids []uuid.UUID
 	if nil == err {
-		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = photoregistry.MoveFromTemps(self.registry, form.TempPhotos...)
 	}
 
 	if nil == err {

@@ -6,8 +6,8 @@ import (
 	"rent_service/internal/factory/services/v1/deffactory"
 	"rent_service/internal/logic/delivery"
 	"rent_service/internal/logic/services/implementations/defservices/codegen"
+	"rent_service/internal/logic/services/implementations/defservices/paymentcheckers"
 	"rent_service/internal/logic/services/implementations/defservices/photoregistry/implementations/defregistry"
-	"rent_service/internal/logic/services/implementations/defservices/services/payment"
 	rv1 "rent_service/internal/repository/context/v1"
 
 	"github.com/google/uuid"
@@ -18,12 +18,12 @@ type Builder struct {
 	codegen           codegen.IGenerator
 	photoStorage      defregistry.IStorage
 	deliveryCreator   delivery.ICreator
-	paymentCheckers   map[uuid.UUID]payment.IRegistrationChecker
+	paymentCheckers   map[uuid.UUID]paymentcheckers.IRegistrationChecker
 }
 
 func New() *Builder {
 	return &Builder{
-		paymentCheckers: make(map[uuid.UUID]payment.IRegistrationChecker),
+		paymentCheckers: make(map[uuid.UUID]paymentcheckers.IRegistrationChecker),
 	}
 }
 
@@ -47,12 +47,12 @@ func (self *Builder) WithDeliveryCreator(deliveryCreator delivery.ICreator) *Bui
 	return self
 }
 
-func (self *Builder) WithPaymentChecker(checker payment.IRegistrationChecker) *Builder {
+func (self *Builder) WithPaymentChecker(checker paymentcheckers.IRegistrationChecker) *Builder {
 	self.paymentCheckers[checker.MethodId()] = checker
 	return self
 }
 
-func (self *Builder) WithPaymentCheckers(checkers map[uuid.UUID]payment.IRegistrationChecker) *Builder {
+func (self *Builder) WithPaymentCheckers(checkers map[uuid.UUID]paymentcheckers.IRegistrationChecker) *Builder {
 	if nil != checkers {
 		self.paymentCheckers = checkers
 	}

@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=authorizer.go -destination=implementations/mock/authorizer.go
+
 type IAuthorizer interface {
 	IsAdministrator(userId uuid.UUID) (models.Administrator, error)
 	IsRenter(userId uuid.UUID) (models.Renter, error)

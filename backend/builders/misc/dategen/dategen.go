@@ -34,14 +34,19 @@ func NewDate(year uint, month uint, day uint) Date {
 }
 
 func (self *formattable) String() string {
-	return fmt.Sprintf("%v-%v-%v", self.year, self.month, self.day)
+	return fmt.Sprintf("%04v-%02v-%02v", self.year, self.month, self.day)
 }
 
 func (self *Date) getTime() time.Time {
 	if nil == self.form && nil != self.time {
 		return *self.time
 	} else if nil != self.form && nil == self.time {
-		t, _ := time.Parse(format, self.form.String())
+		t, err := time.Parse(format, self.form.String())
+
+		if nil != err {
+			panic(err)
+		}
+
 		return t
 	} else {
 		panic("Unreachable state!")

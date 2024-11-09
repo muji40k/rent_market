@@ -6,8 +6,8 @@ import (
 	v1 "rent_service/internal/factory/services/v1"
 	"rent_service/internal/logic/delivery"
 	"rent_service/internal/logic/services/implementations/defservices/codegen/simple"
+	"rent_service/internal/logic/services/implementations/defservices/paymentcheckers"
 	"rent_service/internal/logic/services/implementations/defservices/photoregistry/implementations/defregistry/storages/local"
-	"rent_service/internal/logic/services/implementations/defservices/services/payment"
 	rcontext "rent_service/internal/repository/context/v1"
 	"strings"
 
@@ -28,7 +28,7 @@ type Config struct {
 func New(
 	parser Parser,
 	deliveries delivery.ICreator,
-	checkers map[uuid.UUID]payment.IRegistrationChecker,
+	checkers map[uuid.UUID]paymentcheckers.IRegistrationChecker,
 ) constructor.Provider {
 	return func() (string, constructor.Realisation) {
 		return "default", newConstructor(parser, deliveries, checkers)
@@ -38,7 +38,7 @@ func New(
 func newConstructor(
 	parser Parser,
 	deliveries delivery.ICreator,
-	checkers map[uuid.UUID]payment.IRegistrationChecker,
+	checkers map[uuid.UUID]paymentcheckers.IRegistrationChecker,
 ) constructor.Realisation {
 	return func(context *rcontext.Context) (v1.IFactory, error) {
 		var sfactory v1.IFactory

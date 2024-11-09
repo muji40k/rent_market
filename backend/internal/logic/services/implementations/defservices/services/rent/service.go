@@ -162,7 +162,7 @@ func (self *service) StartRent(token token.Token, form rent.StartForm) error {
 
 	var ids []uuid.UUID
 	if nil == err {
-		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = photoregistry.MoveFromTemps(self.registry, form.TempPhotos...)
 	}
 
 	if nil == err {
@@ -240,7 +240,7 @@ func (self *service) StopRent(token token.Token, form rent.StopForm) error {
 
 	var ids []uuid.UUID
 	if nil == err {
-		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = photoregistry.MoveFromTemps(self.registry, form.TempPhotos...)
 	}
 
 	if nil == err {

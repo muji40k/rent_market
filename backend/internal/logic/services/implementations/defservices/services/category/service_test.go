@@ -11,11 +11,13 @@ import (
 	category_pmock "rent_service/internal/repository/context/mock/category"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 	category_mock "rent_service/internal/repository/implementation/mock/category"
+	"rent_service/misc/testcommon"
 
 	"slices"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"go.uber.org/mock/gomock"
@@ -43,7 +45,9 @@ func generateDefaultPath(
 	var reference []category.Category
 
 	t.WithNewStep("Create reference categories", func(sCtx provider.StepCtx) {
-		categories = models_om.CategoryToPath(models_om.CategoryDefaultPath()...)
+		categories = testcommon.AssignParameter(sCtx, "categories",
+			models_om.CategoryToPath(models_om.CategoryDefaultPath()...),
+		)
 		reference = make([]category.Category, len(categories))
 		for i, v := range categories {
 			reference[i] = category.Category{
@@ -78,24 +82,21 @@ type CategoryServiceTestSuite struct {
 }
 
 func (self *CategoryServiceTestSuite) BeforeEach(t provider.T) {
-	t.AddParentSuite("DefServices")
-	t.Epic("Default services implementation")
-	t.Feature("Category service")
+	testcommon.SetBase(t,
+		"DefServices",
+		"Default services implementation",
+		"Category service",
+	)
 }
 
-func describeListCategories(t provider.T, title string, description string) {
-	t.AddSubSuite("ListCategories")
-	t.Story("List all")
-	t.Title(title)
-	t.Description(description)
-}
-
-func describeGetFullCategory(t provider.T, title string, description string) {
-	t.AddSubSuite("GetFullCategory")
-	t.Story("List path to leaf")
-	t.Title(title)
-	t.Description(description)
-}
+var describeListCategories = testcommon.MethodDescriptor(
+	"ListCategories",
+	"List All",
+)
+var describeGetFullCategory = testcommon.MethodDescriptor(
+	"GetFullCategory",
+	"List path to leaf",
+)
 
 func (self *CategoryServiceTestSuite) TestListCategoriesPositive(t provider.T) {
 	ctrl := gomock.NewController(t)
@@ -112,7 +113,9 @@ func (self *CategoryServiceTestSuite) TestListCategoriesPositive(t provider.T) {
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
 		t.WithNewStep("Create reference categories", func(sCtx provider.StepCtx) {
-			categories = models_om.CategoryToPath(models_om.CategoryDefaultPath()...)
+			categories = testcommon.AssignParameter(sCtx, "categories",
+				models_om.CategoryToPath(models_om.CategoryDefaultPath()...),
+			)
 			reference = make([]category.Category, len(categories))
 			for i, v := range categories {
 				reference[i] = category.Category{
@@ -207,7 +210,7 @@ func (self *CategoryServiceTestSuite) TestGetFullCategoryPositive(t provider.T) 
 
 	t.WithNewStep("Get path to leaf", func(sCtx provider.StepCtx) {
 		result, err = service.GetFullCategory(categories[len(categories)-1].Id)
-	})
+	}, allure.NewParameter("leaf", categories[len(categories)-1].Id))
 
 	// Assert
 	t.Require().Nil(err, "No error must be returned")
@@ -233,20 +236,15 @@ func (self *CategoryServiceTestSuite) TestGetFullCategoryNotFound(t provider.T) 
 		service, categories, _ = generateDefaultPath(t, ctrl)
 
 		t.WithNewStep("Generate unknown id", func(sCtx provider.StepCtx) {
-			value, err := uuid.NewRandom()
-
-			if nil != err {
-				t.Fatalf("Unable to generate uuid: %v", err)
-			}
+			var err error
+			id, err = uuid.NewRandom()
+			sCtx.Require().Nil(err, "Unable to generate uuid")
 
 			for slices.ContainsFunc(categories, func(c models.Category) bool {
-				return c.Id == value
+				return c.Id == id
 			}) {
-				value, err = uuid.NewRandom()
-
-				if nil != err {
-					t.Fatalf("Unable to generate uuid: %v", err)
-				}
+				id, err = uuid.NewRandom()
+				sCtx.Require().Nil(err, "Unable to generate uuid")
 			}
 		})
 	})
@@ -256,7 +254,7 @@ func (self *CategoryServiceTestSuite) TestGetFullCategoryNotFound(t provider.T) 
 
 	t.WithNewStep("Get path to leaf", func(sCtx provider.StepCtx) {
 		_, err = service.GetFullCategory(id)
-	})
+	}, allure.NewParameter("leaf", id))
 
 	// Assert
 	var nferr cmnerrors.ErrorNotFound
@@ -300,7 +298,7 @@ func (self *CategoryServiceTestSuite) TestGetFullCategoryInternalError(t provide
 
 	t.WithNewStep("Get path to leaf", func(sCtx provider.StepCtx) {
 		_, err = service.GetFullCategory(id)
-	})
+	}, allure.NewParameter("leaf", id))
 
 	// Assert
 	var ierr cmnerrors.ErrorInternal

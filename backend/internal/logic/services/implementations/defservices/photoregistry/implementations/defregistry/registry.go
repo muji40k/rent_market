@@ -131,23 +131,6 @@ func (self *Registry) MoveFromTemp(tempId uuid.UUID) (uuid.UUID, error) {
 	return photo.Id, err
 }
 
-func (self *Registry) MoveFromTemps(tempIds ...uuid.UUID) ([]uuid.UUID, error) {
-	var err error
-	out := make([]uuid.UUID, 0, len(tempIds))
-
-	for i := 0; nil == err && len(tempIds) > i; i++ {
-		id, cerr := self.MoveFromTemp(tempIds[i])
-
-		if nil == cerr {
-			out = append(out, id)
-		} else {
-			err = cerr
-		}
-	}
-
-	return out, err
-}
-
 func (self *Registry) ConvertPath(path string) string {
 	return self.storage.ConvertPath(path)
 }

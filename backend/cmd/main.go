@@ -9,8 +9,8 @@ import (
 	// Static initialization
 	delivery_composite "rent_service/internal/logic/delivery/implementations/composite"
 	delivery_dummy "rent_service/internal/logic/delivery/implementations/dummy"
+	"rent_service/internal/logic/services/implementations/defservices/paymentcheckers"
 	checker_dummy "rent_service/internal/logic/services/implementations/defservices/paymentcheckers/dummy"
-	"rent_service/internal/logic/services/implementations/defservices/services/payment"
 	"rent_service/internal/repository/implementation/sql/hashers/md5"
 	"rent_service/internal/repository/implementation/sql/repositories/user"
 
@@ -81,7 +81,7 @@ var delivery_creator = delivery_composite.New(
 )
 
 var cdummy = checker_dummy.New()
-var payment_checkers = map[uuid.UUID]payment.IRegistrationChecker{
+var payment_checkers = map[uuid.UUID]paymentcheckers.IRegistrationChecker{
 	cdummy.MethodId(): cdummy,
 }
 

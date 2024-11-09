@@ -8,6 +8,7 @@ import (
 	"rent_service/internal/logic/services/implementations/defservices/authenticator"
 	"rent_service/internal/logic/services/implementations/defservices/authorizer"
 	"rent_service/internal/logic/services/implementations/defservices/emptymathcer"
+	"rent_service/internal/logic/services/implementations/defservices/paymentcheckers"
 	"rent_service/internal/logic/services/interfaces/payment"
 	"rent_service/internal/logic/services/types/date"
 	"rent_service/internal/logic/services/types/token"
@@ -58,20 +59,15 @@ type userPayMethodRepoProviders struct {
 
 type userPayMethodService struct {
 	repos         userPayMethodRepoProviders
-	checkers      map[uuid.UUID]IRegistrationChecker
+	checkers      map[uuid.UUID]paymentcheckers.IRegistrationChecker
 	authenticator authenticator.IAuthenticator
 	authorizer    authorizer.IAuthorizer
-}
-
-type IRegistrationChecker interface {
-	MethodId() uuid.UUID
-	CheckPayerId(payerId string) error
 }
 
 func NewUserPayMethod(
 	authenticator authenticator.IAuthenticator,
 	authorizer authorizer.IAuthorizer,
-	checkers map[uuid.UUID]IRegistrationChecker,
+	checkers map[uuid.UUID]paymentcheckers.IRegistrationChecker,
 	payMethod user_provider.IPayMethodsProvider,
 ) payment.IUserPayMethodService {
 	return &userPayMethodService{

@@ -10,6 +10,7 @@ import (
 	"rent_service/internal/logic/services/implementations/defservices/authorizer"
 	"rent_service/internal/logic/services/implementations/defservices/authorizer/implementations/defauthorizer"
 	"rent_service/internal/logic/services/implementations/defservices/codegen"
+	"rent_service/internal/logic/services/implementations/defservices/paymentcheckers"
 	"rent_service/internal/logic/services/implementations/defservices/photoregistry"
 	"rent_service/internal/logic/services/implementations/defservices/photoregistry/implementations/defregistry"
 	"rent_service/internal/logic/services/implementations/defservices/services/category"
@@ -71,7 +72,7 @@ type Factory struct {
 	generator         codegen.IGenerator
 	registryStorage   defregistry.IStorage
 	deliveryCreator   delivery_creator.ICreator
-	payMethodCheckers map[uuid.UUID]payment.IRegistrationChecker
+	payMethodCheckers map[uuid.UUID]paymentcheckers.IRegistrationChecker
 	static            static
 }
 
@@ -80,7 +81,7 @@ func New(
 	generator codegen.IGenerator,
 	registryStorage defregistry.IStorage,
 	deliveryCreator delivery_creator.ICreator,
-	payMethodCheckers map[uuid.UUID]payment.IRegistrationChecker,
+	payMethodCheckers map[uuid.UUID]paymentcheckers.IRegistrationChecker,
 ) *Factory {
 	return &Factory{
 		repositories,

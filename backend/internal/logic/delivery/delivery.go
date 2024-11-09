@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=delivery.go -destination=implementations/mock/delivery.go
+
 type Delivery struct {
 	CompanyId          uuid.UUID
 	DeliveryId         string

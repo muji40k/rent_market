@@ -202,7 +202,7 @@ func (self *service) StartProvision(
 
 	var ids []uuid.UUID
 	if nil == err {
-		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = photoregistry.MoveFromTemps(self.registry, form.TempPhotos...)
 	}
 
 	if nil == err {
@@ -281,7 +281,7 @@ func (self *service) StopProvision(
 
 	var ids []uuid.UUID
 	if nil == err {
-		ids, err = self.registry.MoveFromTemps(form.TempPhotos...)
+		ids, err = photoregistry.MoveFromTemps(self.registry, form.TempPhotos...)
 	}
 
 	if nil == err {

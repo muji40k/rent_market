@@ -12,6 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=instance_state.go -destination=implementations/mock/instance_state.go
+
 type IInstanceStateMachine interface {
 	CreateProvisionRequest(renterId uuid.UUID, form provide.RequestCreateForm) (requests.Provide, error)
 	RejectProvisionRequest(requestId uuid.UUID) error
