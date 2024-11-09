@@ -1,1 +1,1 @@
-../../../../backend/internal/logic/services/implementations/defservices/misc/paymentcheckers/dummy/insert.sql
+../../../../backend/internal/logic/services/implementations/defservices/paymentcheckers/dummy/insert.sql
