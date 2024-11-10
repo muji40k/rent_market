@@ -46,7 +46,7 @@ type PeriodServiceTestSuite struct {
 func (self *PeriodServiceTestSuite) BeforeEach(t provider.T) {
 	testcommon.SetBase(t,
 		"DefServices",
-		"Default period implementation",
+		"Default services implementation",
 		"Period service",
 	)
 }

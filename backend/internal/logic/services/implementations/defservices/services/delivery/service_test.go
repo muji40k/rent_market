@@ -161,7 +161,7 @@ type DeliveryServiceTestSuite struct {
 func (self *DeliveryServiceTestSuite) BeforeEach(t provider.T) {
 	testcommon.SetBase(t,
 		"DefServices",
-		"Default delivery implementations",
+		"Default services implementation",
 		"Delivery service",
 	)
 }
@@ -1460,7 +1460,7 @@ func MapDeliveryCompany(value *models.DeliveryCompany) delivery.DeliveryCompany 
 func (self *DeliveryCompanyServiceTestSuite) BeforeEach(t provider.T) {
 	testcommon.SetBase(t,
 		"DefServices",
-		"Default delivery company implementations",
+		"Default services implementation",
 		"Delivery Company service",
 	)
 }
