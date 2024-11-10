@@ -2,6 +2,7 @@ package category_test
 
 import (
 	"errors"
+	"rent_service/builders/misc/uuidgen"
 	models_om "rent_service/builders/mothers/domain/models"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/logic/services/errors/cmnerrors"
@@ -236,15 +237,12 @@ func (self *CategoryServiceTestSuite) TestGetFullCategoryNotFound(t provider.T) 
 		service, categories, _ = generateDefaultPath(t, ctrl)
 
 		t.WithNewStep("Generate unknown id", func(sCtx provider.StepCtx) {
-			var err error
-			id, err = uuid.NewRandom()
-			sCtx.Require().Nil(err, "Unable to generate uuid")
+			id = uuidgen.Generate()
 
 			for slices.ContainsFunc(categories, func(c models.Category) bool {
 				return c.Id == id
 			}) {
-				id, err = uuid.NewRandom()
-				sCtx.Require().Nil(err, "Unable to generate uuid")
+				id = uuidgen.Generate()
 			}
 		})
 	})
@@ -278,9 +276,7 @@ func (self *CategoryServiceTestSuite) TestGetFullCategoryInternalError(t provide
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
 		t.WithNewStep("Generate some uuid", func(sCtx provider.StepCtx) {
-			var err error
-			id, err = uuid.NewRandom()
-			sCtx.Require().Nil(err)
+			id = uuidgen.Generate()
 		})
 
 		t.WithNewStep("Create empty service", func(sCtx provider.StepCtx) {
