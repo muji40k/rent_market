@@ -2,6 +2,7 @@ package category_test
 
 import (
 	"errors"
+	"rent_service/builders/misc/collect"
 	"rent_service/builders/misc/uuidgen"
 	models_om "rent_service/builders/mothers/domain/models"
 	"rent_service/internal/domain/models"
@@ -37,6 +38,14 @@ func GetService(
 	return defcategory.New(category_pmock.New(repo))
 }
 
+func MapCategory(value *models.Category) category.Category {
+	return category.Category{
+		Id:       value.Id,
+		ParentId: value.ParentId,
+		Name:     value.Name,
+	}
+}
+
 func generateDefaultPath(
 	t provider.T,
 	ctrl *gomock.Controller,
@@ -47,16 +56,14 @@ func generateDefaultPath(
 
 	t.WithNewStep("Create reference categories", func(sCtx provider.StepCtx) {
 		categories = testcommon.AssignParameter(sCtx, "categories",
-			models_om.CategoryToPath(models_om.CategoryDefaultPath()...),
+			collect.Do(models_om.CategoryDefaultPath()...),
 		)
-		reference = make([]category.Category, len(categories))
-		for i, v := range categories {
-			reference[i] = category.Category{
-				Id:       v.Id,
-				ParentId: v.ParentId,
-				Name:     v.Name,
-			}
-		}
+
+		reference = collection.Collect(
+			collection.MapIterator(
+				MapCategory, collection.SliceIterator(categories),
+			),
+		)
 	})
 
 	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
@@ -115,7 +122,7 @@ func (self *CategoryServiceTestSuite) TestListCategoriesPositive(t provider.T) {
 	t.WithTestSetup(func(t provider.T) {
 		t.WithNewStep("Create reference categories", func(sCtx provider.StepCtx) {
 			categories = testcommon.AssignParameter(sCtx, "categories",
-				models_om.CategoryToPath(models_om.CategoryDefaultPath()...),
+				collect.Do(models_om.CategoryDefaultPath()...),
 			)
 			reference = make([]category.Category, len(categories))
 			for i, v := range categories {

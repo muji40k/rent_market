@@ -5,7 +5,6 @@ import (
 	modelsb "rent_service/builders/domain/models"
 	"rent_service/builders/misc/uuidgen"
 	"rent_service/internal/domain/models"
-	"rent_service/internal/misc/types/collection"
 
 	"github.com/google/uuid"
 )
@@ -37,15 +36,6 @@ func CharacteristicExampleNumeric(name string, value float64) *modelsb.Charachte
 	return CharacteristicRandomId().
 		WithName(name).
 		WithValue(fmt.Sprint(value))
-}
-
-func CharacteristicCollect(builders ...*modelsb.CharachteristicBuilder) []models.Charachteristic {
-	return collection.Collect(collection.MapIterator(
-		func(builder **modelsb.CharachteristicBuilder) models.Charachteristic {
-			return (*builder).Build()
-		},
-		collection.SliceIterator(builders),
-	))
 }
 
 func ProductCharacteristics(productId uuid.UUID, chars ...models.Charachteristic) *modelsb.ProductCharacteristicsBuilder {

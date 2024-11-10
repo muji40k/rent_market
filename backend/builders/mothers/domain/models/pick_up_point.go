@@ -46,17 +46,6 @@ func WorkingHoursWeek(start time.Duration, end time.Duration) []*modelsb.Working
 	)
 }
 
-func WorkingHoursCollect(builders ...*modelsb.WorkingHoursBuilder) []models.WorkingHours {
-	return collection.Collect(
-		collection.MapIterator(
-			func(i **modelsb.WorkingHoursBuilder) models.WorkingHours {
-				return (*i).Build()
-			},
-			collection.SliceIterator(builders),
-		),
-	)
-}
-
 func PickUpPointWorkingHours(pickUpPointId uuid.UUID, wh ...models.WorkingHours) *modelsb.PickUpPointWorkingHoursBuilder {
 	return modelsb.NewPickUpPointWorkingHours().
 		WithPickUpPointId(pickUpPointId).

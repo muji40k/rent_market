@@ -3,7 +3,6 @@ package models
 import (
 	modelsb "rent_service/builders/domain/models"
 	"rent_service/builders/misc/uuidgen"
-	"rent_service/internal/domain/models"
 	"rent_service/misc/nullable"
 
 	"github.com/google/uuid"
@@ -17,16 +16,6 @@ func CategoryRandomId() *modelsb.CategoryBuilder {
 func CategoryWithParentId(parentId uuid.UUID) *modelsb.CategoryBuilder {
 	return CategoryRandomId().
 		WithParentId(nullable.Some(parentId))
-}
-
-func CategoryToPath(path ...*modelsb.CategoryBuilder) []models.Category {
-	out := make([]models.Category, len(path))
-
-	for i, c := range path {
-		out[i] = c.Build()
-	}
-
-	return out
 }
 
 func CategoryPath(path ...string) []*modelsb.CategoryBuilder {

@@ -3,8 +3,6 @@ package models
 import (
 	modelsb "rent_service/builders/domain/models"
 	"rent_service/builders/misc/uuidgen"
-	"rent_service/internal/domain/models"
-	"rent_service/internal/misc/types/collection"
 	"time"
 )
 
@@ -47,16 +45,5 @@ func PeriodYear() *modelsb.PeriodBuilder {
 	return PeriodRandomId().
 		WithName("year").
 		WithDuration(360 * 24 * time.Hour)
-}
-
-func PeriodCollect(periods ...*modelsb.PeriodBuilder) []models.Period {
-	return collection.Collect(
-		collection.MapIterator(
-			func(period **modelsb.PeriodBuilder) models.Period {
-				return (*period).Build()
-			},
-			collection.SliceIterator(periods),
-		),
-	)
 }
 

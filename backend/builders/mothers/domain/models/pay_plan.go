@@ -27,17 +27,6 @@ func PayPlanWithPeriodIdAndPrice(
 		WithPrice(price)
 }
 
-func PayPlanCollect(builders ...*modelsb.PayPlanBuilder) []models.PayPlan {
-	return collection.Collect(
-		collection.MapIterator(
-			func(builder **modelsb.PayPlanBuilder) models.PayPlan {
-				return (*builder).Build()
-			},
-			collection.SliceIterator(builders),
-		),
-	)
-}
-
 func PayPlansWithPeriods(periods ...models.Period) []*modelsb.PayPlanBuilder {
 	scale := 0.3 + 4.7*rand.Float64()
 	sort.Slice(periods, func(i, j int) bool {

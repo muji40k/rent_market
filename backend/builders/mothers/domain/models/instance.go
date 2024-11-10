@@ -2,6 +2,7 @@ package models
 
 import (
 	modelsb "rent_service/builders/domain/models"
+	"rent_service/builders/misc/collect"
 	"rent_service/builders/misc/uuidgen"
 	"rent_service/internal/domain/models"
 
@@ -24,6 +25,6 @@ func InstanceExample(prefix string, productId uuid.UUID) *modelsb.InstanceBuilde
 func InstancePayPlansExample(instanceId uuid.UUID, periods ...models.Period) *modelsb.InstancePayPlansBuilder {
 	return modelsb.NewInstancePayPlans().
 		WithInstanceId(instanceId).
-		WithPayPlans(PayPlanCollect(PayPlansWithPeriods(periods...)...)...)
+		WithPayPlans(collect.Do(PayPlansWithPeriods(periods...)...)...)
 }
 
