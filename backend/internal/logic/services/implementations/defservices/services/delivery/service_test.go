@@ -2,6 +2,7 @@ package delivery_test
 
 import (
 	"errors"
+	"fmt"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/domain/requests"
 	"rent_service/internal/logic/services/errors/cmnerrors"
@@ -10,6 +11,7 @@ import (
 	"rent_service/internal/logic/services/types/date"
 	"rent_service/internal/logic/services/types/token"
 	"rent_service/internal/misc/types/collection"
+	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 	"rent_service/misc/nullable"
 	"rent_service/misc/testcommon"
 	"testing"
@@ -105,6 +107,19 @@ func (self *ServiceBuilder) WithPickUpPointAccess(f func(pickUpPointAcc *access.
 	return self
 }
 
+func (self *ServiceBuilder) GetService() delivery.IService {
+	return service.New(
+		self.states,
+		self.authenticator,
+		self.registry,
+		delivery_pmock.New(self.delivery),
+		instance_pmock.NewPhoto(self.photo),
+		rent_pmock.NewRequest(self.rentReq),
+		self.instanceAcc,
+		self.pickUpPointAcc,
+	)
+}
+
 func MapDelivery(value *requests.Delivery) delivery.Delivery {
 	return delivery.Delivery{
 		Id:         value.Id,
@@ -139,19 +154,6 @@ func MapDelivery(value *requests.Delivery) delivery.Delivery {
 	}
 }
 
-func (self *ServiceBuilder) GetService() delivery.IService {
-	return service.New(
-		self.states,
-		self.authenticator,
-		self.registry,
-		delivery_pmock.New(self.delivery),
-		instance_pmock.NewPhoto(self.photo),
-		rent_pmock.NewRequest(self.rentReq),
-		self.instanceAcc,
-		self.pickUpPointAcc,
-	)
-}
-
 type DeliveryServiceTestSuite struct {
 	suite.Suite
 }
@@ -162,7 +164,6 @@ func (self *DeliveryServiceTestSuite) BeforeEach(t provider.T) {
 		"Default delivery implementations",
 		"Delivery service",
 	)
-
 }
 
 var describeAcceptDelivery = testcommon.MethodDescriptor(
@@ -1413,7 +1414,333 @@ func (self *DeliveryServiceTestSuite) TestListDeliveriesByInstanceNotFound(t pro
 	t.Assert().ErrorAs(err, &nferr, "Error is NotFound")
 }
 
+type DeliveryCompanyServiceTestSuite struct {
+	suite.Suite
+}
+
+type CompanyServiceBuilder struct {
+	authenticator *authenticator.MockIAuthenticator
+	company       *rdelivery.MockICompanyRepository
+}
+
+func NewCompanyServiceBuilder(ctrl *gomock.Controller) *CompanyServiceBuilder {
+	return &CompanyServiceBuilder{
+		authenticator.NewMockIAuthenticator(ctrl),
+		rdelivery.NewMockICompanyRepository(ctrl),
+	}
+}
+
+func (self *CompanyServiceBuilder) WithAuthenticator(f func(authenticator *authenticator.MockIAuthenticator)) *CompanyServiceBuilder {
+	f(self.authenticator)
+	return self
+}
+
+func (self *CompanyServiceBuilder) WithDeliveryComanyRepository(f func(repo *rdelivery.MockICompanyRepository)) *CompanyServiceBuilder {
+	f(self.company)
+	return self
+}
+
+func (self *CompanyServiceBuilder) GetService() delivery.ICompanyService {
+	return service.NewCompany(
+		self.authenticator,
+		delivery_pmock.NewCompany(self.company),
+	)
+}
+
+func MapDeliveryCompany(value *models.DeliveryCompany) delivery.DeliveryCompany {
+	return delivery.DeliveryCompany{
+		Id:          value.Id,
+		Name:        value.Name,
+		Site:        value.Site,
+		PhoneNumber: value.PhoneNumber,
+		Description: value.Description,
+	}
+}
+
+func (self *DeliveryCompanyServiceTestSuite) BeforeEach(t provider.T) {
+	testcommon.SetBase(t,
+		"DefServices",
+		"Default delivery company implementations",
+		"Delivery Company service",
+	)
+}
+
+var describeGetDeliveryCompanyById = testcommon.MethodDescriptor(
+	"GetDeliveryCompanyById",
+	"Get delivery company by id",
+)
+
+var describeListDeliveryCompanies = testcommon.MethodDescriptor(
+	"ListDeliveryCompanies",
+	"List all delivery companies",
+)
+
+func (self *DeliveryCompanyServiceTestSuite) TestListDeliveryCompaniesPositive(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var service delivery.ICompanyService
+
+	var (
+		user              models.User
+		deliveryCompanies []models.DeliveryCompany
+		reference         []delivery.DeliveryCompany
+	)
+
+	describeListDeliveryCompanies(t,
+		"List all delivery companies",
+		"All compnanies must be returned withou error",
+	)
+
+	// Arrange
+	t.WithTestSetup(func(t provider.T) {
+		t.WithNewStep("Create user", func(sCtx provider.StepCtx) {
+			user = testcommon.AssignParameter(sCtx, "user",
+				models_om.UserDefault(nullable.None[string]()).Build(),
+			)
+		})
+
+		t.WithNewStep("Create delivery companies", func(sCtx provider.StepCtx) {
+			deliveryCompanies = testcommon.AssignParameter(sCtx, "deliveryCompanies",
+				collection.Collect(collection.MapIterator(
+					func(i *int) models.DeliveryCompany {
+						return models_om.DeliveryCompanyExample(fmt.Sprint(*i)).
+							Build()
+					},
+					collection.RangeIterator(collection.RangeEnd(5)),
+				)),
+			)
+
+			reference = collection.Collect(collection.MapIterator(
+				MapDeliveryCompany, collection.SliceIterator(deliveryCompanies),
+			))
+		})
+
+		t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+			service = NewCompanyServiceBuilder(ctrl).
+				WithAuthenticator(func(auth *authenticator.MockIAuthenticator) {
+					auth.EXPECT().LoginWithToken(token.Token(user.Token)).
+						Return(user, nil).
+						MinTimes(1)
+				}).
+				WithDeliveryComanyRepository(func(repo *rdelivery.MockICompanyRepository) {
+					repo.EXPECT().GetAll().
+						Return(collection.SliceCollection(deliveryCompanies), nil).
+						MinTimes(1)
+				}).
+				GetService()
+		})
+	})
+
+	// Act
+	var result collection.Collection[delivery.DeliveryCompany]
+	var err error
+
+	t.WithNewStep("Accept delivery",
+		func(sCtx provider.StepCtx) {
+			result, err = service.ListDeliveryCompanies(token.Token(user.Token))
+		},
+		allure.NewParameter("token", user.Token),
+	)
+
+	// Assert
+	t.Require().Nil(err, "No error must be returned")
+	t.Require().ElementsMatch(reference, collection.Collect(result.Iter()),
+		"All companies returned",
+	)
+}
+
+func (self *DeliveryCompanyServiceTestSuite) TestListDeliveryCompaniesInternalError(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var service delivery.ICompanyService
+	var user models.User
+
+	describeListDeliveryCompanies(t,
+		"Internal error during list all deliveries",
+		"Error must be mapped",
+	)
+
+	// Arrange
+	t.WithTestSetup(func(t provider.T) {
+		t.WithNewStep("Create user", func(sCtx provider.StepCtx) {
+			user = testcommon.AssignParameter(sCtx, "user",
+				models_om.UserDefault(nullable.None[string]()).Build(),
+			)
+		})
+
+		t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+			service = NewCompanyServiceBuilder(ctrl).
+				WithAuthenticator(func(auth *authenticator.MockIAuthenticator) {
+					auth.EXPECT().LoginWithToken(token.Token(user.Token)).
+						Return(user, nil).
+						MinTimes(1)
+				}).
+				WithDeliveryComanyRepository(func(repo *rdelivery.MockICompanyRepository) {
+					repo.EXPECT().GetAll().
+						Return(nil, errors.New("Some internal error")).
+						MinTimes(1)
+				}).
+				GetService()
+		})
+	})
+
+	// Act
+	var err error
+
+	t.WithNewStep("Accept delivery",
+		func(sCtx provider.StepCtx) {
+			_, err = service.ListDeliveryCompanies(token.Token(user.Token))
+		},
+		allure.NewParameter("token", user.Token),
+	)
+
+	// Assert
+	var ierr cmnerrors.ErrorInternal
+	var derr cmnerrors.ErrorDataAccess
+
+	t.Require().Error(err, "Error must be returned")
+	t.Assert().ErrorAs(err, &ierr, "Error is internal")
+	t.Assert().ErrorAs(ierr, &derr, "Error is data access")
+}
+
+func (self *DeliveryCompanyServiceTestSuite) TestGetDeliveryCompanyByIdPositive(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var service delivery.ICompanyService
+
+	var (
+		user            models.User
+		deliveryCompany models.DeliveryCompany
+		reference       delivery.DeliveryCompany
+	)
+
+	describeGetDeliveryCompanyById(t,
+		"Get delivery company by id",
+		"Value must be returned without error",
+	)
+
+	// Arrange
+	t.WithTestSetup(func(t provider.T) {
+		t.WithNewStep("Create user", func(sCtx provider.StepCtx) {
+			user = testcommon.AssignParameter(sCtx, "user",
+				models_om.UserDefault(nullable.None[string]()).Build(),
+			)
+		})
+
+		t.WithNewStep("Create delivery company", func(sCtx provider.StepCtx) {
+			deliveryCompany = testcommon.AssignParameter(sCtx, "deliveryCompany",
+				models_om.DeliveryCompanyExample("").Build(),
+			)
+
+			reference = MapDeliveryCompany(&deliveryCompany)
+		})
+
+		t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+			service = NewCompanyServiceBuilder(ctrl).
+				WithAuthenticator(func(auth *authenticator.MockIAuthenticator) {
+					auth.EXPECT().LoginWithToken(token.Token(user.Token)).
+						Return(user, nil).
+						MinTimes(1)
+				}).
+				WithDeliveryComanyRepository(func(repo *rdelivery.MockICompanyRepository) {
+					repo.EXPECT().GetById(deliveryCompany.Id).
+						Return(deliveryCompany, nil).
+						MinTimes(1)
+				}).
+				GetService()
+		})
+	})
+
+	// Act
+	var result delivery.DeliveryCompany
+	var err error
+
+	t.WithNewStep("Accept delivery",
+		func(sCtx provider.StepCtx) {
+			result, err = service.GetDeliveryCompanyById(token.Token(user.Token), deliveryCompany.Id)
+		},
+		allure.NewParameter("token", user.Token),
+		allure.NewParameter("companyId", deliveryCompany.Id),
+	)
+
+	// Assert
+	t.Require().Nil(err, "No error must be returned")
+	t.Require().Equal(reference, result, "Company returned")
+}
+
+func (self *DeliveryCompanyServiceTestSuite) TestGetDeliveryCompanyByIdNotFound(t provider.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var service delivery.ICompanyService
+
+	var (
+		user models.User
+		id   uuid.UUID
+	)
+
+	describeGetDeliveryCompanyById(t,
+		"Delivery company not found",
+		"Error NotFound must be returned",
+	)
+
+	// Arrange
+	t.WithTestSetup(func(t provider.T) {
+		t.WithNewStep("Create user", func(sCtx provider.StepCtx) {
+			user = testcommon.AssignParameter(sCtx, "user",
+				models_om.UserDefault(nullable.None[string]()).Build(),
+			)
+		})
+
+		t.WithNewStep("Create random id", func(sCtx provider.StepCtx) {
+			id = testcommon.AssignParameter(sCtx, "id", uuidgen.Generate())
+		})
+
+		t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+			service = NewCompanyServiceBuilder(ctrl).
+				WithAuthenticator(func(auth *authenticator.MockIAuthenticator) {
+					auth.EXPECT().LoginWithToken(token.Token(user.Token)).
+						Return(user, nil).
+						MinTimes(1)
+				}).
+				WithDeliveryComanyRepository(func(repo *rdelivery.MockICompanyRepository) {
+					repo.EXPECT().GetById(id).
+						Return(
+							models.DeliveryCompany{},
+							repo_errors.NotFound("delivery_company_id"),
+						).
+						MinTimes(1)
+				}).
+				GetService()
+		})
+	})
+
+	// Act
+	var err error
+
+	t.WithNewStep("Accept delivery",
+		func(sCtx provider.StepCtx) {
+			_, err = service.GetDeliveryCompanyById(token.Token(user.Token), id)
+		},
+		allure.NewParameter("token", user.Token),
+		allure.NewParameter("companyId", id),
+	)
+
+	// Assert
+	var nferr cmnerrors.ErrorNotFound
+
+	t.Require().NotNil(err, "Error must be returned")
+	t.Require().ErrorAs(err, &nferr, "Error is NotFound")
+}
+
 func TestDeliveryServiceTestSuiteRunner(t *testing.T) {
 	suite.RunSuite(t, new(DeliveryServiceTestSuite))
+}
+
+func TestDeliveryCompanyServiceTestSuiteRunner(t *testing.T) {
+	suite.RunSuite(t, new(DeliveryCompanyServiceTestSuite))
 }
 
