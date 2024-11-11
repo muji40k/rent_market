@@ -1,6 +1,11 @@
 package models
 
 import (
+	"bytes"
+	"image"
+	"image/color"
+	"image/png"
+	"math/rand/v2"
 	modelsb "rent_service/builders/domain/models"
 	"rent_service/builders/misc/uuidgen"
 	"rent_service/misc/nullable"
@@ -46,5 +51,40 @@ func TempPhotoExampleUploaded(
 ) *modelsb.TempPhotoBuilder {
 	return TempPhotoExampleEmpty(prefix, date).
 		WithPath(nullable.Some("/path/to/" + prefix))
+}
+
+func getRandomColor() color.NRGBA {
+	return color.NRGBA{
+		uint8(rand.Uint32() % 256),
+		uint8(rand.Uint32() % 256),
+		uint8(rand.Uint32() % 256),
+		255,
+	}
+}
+
+func ImagePNGContent(size *nullable.Nullable[int]) []byte {
+	var rsize = nullable.GetOr(size, 200)
+	img := image.NewRGBA(image.Rect(0, 0, rsize, rsize))
+
+	for i := range rsize {
+		for j := range rsize {
+			img.Set(i, j, getRandomColor())
+		}
+	}
+
+	var buf bytes.Buffer
+	var out []byte
+	err := png.Encode(&buf, img)
+
+	if nil == err {
+		out = make([]byte, buf.Len())
+		_, err = buf.Read(out)
+	}
+
+	if nil != err {
+		panic(err)
+	}
+
+	return out
 }
 

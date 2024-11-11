@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=registry.go -destination=storages/mock/storage.go
+
 type repoproviders struct {
 	photo photo_provider.IProvider
 	temp  photo_provider.ITempProvider
