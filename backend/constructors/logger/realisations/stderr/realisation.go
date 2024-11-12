@@ -3,7 +3,6 @@ package stderr
 import (
 	"os"
 	builder "rent_service/builders/logger/writer"
-	"rent_service/constructors"
 	constructor "rent_service/constructors/logger"
 	"rent_service/logger"
 )
@@ -21,7 +20,7 @@ func New(parser Parser) constructor.Provider {
 }
 
 func newConstructor(parser Parser) constructor.Realisation {
-	return func(_ *constructors.Cleaner) (logger.ILogger, error) {
+	return func() (logger.ILogger, error) {
 		var log logger.ILogger
 
 		var hostname string

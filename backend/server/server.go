@@ -1,8 +1,13 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
 	"rent_service/logger"
+	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -12,9 +17,11 @@ import (
 
 type Server struct {
 	engine     *gin.Engine
+	srv        *http.Server
 	host       string
 	port       uint
 	corsConfig cors.Config
+	logger     logger.ILogger
 }
 
 type IController interface {
@@ -78,12 +85,12 @@ func WithCors(fillers ...CorsFiller) Configurator {
 
 func WithLogger(log logger.ILogger) Configurator {
 	return func(server *Server) {
+		server.logger = log
 		server.engine.Use(func(ctx *gin.Context) {
 			start := time.Now()
 			path := ctx.Request.URL.Path
 			raw := ctx.Request.URL.RawQuery
 
-			// Process request
 			ctx.Next()
 
 			duration := time.Now().Sub(start)
@@ -96,7 +103,7 @@ func WithLogger(log logger.ILogger) Configurator {
 				path = path + "?" + raw
 			}
 
-			log.Logf(logger.INFO,
+			logger.Logf(log, logger.INFO,
 				"Request processed: %v - %v %v; client: %v; body: %v; duration: %v",
 				status, method, path, client, bodySize, duration,
 			)
@@ -123,10 +130,38 @@ func New(config ...Configurator) *Server {
 }
 
 func (self *Server) Run() {
-	self.engine.Run(fmt.Sprintf("%v:%v", self.host, self.port))
+	self.srv = &http.Server{
+		Addr:    fmt.Sprintf("%v:%v", self.host, self.port),
+		Handler: self.engine.Handler(),
+	}
+
+	go func() {
+		if err := self.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Logf(self.logger, logger.ERROR, "Listen error: %s", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	logger.Log(self.logger, logger.INFO, "Server shutting down")
 }
 
-func (self *Server) Clear() {}
+func (self *Server) Clear() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := self.srv.Shutdown(ctx); err != nil {
+		logger.Logf(self.logger, logger.ERROR, "Shutdown error: %s", err)
+	}
+
+	select {
+	case <-ctx.Done():
+		logger.Log(self.logger, logger.INFO, "Context timeout")
+	}
+
+	logger.Log(self.logger, logger.INFO, "Server down")
+}
 
 func (self *Server) Extend(controller IController) *Server {
 	controller.Register(self.engine)

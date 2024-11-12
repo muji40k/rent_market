@@ -27,9 +27,10 @@ func getStatus(status logger.Status) string {
 type writerLogger struct {
 	host   string
 	writer io.Writer
+	close  func()
 }
 
-func New(writer io.Writer, host *string) (logger.ILogger, error) {
+func New(writer io.Writer, host *string, closefn func()) (logger.ILogger, error) {
 	var hostname string
 	var err error
 
@@ -49,7 +50,7 @@ func New(writer io.Writer, host *string) (logger.ILogger, error) {
 
 	if nil == err {
 		write(writer, hostname, logger.INFO, "Logger start")
-		return &writerLogger{hostname, writer}, nil
+		return &writerLogger{hostname, writer, closefn}, nil
 	} else {
 		write(writer, "unknown", logger.ERROR, err.Error())
 		write(writer, "unknown", logger.INFO, "System will work without log")
@@ -67,5 +68,13 @@ func (self *writerLogger) Log(status logger.Status, msg any) {
 
 func (self *writerLogger) Logf(status logger.Status, format string, args ...any) {
 	write(self.writer, self.host, status, fmt.Sprintf(format, args...))
+}
+
+func (self *writerLogger) Close() {
+	write(self.writer, self.host, logger.INFO, "Log closed")
+
+	if nil != self.close {
+		self.close()
+	}
 }
 

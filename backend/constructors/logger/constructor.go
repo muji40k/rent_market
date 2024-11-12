@@ -6,7 +6,7 @@ import (
 	"rent_service/logger"
 )
 
-type Realisation func(cleaner *constructors.Cleaner) (logger.ILogger, error)
+type Realisation func() (logger.ILogger, error)
 type Provider func() (string, Realisation)
 
 type Parser func() (Config, error)
@@ -51,9 +51,13 @@ func (self *Constructor) Construct(
 			if nil != entry.logger {
 				log = entry.logger
 			} else {
-				log, err = entry.realisation(cleaner)
+				log, err = entry.realisation()
 				entry.logger = log
 				self.realisations[config.Type] = entry
+
+				if nil == err && nil != cleaner {
+					cleaner.AddStage(log.Close)
+				}
 			}
 		} else {
 			err = fmt.Errorf("Can't find logger of type '%v'", config.Type)

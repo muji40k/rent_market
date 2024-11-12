@@ -9,6 +9,7 @@ import (
 type WriterBuilder struct {
 	writer io.Writer
 	host   *string
+	close  func()
 }
 
 func New() *WriterBuilder {
@@ -31,7 +32,12 @@ func (self *WriterBuilder) WithHost(host *string) *WriterBuilder {
 	return self
 }
 
+func (self *WriterBuilder) WithClose(f func()) *WriterBuilder {
+	self.close = f
+	return self
+}
+
 func (self *WriterBuilder) Build() (logger.ILogger, error) {
-	return writer.New(self.writer, self.host)
+	return writer.New(self.writer, self.host, self.close)
 }
 
