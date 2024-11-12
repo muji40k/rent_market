@@ -23,7 +23,7 @@ func Log(log ILogger, status Status, msg any) {
 
 func Logf(log ILogger, status Status, format string, args ...any) {
 	if nil != log {
-		log.Logf(status, format, args)
+		log.Logf(status, format, args...)
 	}
 }
 
