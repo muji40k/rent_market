@@ -14,6 +14,12 @@ import (
 	"rent_service/internal/repository/implementation/sql/hashers/md5"
 	"rent_service/internal/repository/implementation/sql/repositories/user"
 
+	// Logger construction
+	logger_constructor "rent_service/constructors/logger"
+	stderr_logger_realisation "rent_service/constructors/logger/realisations/stderr"
+	logger_parser "rent_service/constructors/parsers/env/logger"
+	stderr_logger_parser "rent_service/constructors/parsers/env/logger/stderr"
+
 	// Application construction
 	application_parser "rent_service/constructors/parsers/env/application/v1"
 	server_parser "rent_service/constructors/parsers/env/application/v1/server"
@@ -86,6 +92,13 @@ var payment_checkers = map[uuid.UUID]payment.IRegistrationChecker{
 }
 
 func main() {
+	lconstructor := logger_constructor.New(
+		logger_parser.Parser,
+		stderr_logger_realisation.New(
+			stderr_logger_parser.Parser,
+		),
+	)
+
 	aconstructor := application_constructor.New(
 		application_parser.Parser,
 		server_realisation.New(
@@ -102,6 +115,7 @@ func main() {
 					),
 				),
 			),
+			lconstructor,
 			func(a authenticator.IAuthenticator, c *scontext.Context) (server.CorsFiller, server.IController) {
 				return categories.CorsFiller, categories.New(c)
 			},

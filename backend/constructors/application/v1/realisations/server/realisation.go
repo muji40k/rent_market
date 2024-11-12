@@ -6,7 +6,9 @@ import (
 	"rent_service/constructors"
 	constructor "rent_service/constructors/application/v1"
 	aconstructor "rent_service/constructors/application/v1/realisations/server/authenticators"
+	lconstructor "rent_service/constructors/logger"
 	scontext "rent_service/internal/logic/context/v1"
+	"rent_service/logger"
 	"rent_service/server"
 	"rent_service/server/authenticator"
 )
@@ -26,10 +28,11 @@ type Extender func(
 func New(
 	parser Parser,
 	authConstructor *aconstructor.Constructor,
+	loggerConstructor *lconstructor.Constructor,
 	extenders ...Extender,
 ) constructor.Provider {
 	return func() (string, constructor.Realisation) {
-		return "web", newConstructor(parser, authConstructor, extenders...)
+		return "web", newConstructor(parser, authConstructor, loggerConstructor, extenders...)
 	}
 }
 
@@ -50,11 +53,13 @@ func (self *cleanerWrap) Clear() {
 func newConstructor(
 	parser Parser,
 	authConstructor *aconstructor.Constructor,
+	loggerConstructor *lconstructor.Constructor,
 	extenders ...Extender,
 ) constructor.Realisation {
 	return func(context *scontext.Context) (application.IApplication, error) {
 		var wrap = &cleanerWrap{nil, constructors.NewCleaner()}
 		var auth authenticator.IAuthenticator
+		var log logger.ILogger
 		config, err := parser()
 
 		if nil == err {
@@ -62,9 +67,14 @@ func newConstructor(
 		}
 
 		if nil == err {
+			log, _ = loggerConstructor.Construct(wrap.cleaner)
+		}
+
+		if nil == err {
 			builder := builder.New().
 				WithHost(config.Host).
 				WithPort(config.Port).
+				WithLogger(log).
 				WithSwaggerSpecification(config.SwaggerURL)
 
 			for _, e := range extenders {

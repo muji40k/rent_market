@@ -3,6 +3,7 @@ package web
 import (
 	"rent_service/application"
 	"rent_service/internal/misc/types/collection"
+	"rent_service/logger"
 	"rent_service/server"
 )
 
@@ -12,6 +13,7 @@ type Builder struct {
 	swaggerSpecsUrl string
 	corsFillers     []server.CorsFiller
 	controllers     []server.IController
+	logger          logger.ILogger
 }
 
 func New() *Builder {
@@ -60,6 +62,12 @@ func (self *Builder) WithSwaggerSpecification(url string) *Builder {
 	return self
 }
 
+func (self *Builder) WithLogger(logger logger.ILogger) *Builder {
+	self.logger = logger
+
+	return self
+}
+
 func (self *Builder) Build() (application.IApplication, error) {
 	configurators := collection.ChainIterator(
 		collection.MapIterator(
@@ -94,15 +102,28 @@ func (self *Builder) Build() (application.IApplication, error) {
 						},
 						collection.SingleIterator(self.corsFillers),
 					),
-					collection.MapIterator(
-						func(controller *server.IController) server.Configurator {
-							return server.WithController(*controller)
-						},
-						collection.FilterIterator(
-							func(controller *server.IController) bool {
-								return nil != *controller
+					collection.ChainIterator(
+						collection.MapIterator(
+							func(logger *logger.ILogger) server.Configurator {
+								return server.WithLogger(*logger)
 							},
-							collection.SliceIterator(self.controllers),
+							collection.FilterIterator(
+								func(logger *logger.ILogger) bool {
+									return nil != *logger
+								},
+								collection.SingleIterator(self.logger),
+							),
+						),
+						collection.MapIterator(
+							func(controller *server.IController) server.Configurator {
+								return server.WithController(*controller)
+							},
+							collection.FilterIterator(
+								func(controller *server.IController) bool {
+									return nil != *controller
+								},
+								collection.SliceIterator(self.controllers),
+							),
 						),
 					),
 				),

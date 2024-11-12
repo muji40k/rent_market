@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"rent_service/logger"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -72,6 +73,34 @@ func WithCors(fillers ...CorsFiller) Configurator {
 		}
 
 		server.engine.Use(cors.New(config))
+	}
+}
+
+func WithLogger(log logger.ILogger) Configurator {
+	return func(server *Server) {
+		server.engine.Use(func(ctx *gin.Context) {
+			start := time.Now()
+			path := ctx.Request.URL.Path
+			raw := ctx.Request.URL.RawQuery
+
+			// Process request
+			ctx.Next()
+
+			duration := time.Now().Sub(start)
+			client := ctx.ClientIP()
+			method := ctx.Request.Method
+			status := ctx.Writer.Status()
+			bodySize := ctx.Writer.Size()
+
+			if raw != "" {
+				path = path + "?" + raw
+			}
+
+			log.Logf(logger.INFO,
+				"Request processed: %v - %v %v; client: %v; body: %v; duration: %v",
+				status, method, path, client, bodySize, duration,
+			)
+		})
 	}
 }
 
