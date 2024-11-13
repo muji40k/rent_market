@@ -93,7 +93,7 @@ func WithLogger(log logger.ILogger) Configurator {
 
 			ctx.Next()
 
-			duration := time.Now().Sub(start)
+			duration := time.Since(start)
 			client := ctx.ClientIP()
 			method := ctx.Request.Method
 			status := ctx.Writer.Status()
@@ -119,7 +119,7 @@ func New(config ...Configurator) *Server {
 		corsConfig: cors.Config{},
 	}
 
-	out.engine.SetTrustedProxies(nil)
+	_ = out.engine.SetTrustedProxies(nil)
 	out.engine.Use(gin.Recovery())
 
 	for _, f := range config {
@@ -155,10 +155,7 @@ func (self *Server) Clear() {
 		logger.Logf(self.logger, logger.ERROR, "Shutdown error: %s", err)
 	}
 
-	select {
-	case <-ctx.Done():
-		logger.Log(self.logger, logger.INFO, "Context timeout")
-	}
+	<-ctx.Done()
 
 	logger.Log(self.logger, logger.INFO, "Server down")
 }
