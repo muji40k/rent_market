@@ -10,11 +10,8 @@ import (
 	"rent_service/internal/misc/types/collection"
 
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
-	// "rent_service/misc/nullable"
 	"rent_service/misc/testcommon"
 	"testing"
-
-	// "time"
 
 	rproduct "rent_service/internal/repository/implementation/mock/product"
 	repo "rent_service/internal/repository/interfaces/product"
@@ -22,7 +19,6 @@ import (
 	product_pmock "rent_service/internal/repository/context/mock/product"
 
 	"rent_service/builders/misc/collect"
-	// "rent_service/builders/misc/nullcommon"
 	"rent_service/builders/misc/uuidgen"
 	models_om "rent_service/builders/mothers/domain/models"
 
