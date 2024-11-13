@@ -375,7 +375,7 @@ func (self *profileRepository) Create(
 	err := CheckExistsById(self.connection, profile.UserId)
 
 	if nil == err {
-		err := CheckProfileExistsByUserId(self.connection, profile.UserId)
+		err = CheckProfileExistsByUserId(self.connection, profile.UserId)
 
 		if nil == err {
 			err = cmnerrors.Duplicate("user_profile_user_id")
@@ -864,7 +864,7 @@ func (self *payMethodsRepository) getByUserId(
 	err := CheckExistsById(self.connection, userId)
 
 	if nil == err {
-		CheckPayMethodExistsByUserId(self.connection, userId)
+		err = CheckPayMethodExistsByUserId(self.connection, userId)
 	}
 
 	if nil == err {

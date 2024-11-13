@@ -294,22 +294,6 @@ func (self *payPlansRepository) mapPayPlan(
 	}
 }
 
-func (self *payPlansRepository) mapPayPlans(
-	instanceId uuid.UUID,
-	payPlans []InstancePayPlan,
-) models.InstancePayPlans {
-	out := models.InstancePayPlans{
-		InstanceId: instanceId,
-		Map:        make(map[uuid.UUID]models.PayPlan),
-	}
-
-	for _, plan := range payPlans {
-		out.Map[plan.PeriodId] = self.mapPayPlan(plan)
-	}
-
-	return out
-}
-
 func (self *payPlansRepository) unmapPayPlans(
 	value *models.InstancePayPlans,
 ) ([]InstancePayPlan, error) {

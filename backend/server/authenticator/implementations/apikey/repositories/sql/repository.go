@@ -84,7 +84,7 @@ func (self *repository) RenewToken(apiToken authenticator.ApiToken) (token.Token
 			apiToken.Renew,
 		)
 
-		self.connection.Exec(delete_by_access_token_query, apiToken.Access)
+		_, _ = self.connection.Exec(delete_by_access_token_query, apiToken.Access)
 
 		if errors.Is(err, sql.ErrNoRows) {
 			err = apikey.ErrorNotFound

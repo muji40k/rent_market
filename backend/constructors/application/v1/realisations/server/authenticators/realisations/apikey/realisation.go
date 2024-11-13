@@ -73,7 +73,7 @@ func newConstructor(
 				Build()
 		}
 
-		return out, nil
+		return out, err
 	}
 }
 

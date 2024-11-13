@@ -94,7 +94,7 @@ func (self *InstanceStateMachine) actionAcceptRentRequest(
 
 	if nil == err {
 		repo := self.repos.rent.request.GetRentRequestRepository()
-		err := repo.Remove(request.Id)
+		err = repo.Remove(request.Id)
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			err = cmnerrors.Internal(cmnerrors.NotFound(cerr.What...))
@@ -191,7 +191,7 @@ func (self *InstanceStateMachine) actionAcceptRentReturn(
 
 	if nil == err {
 		repo := self.repos.rent.retrn.GetRentReturnRepository()
-		err := repo.Remove(request.Id)
+		err = repo.Remove(request.Id)
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			err = cmnerrors.Internal(cmnerrors.NotFound(cerr.What...))

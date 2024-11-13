@@ -2,7 +2,7 @@ package variables
 
 const (
 	SERVER_HOST string = "APP_HOST"
-	SERVER_PORT        = "APP_PORT"
-	SWAGGER_URL        = "APP_SWAGGER_CONF_URL"
+	SERVER_PORT string = "APP_PORT"
+	SWAGGER_URL string = "APP_SWAGGER_CONF_URL"
 )
 

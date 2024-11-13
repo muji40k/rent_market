@@ -222,7 +222,7 @@ func (self *userPayMethodService) UpdatePayMethodsPriority(
 	}
 
 	if nil == err {
-		err := repo.Update(paymethods)
+		err = repo.Update(paymethods)
 
 		if nil != err {
 			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
@@ -259,14 +259,14 @@ func (self *userPayMethodService) RemovePayMethod(
 	}
 
 	if nil == err {
-		err := repo.Update(paymethods)
+		err = repo.Update(paymethods)
 
 		if nil != err {
 			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 		}
 	}
 
-	return nil
+	return err
 }
 
 type rentPaymentRepoProviders struct {

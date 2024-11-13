@@ -410,7 +410,7 @@ func mapReview(value *models.Review) instance.Review {
 }
 
 func checkRating(rating instance.ReviewRating) error {
-	if 0 > rating || 5 < rating {
+	if 5 < rating {
 		return instance.ErrorRatingIncorrectValue{Value: rating}
 	}
 
