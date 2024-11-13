@@ -2,7 +2,6 @@ package defservices
 
 import (
 	"errors"
-	v1 "rent_service/internal/factory/services/v1"
 	"rent_service/internal/factory/services/v1/deffactory"
 	"rent_service/internal/logic/delivery"
 	"rent_service/internal/logic/services/implementations/defservices/codegen"
@@ -60,7 +59,7 @@ func (self *Builder) WithPaymentCheckers(checkers map[uuid.UUID]paymentcheckers.
 	return self
 }
 
-func (self *Builder) Build() (v1.IFactory, error) {
+func (self *Builder) Build() (*deffactory.Factory, error) {
 	var factory *deffactory.Factory
 	var err error
 

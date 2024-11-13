@@ -1,7 +1,6 @@
 package web
 
 import (
-	"rent_service/application"
 	"rent_service/internal/misc/types/collection"
 	"rent_service/logger"
 	"rent_service/server"
@@ -68,7 +67,7 @@ func (self *Builder) WithLogger(logger logger.ILogger) *Builder {
 	return self
 }
 
-func (self *Builder) Build() (application.IApplication, error) {
+func (self *Builder) Build() (*server.Server, error) {
 	configurators := collection.ChainIterator(
 		collection.MapIterator(
 			func(host *string) server.Configurator {
