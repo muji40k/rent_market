@@ -3,8 +3,19 @@ services:
   nginx:
     build:
       context: ..
-      dockerfile: ./nginx/Dockerfile
+      dockerfile: ./nginx/balance.Dockerfile
     restart: always
+    depends_on:
+      backend:
+        condition: service_started
+      backend_ro1:
+        condition: service_started
+      backend_ro2:
+        condition: service_started
+      pgadmin:
+        condition: service_started
+      mirror_nginx:
+        condition: service_started
     ports:
       - "80:80"
     volumes:
@@ -14,6 +25,10 @@ services:
     build:
       context: ../backend/
     restart: always
+    depends_on:
+      postgresql_db:
+        condition: service_healthy
+        restart: true
     ports:
       - "127.0.0.1:12345:80"
     environment:
@@ -27,9 +42,57 @@ services:
       DB_PORT: "5432"
       DB_USER_NAME: "postgres"
       DB_USER_PASSWORD: "postgres"
+      GIN_MODE: "release"
+      LOGGER_TYPE: "stderr"
     volumes:
       - ../server/media/:/server/media
       - ../server/temp/:/server/temp
+
+######## RO Instances #########################################################
+  backend_ro1:
+    build:
+      context: ../backend/
+    restart: always
+    depends_on:
+      postgresql_db:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "127.0.0.1:12346:80"
+    environment:
+      APP_PHOTO_BASE_URL: "/img"
+      APP_SWAGGER_CONF_URL: "/docs/openapi.json"
+      DB_AUTH_NAME: "authentication"
+      DB_MAIN_NAME: "rent_market"
+      DB_HOST: "postgresql_db"
+      DB_PORT: "5432"
+      DB_USER_NAME: "reader"
+      DB_USER_PASSWORD: "reader"
+      GIN_MODE: "release"
+      LOGGER_TYPE: "stderr"
+
+  backend_ro2:
+    build:
+      context: ../backend/
+    restart: always
+    depends_on:
+      postgresql_db:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "127.0.0.1:12347:80"
+    environment:
+      APP_PHOTO_BASE_URL: "/img"
+      APP_SWAGGER_CONF_URL: "/docs/openapi.json"
+      DB_AUTH_NAME: "authentication"
+      DB_MAIN_NAME: "rent_market"
+      DB_HOST: "postgresql_db"
+      DB_PORT: "5432"
+      DB_USER_NAME: "reader"
+      DB_USER_PASSWORD: "reader"
+      GIN_MODE: "release"
+      LOGGER_TYPE: "stderr"
+###############################################################################
 
   postgresql_db:
     build:
@@ -38,14 +101,30 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     volumes:
       - /mnt/rent_market:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5432:5432"
+    command: |
+      postgres
+        -c wal_level=replica
+        -c hot_standby=on
+        -c hba_file=/etc/postgresql/pg_hba.conf
+    healthcheck:
+      test: 'pg_isready -U postgres --dbname=rent_market && pg_isready -U postgres --dbname authentication'
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4:latest
     restart: always
+    depends_on:
+      postgresql_db:
+        condition: service_healthy
+        restart: true
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@domain.org
       - PGADMIN_DEFAULT_PASSWORD=psswd
@@ -54,4 +133,67 @@ services:
     ports:
       - "127.0.0.1:42069:80"
 
+######## Mirror ###############################################################
+  mirror_nginx:
+    build:
+      context: ..
+      dockerfile: ./nginx/mirror.Dockerfile
+    restart: always
+    depends_on:
+      mirror_backend:
+        condition: service_started
+    ports:
+      - "8080:80"
+    volumes:
+      - ../server/media/:/static/img
+
+  mirror_backend:
+    build:
+      context: ../backend/
+    restart: always
+    depends_on:
+      mirror_postgresql_db:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "127.0.0.1:12344:80"
+    environment:
+      APP_PHOTO_BASE_URL: "/img"
+      APP_PHOTO_PATH_MAIN: "/server/media"
+      APP_PHOTO_PATH_TEMP: "/server/temp"
+      APP_SWAGGER_CONF_URL: "/docs/openapi.json"
+      DB_AUTH_NAME: "authentication"
+      DB_MAIN_NAME: "rent_market"
+      DB_HOST: "mirror_postgresql_db"
+      DB_PORT: "5432"
+      DB_USER_NAME: "reader"
+      DB_USER_PASSWORD: "reader"
+      GIN_MODE: "release"
+      LOGGER_TYPE: "stderr"
+    volumes:
+      - ../server/media/:/server/media
+      - ../server/temp/:/server/temp
+
+  mirror_postgresql_db:
+    build:
+      context: ../scripts/psql/.
+      dockerfile: ./replica.Dockerfile
+    restart: always
+    depends_on:
+      postgresql_db:
+        condition: service_healthy
+        restart: true
+    environment:
+      - PGUSER=replicator
+      - PGPASSWORD=replicator
+    volumes:
+      - /mnt/rent_market_mirror:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: 'pg_isready -U postgres --dbname=rent_market && pg_isready -U postgres --dbname authentication'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+###############################################################################
 

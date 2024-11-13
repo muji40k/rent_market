@@ -4,7 +4,7 @@ FROM nginx
 RUN mkdir -p /etc/nginx/sites-enabled/
 
 COPY nginx/main.conf /etc/nginx/nginx.conf
-COPY nginx/nginx.conf /etc/nginx/sites-enabled/web_backend.conf
+COPY nginx/mirror_nginx.conf /etc/nginx/sites-enabled/web_backend.conf
 
 RUN mkdir -p /static/
 RUN mkdir -p /static/docs
