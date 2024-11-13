@@ -47,7 +47,7 @@ var describeGetAll = testcommon.MethodDescriptor(
 
 var describeGetPath = testcommon.MethodDescriptor(
 	"GetPath",
-	"Get path to category by id)",
+	"Get path to category by id",
 )
 
 func (self *CategoryRepositoryTestSuite) TestGetAllPositive(t provider.T) {

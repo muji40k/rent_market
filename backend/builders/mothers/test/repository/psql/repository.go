@@ -240,6 +240,18 @@ func GetCurrency(name string) uuid.UUID {
 	}
 }
 
+func GetAllCurrencies() []uuid.UUID {
+	out := make([]uuid.UUID, len(currencies))
+	i := 0
+
+	for _, v := range currencies {
+		out[i] = v
+		i++
+	}
+
+	return out
+}
+
 var insertCurrencyQuery = prepareInsert("currencies.currencies",
 	"id", "name")
 
