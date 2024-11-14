@@ -18,7 +18,7 @@ func PickUpPointRandomId() *modelsb.PickUpPointBuilder {
 
 func PickUpPointExample(prefix string) *modelsb.PickUpPointBuilder {
 	return PickUpPointRandomId().
-		WithCapacity(rand.Uint64()).
+		WithCapacity(rand.Uint64() % 1000).
 		WithAddress(AddressExmapleWithoutFlat(prefix).Build())
 }
 

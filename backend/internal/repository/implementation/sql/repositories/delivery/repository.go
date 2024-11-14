@@ -340,7 +340,7 @@ func (self *companyRepository) GetById(
 	companyId uuid.UUID,
 ) (models.DeliveryCompany, error) {
 	var out DeliveryCompany
-	err := CheckExistsById(self.connection, companyId)
+	err := CheckCompanyExistsById(self.connection, companyId)
 
 	if nil == err {
 		err = self.connection.Get(&out, get_company_by_id_query, companyId)

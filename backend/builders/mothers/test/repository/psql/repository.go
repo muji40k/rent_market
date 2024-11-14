@@ -131,41 +131,52 @@ var currencies = map[string]uuid.UUID{
 }
 
 var tables = []string{
-	"currencies.currencies",
-	"addresses.addresses",
-	"roles.administrators",
-	"categories.categories",
-	"deliveries.companies",
-	"instances.instances",
-	"instances.pay_plans",
 	"payments.payments",
-	"payments.methods",
-	"periods.periods",
-	"photos.photos",
-	"photos.photos",
-	"pick_up_points.pick_up_points",
-	"products.products",
-	"products.characteristics",
-	"roles.renters",
-	"instances.reviews",
-	"roles.storekeepers",
-	"users.users",
-	"users.profiles",
-	"payments.users_methods",
+
 	"records.renters_instances",
 	"records.users_rents",
 	"records.pick_up_points_instances",
+
 	"deliveries.deliveries",
-	"provisions.requests",
+
 	"provisions.requests_pay_plans",
+	"provisions.requests",
+	"provisions.revokes",
+
 	"rents.requests",
 	"rents.returns",
-	"provisions.revokes",
-	"pick_up_points.working_hours",
+
+	"roles.renters",
+	"roles.administrators",
+	"roles.storekeepers",
+
+	"instances.reviews",
+
+	"payments.users_methods",
 	"users.favorite_pick_up_points",
-	"instances.photos",
+	"users.profiles",
+	"users.users",
+
 	"pick_up_points.photos",
+	"pick_up_points.working_hours",
+	"pick_up_points.pick_up_points",
+
+	"instances.pay_plans",
+	"instances.photos",
+	"instances.instances",
+
+	"products.characteristics",
 	"products.photos",
+	"products.products",
+
+	"addresses.addresses",
+	"categories.categories",
+	"periods.periods",
+	"payments.methods",
+	"deliveries.companies",
+	"photos.photos",
+	"photos.temp",
+	"currencies.currencies",
 }
 
 func (self *Inserter) ClearDB() {
@@ -348,7 +359,7 @@ func (self *Inserter) InsertPhoto(value *models.Photo) {
 		value.Description, value.Path, value.Mime, value.Date)
 }
 
-var insertTempPhotoQuery = prepareInsert("photos.photos",
+var insertTempPhotoQuery = prepareInsert("photos.temp",
 	"id", "placeholder", "description", "path", "mime", "date")
 
 func (self *Inserter) InsertTempPhoto(value *models.TempPhoto) {
