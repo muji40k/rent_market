@@ -9,7 +9,6 @@ import (
 	"rent_service/builders/mothers/test/repository/psql"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/domain/requests"
-	psqlfactory "rent_service/internal/factory/repositories/v1/psql"
 	"rent_service/internal/misc/types/collection"
 	"rent_service/internal/repository/errors/cmnerrors"
 	"rent_service/internal/repository/interfaces/delivery"
@@ -42,31 +41,16 @@ func CompareDelivery(reference requests.Delivery, actual requests.Delivery) bool
 
 type DeliveryRepositoryTestSuite struct {
 	suite.Suite
-	inserter *psql.Inserter
-	repo     delivery.IRepository
-	factory  *psqlfactory.Factory
+	repo delivery.IRepository
+	psqlcommon.Context
 }
 
 func (self *DeliveryRepositoryTestSuite) BeforeAll(t provider.T) {
-	t.WithNewStep("Create insert helper", func(sCtx provider.StepCtx) {
-		self.inserter = psql.NewInserter()
-	})
-
-	t.WithNewStep("Create factory", func(sCtx provider.StepCtx) {
-		var err error
-		self.factory, err = psql.PSQLRepositoryFactory().Build()
-
-		if nil != err {
-			t.Breakf("Unable to create repository: %s", err)
-		}
-	})
+	self.Context.SetUp(t)
 }
 
 func (self *DeliveryRepositoryTestSuite) AfterAll(t provider.T) {
-	t.WithNewStep("Close connections", func(sCtx provider.StepCtx) {
-		self.inserter.Close()
-		self.factory.Clear()
-	})
+	self.Context.TearDown(t)
 }
 
 func (self *DeliveryRepositoryTestSuite) BeforeEach(t provider.T) {
@@ -77,11 +61,11 @@ func (self *DeliveryRepositoryTestSuite) BeforeEach(t provider.T) {
 	)
 
 	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.inserter.ClearDB()
+		self.Inserter.ClearDB()
 	})
 
 	t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-		self.repo = self.factory.CreateDeliveryRepository()
+		self.repo = self.Factory.CreateDeliveryRepository()
 	})
 }
 
@@ -146,28 +130,28 @@ func (self *DeliveryRepositoryTestSuite) TestCreatePositive(t provider.T) {
 			company = testcommon.AssignParameter(sCtx, "company",
 				models_om.DeliveryCompanyExample("1").Build(),
 			)
-			self.inserter.InsertDeliveryCompany(&company)
+			self.Inserter.InsertDeliveryCompany(&company)
 		})
 
 		t.WithNewStep("Create and insert category", func(sCtx provider.StepCtx) {
 			category = testcommon.AssignParameter(sCtx, "category",
 				models_om.CategoryRandomId().WithName("test").Build(),
 			)
-			self.inserter.InsertCategory(&category)
+			self.Inserter.InsertCategory(&category)
 		})
 
 		t.WithNewStep("Create and insert product", func(sCtx provider.StepCtx) {
 			product = testcommon.AssignParameter(sCtx, "product",
 				models_om.ProductExmaple("1", category.Id).Build(),
 			)
-			self.inserter.InsertProduct(&product)
+			self.Inserter.InsertProduct(&product)
 		})
 
 		t.WithNewStep("Create and insert instance", func(sCtx provider.StepCtx) {
 			instance = testcommon.AssignParameter(sCtx, "instance",
 				models_om.InstanceExample("1", product.Id).Build(),
 			)
-			self.inserter.InsertInstance(&instance)
+			self.Inserter.InsertInstance(&instance)
 		})
 
 		t.WithNewStep("Create and insert pick up points", func(sCtx provider.StepCtx) {
@@ -177,7 +161,7 @@ func (self *DeliveryRepositoryTestSuite) TestCreatePositive(t provider.T) {
 			toPuP = testcommon.AssignParameter(sCtx, "to",
 				models_om.PickUpPointExample("To").Build(),
 			)
-			psql.BulkInsert(self.inserter.InsertPickUpPoint, fromPuP, toPuP)
+			psql.BulkInsert(self.Inserter.InsertPickUpPoint, fromPuP, toPuP)
 		})
 
 		t.WithNewStep("Create delivery", func(sCtx provider.StepCtx) {
@@ -237,21 +221,21 @@ func (self *DeliveryRepositoryTestSuite) TestCreateNotFound(t provider.T) {
 			category = testcommon.AssignParameter(sCtx, "category",
 				models_om.CategoryRandomId().WithName("test").Build(),
 			)
-			self.inserter.InsertCategory(&category)
+			self.Inserter.InsertCategory(&category)
 		})
 
 		t.WithNewStep("Create and insert product", func(sCtx provider.StepCtx) {
 			product = testcommon.AssignParameter(sCtx, "product",
 				models_om.ProductExmaple("1", category.Id).Build(),
 			)
-			self.inserter.InsertProduct(&product)
+			self.Inserter.InsertProduct(&product)
 		})
 
 		t.WithNewStep("Create and insert instance", func(sCtx provider.StepCtx) {
 			instance = testcommon.AssignParameter(sCtx, "instance",
 				models_om.InstanceExample("1", product.Id).Build(),
 			)
-			self.inserter.InsertInstance(&instance)
+			self.Inserter.InsertInstance(&instance)
 		})
 
 		t.WithNewStep("Create and insert pick up points", func(sCtx provider.StepCtx) {
@@ -261,7 +245,7 @@ func (self *DeliveryRepositoryTestSuite) TestCreateNotFound(t provider.T) {
 			toPuP = testcommon.AssignParameter(sCtx, "to",
 				models_om.PickUpPointExample("To").Build(),
 			)
-			psql.BulkInsert(self.inserter.InsertPickUpPoint, fromPuP, toPuP)
+			psql.BulkInsert(self.Inserter.InsertPickUpPoint, fromPuP, toPuP)
 		})
 
 		t.WithNewStep("Create delivery", func(sCtx provider.StepCtx) {
@@ -314,28 +298,28 @@ func (self *DeliveryRepositoryTestSuite) TestUpdatePositive(t provider.T) {
 			company = testcommon.AssignParameter(sCtx, "company",
 				models_om.DeliveryCompanyExample("1").Build(),
 			)
-			self.inserter.InsertDeliveryCompany(&company)
+			self.Inserter.InsertDeliveryCompany(&company)
 		})
 
 		t.WithNewStep("Create and insert category", func(sCtx provider.StepCtx) {
 			category = testcommon.AssignParameter(sCtx, "category",
 				models_om.CategoryRandomId().WithName("test").Build(),
 			)
-			self.inserter.InsertCategory(&category)
+			self.Inserter.InsertCategory(&category)
 		})
 
 		t.WithNewStep("Create and insert product", func(sCtx provider.StepCtx) {
 			product = testcommon.AssignParameter(sCtx, "product",
 				models_om.ProductExmaple("1", category.Id).Build(),
 			)
-			self.inserter.InsertProduct(&product)
+			self.Inserter.InsertProduct(&product)
 		})
 
 		t.WithNewStep("Create and insert instance", func(sCtx provider.StepCtx) {
 			instance = testcommon.AssignParameter(sCtx, "instance",
 				models_om.InstanceExample("1", product.Id).Build(),
 			)
-			self.inserter.InsertInstance(&instance)
+			self.Inserter.InsertInstance(&instance)
 		})
 
 		t.WithNewStep("Create and insert pick up points", func(sCtx provider.StepCtx) {
@@ -345,7 +329,7 @@ func (self *DeliveryRepositoryTestSuite) TestUpdatePositive(t provider.T) {
 			toPuP = testcommon.AssignParameter(sCtx, "to",
 				models_om.PickUpPointExample("To").Build(),
 			)
-			psql.BulkInsert(self.inserter.InsertPickUpPoint, fromPuP, toPuP)
+			psql.BulkInsert(self.Inserter.InsertPickUpPoint, fromPuP, toPuP)
 		})
 
 		t.WithNewStep("Create and insert new delivery", func(sCtx provider.StepCtx) {
@@ -363,7 +347,7 @@ func (self *DeliveryRepositoryTestSuite) TestUpdatePositive(t provider.T) {
 			created := builder.
 				WithActualBeginDate(nullable.None[time.Time]()).
 				Build()
-			self.inserter.InsertDelivery(&created)
+			self.Inserter.InsertDelivery(&created)
 		})
 	})
 
@@ -400,28 +384,28 @@ func (self *DeliveryRepositoryTestSuite) TestUpdateNotFound(t provider.T) {
 			company = testcommon.AssignParameter(sCtx, "company",
 				models_om.DeliveryCompanyExample("1").Build(),
 			)
-			self.inserter.InsertDeliveryCompany(&company)
+			self.Inserter.InsertDeliveryCompany(&company)
 		})
 
 		t.WithNewStep("Create and insert category", func(sCtx provider.StepCtx) {
 			category = testcommon.AssignParameter(sCtx, "category",
 				models_om.CategoryRandomId().WithName("test").Build(),
 			)
-			self.inserter.InsertCategory(&category)
+			self.Inserter.InsertCategory(&category)
 		})
 
 		t.WithNewStep("Create and insert product", func(sCtx provider.StepCtx) {
 			product = testcommon.AssignParameter(sCtx, "product",
 				models_om.ProductExmaple("1", category.Id).Build(),
 			)
-			self.inserter.InsertProduct(&product)
+			self.Inserter.InsertProduct(&product)
 		})
 
 		t.WithNewStep("Create and insert instance", func(sCtx provider.StepCtx) {
 			instance = testcommon.AssignParameter(sCtx, "instance",
 				models_om.InstanceExample("1", product.Id).Build(),
 			)
-			self.inserter.InsertInstance(&instance)
+			self.Inserter.InsertInstance(&instance)
 		})
 
 		t.WithNewStep("Create and insert pick up points", func(sCtx provider.StepCtx) {
@@ -431,7 +415,7 @@ func (self *DeliveryRepositoryTestSuite) TestUpdateNotFound(t provider.T) {
 			toPuP = testcommon.AssignParameter(sCtx, "to",
 				models_om.PickUpPointExample("To").Build(),
 			)
-			psql.BulkInsert(self.inserter.InsertPickUpPoint, fromPuP, toPuP)
+			psql.BulkInsert(self.Inserter.InsertPickUpPoint, fromPuP, toPuP)
 		})
 
 		t.WithNewStep("Create and insert delivery", func(sCtx provider.StepCtx) {
@@ -447,7 +431,7 @@ func (self *DeliveryRepositoryTestSuite) TestUpdateNotFound(t provider.T) {
 			created := builder.Build()
 			reference = testcommon.AssignParameter(sCtx, "delivery",
 				builder.WithActualEndDate(nullable.Some(time.Now())).Build())
-			self.inserter.InsertDelivery(&created)
+			self.Inserter.InsertDelivery(&created)
 		})
 	})
 
@@ -484,28 +468,28 @@ func (self *DeliveryRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 			company = testcommon.AssignParameter(sCtx, "company",
 				models_om.DeliveryCompanyExample("1").Build(),
 			)
-			self.inserter.InsertDeliveryCompany(&company)
+			self.Inserter.InsertDeliveryCompany(&company)
 		})
 
 		t.WithNewStep("Create and insert category", func(sCtx provider.StepCtx) {
 			category = testcommon.AssignParameter(sCtx, "category",
 				models_om.CategoryRandomId().WithName("test").Build(),
 			)
-			self.inserter.InsertCategory(&category)
+			self.Inserter.InsertCategory(&category)
 		})
 
 		t.WithNewStep("Create and insert product", func(sCtx provider.StepCtx) {
 			product = testcommon.AssignParameter(sCtx, "product",
 				models_om.ProductExmaple("1", category.Id).Build(),
 			)
-			self.inserter.InsertProduct(&product)
+			self.Inserter.InsertProduct(&product)
 		})
 
 		t.WithNewStep("Create and insert instance", func(sCtx provider.StepCtx) {
 			instance = testcommon.AssignParameter(sCtx, "instance",
 				models_om.InstanceExample("1", product.Id).Build(),
 			)
-			self.inserter.InsertInstance(&instance)
+			self.Inserter.InsertInstance(&instance)
 		})
 
 		t.WithNewStep("Create and insert pick up points", func(sCtx provider.StepCtx) {
@@ -515,7 +499,7 @@ func (self *DeliveryRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 			toPuP = testcommon.AssignParameter(sCtx, "to",
 				models_om.PickUpPointExample("To").Build(),
 			)
-			psql.BulkInsert(self.inserter.InsertPickUpPoint, fromPuP, toPuP)
+			psql.BulkInsert(self.Inserter.InsertPickUpPoint, fromPuP, toPuP)
 		})
 
 		t.WithNewStep("Create and insert delivery", func(sCtx provider.StepCtx) {
@@ -531,7 +515,7 @@ func (self *DeliveryRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 					nullable.None[time.Time](),
 				).Build(),
 			)
-			self.inserter.InsertDelivery(&reference)
+			self.Inserter.InsertDelivery(&reference)
 		})
 	})
 
@@ -663,7 +647,7 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByPickUpPointIdPositive(t 
 					models_om.DeliveryCompanyExample("5"),
 				),
 			)
-			psql.BulkInsert(self.inserter.InsertDeliveryCompany, companies...)
+			psql.BulkInsert(self.Inserter.InsertDeliveryCompany, companies...)
 		})
 
 		t.WithNewStep("Create and insert categories", func(sCtx provider.StepCtx) {
@@ -676,7 +660,7 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByPickUpPointIdPositive(t 
 					models_om.CategoryRandomId().WithName("5"),
 				),
 			)
-			psql.BulkInsert(self.inserter.InsertCategory, categories...)
+			psql.BulkInsert(self.Inserter.InsertCategory, categories...)
 		})
 
 		t.WithNewStep("Create and insert products", func(sCtx provider.StepCtx) {
@@ -689,7 +673,7 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByPickUpPointIdPositive(t 
 					models_om.ProductExmaple("5", categories[4].Id),
 				),
 			)
-			psql.BulkInsert(self.inserter.InsertProduct, products...)
+			psql.BulkInsert(self.Inserter.InsertProduct, products...)
 		})
 
 		t.WithNewStep("Create and insert instances", func(sCtx provider.StepCtx) {
@@ -702,7 +686,7 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByPickUpPointIdPositive(t 
 					models_om.InstanceExample("5", products[4].Id),
 				),
 			)
-			psql.BulkInsert(self.inserter.InsertInstance, instances...)
+			psql.BulkInsert(self.Inserter.InsertInstance, instances...)
 		})
 
 		t.WithNewStep("Create and insert pick up points", func(sCtx provider.StepCtx) {
@@ -718,8 +702,8 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByPickUpPointIdPositive(t 
 					models_om.PickUpPointExample("5"),
 				),
 			)
-			self.inserter.InsertPickUpPoint(&target)
-			psql.BulkInsert(self.inserter.InsertPickUpPoint, others...)
+			self.Inserter.InsertPickUpPoint(&target)
+			psql.BulkInsert(self.Inserter.InsertPickUpPoint, others...)
 		})
 
 		t.WithNewStep("Create and insert deliveries", func(sCtx provider.StepCtx) {
@@ -731,7 +715,7 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByPickUpPointIdPositive(t 
 					),
 				),
 			)
-			psql.BulkInsert(self.inserter.InsertDelivery, references...)
+			psql.BulkInsert(self.Inserter.InsertDelivery, references...)
 		})
 	})
 
@@ -801,28 +785,28 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByInstanceIdPositive(t pro
 			company = testcommon.AssignParameter(sCtx, "company",
 				models_om.DeliveryCompanyExample("1").Build(),
 			)
-			self.inserter.InsertDeliveryCompany(&company)
+			self.Inserter.InsertDeliveryCompany(&company)
 		})
 
 		t.WithNewStep("Create and insert category", func(sCtx provider.StepCtx) {
 			category = testcommon.AssignParameter(sCtx, "category",
 				models_om.CategoryRandomId().WithName("test").Build(),
 			)
-			self.inserter.InsertCategory(&category)
+			self.Inserter.InsertCategory(&category)
 		})
 
 		t.WithNewStep("Create and insert product", func(sCtx provider.StepCtx) {
 			product = testcommon.AssignParameter(sCtx, "product",
 				models_om.ProductExmaple("1", category.Id).Build(),
 			)
-			self.inserter.InsertProduct(&product)
+			self.Inserter.InsertProduct(&product)
 		})
 
 		t.WithNewStep("Create and insert instance", func(sCtx provider.StepCtx) {
 			instance = testcommon.AssignParameter(sCtx, "instance",
 				models_om.InstanceExample("1", product.Id).Build(),
 			)
-			self.inserter.InsertInstance(&instance)
+			self.Inserter.InsertInstance(&instance)
 		})
 
 		t.WithNewStep("Create and insert pick up points", func(sCtx provider.StepCtx) {
@@ -832,14 +816,14 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByInstanceIdPositive(t pro
 			toPuP = testcommon.AssignParameter(sCtx, "to",
 				models_om.PickUpPointExample("To").Build(),
 			)
-			psql.BulkInsert(self.inserter.InsertPickUpPoint, fromPuP, toPuP)
+			psql.BulkInsert(self.Inserter.InsertPickUpPoint, fromPuP, toPuP)
 		})
 
 		t.WithNewStep("Create and insert delivery", func(sCtx provider.StepCtx) {
 			reference = testcommon.AssignParameter(sCtx, "delivery",
 				GenerateRandomActive(company, instance, fromPuP, toPuP),
 			)
-			self.inserter.InsertDelivery(&reference)
+			self.Inserter.InsertDelivery(&reference)
 		})
 	})
 
@@ -889,31 +873,16 @@ func (self *DeliveryRepositoryTestSuite) TestGetActiveByInstanceIdNotFound(t pro
 
 type DeliveryCompanyRepositoryTestSuite struct {
 	suite.Suite
-	inserter *psql.Inserter
-	repo     delivery.ICompanyRepository
-	factory  *psqlfactory.Factory
+	repo delivery.ICompanyRepository
+	psqlcommon.Context
 }
 
 func (self *DeliveryCompanyRepositoryTestSuite) BeforeAll(t provider.T) {
-	t.WithNewStep("Create insert helper", func(sCtx provider.StepCtx) {
-		self.inserter = psql.NewInserter()
-	})
-
-	t.WithNewStep("Create factory", func(sCtx provider.StepCtx) {
-		var err error
-		self.factory, err = psql.PSQLRepositoryFactory().Build()
-
-		if nil != err {
-			t.Breakf("Unable to create repository: %s", err)
-		}
-	})
+	self.Context.SetUp(t)
 }
 
 func (self *DeliveryCompanyRepositoryTestSuite) AfterAll(t provider.T) {
-	t.WithNewStep("Close connections", func(sCtx provider.StepCtx) {
-		self.inserter.Close()
-		self.factory.Clear()
-	})
+	self.Context.TearDown(t)
 }
 
 func (self *DeliveryCompanyRepositoryTestSuite) BeforeEach(t provider.T) {
@@ -924,11 +893,11 @@ func (self *DeliveryCompanyRepositoryTestSuite) BeforeEach(t provider.T) {
 	)
 
 	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.inserter.ClearDB()
+		self.Inserter.ClearDB()
 	})
 
 	t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-		self.repo = self.factory.CreateDeliveryCompanyRepository()
+		self.repo = self.Factory.CreateDeliveryCompanyRepository()
 	})
 }
 
@@ -956,7 +925,7 @@ func (self *DeliveryCompanyRepositoryTestSuite) TestGetByIdPositive(t provider.T
 			reference = testcommon.AssignParameter(sCtx, "company",
 				models_om.DeliveryCompanyExample("1").Build(),
 			)
-			self.inserter.InsertDeliveryCompany(&reference)
+			self.Inserter.InsertDeliveryCompany(&reference)
 		})
 	})
 
@@ -1022,7 +991,7 @@ func (self *DeliveryCompanyRepositoryTestSuite) TestGetAllPositive(t provider.T)
 					models_om.DeliveryCompanyExample("5"),
 				),
 			)
-			psql.BulkInsert(self.inserter.InsertDeliveryCompany, reference...)
+			psql.BulkInsert(self.Inserter.InsertDeliveryCompany, reference...)
 		})
 	})
 
@@ -1047,6 +1016,7 @@ func (self *DeliveryCompanyRepositoryTestSuite) TestGetAllEmpty(t provider.T) {
 	)
 
 	// Arrange
+	// Empty
 
 	// Act
 	var result collection.Collection[models.DeliveryCompany]

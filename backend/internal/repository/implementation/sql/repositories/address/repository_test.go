@@ -3,11 +3,11 @@ package address_test
 import (
 	"rent_service/builders/misc/uuidgen"
 	models_om "rent_service/builders/mothers/domain/models"
-	"rent_service/builders/mothers/test/repository/psql"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/repository/errors/cmnerrors"
 	"rent_service/internal/repository/implementation/sql/repositories/address"
 	"rent_service/misc/testcommon"
+	psqlcommon "rent_service/misc/testcommon/psql"
 	"testing"
 
 	"github.com/google/uuid"
@@ -18,15 +18,16 @@ import (
 
 type AddressRepositoryTestSuite struct {
 	suite.Suite
-	inserter *psql.Inserter
+	repo *address.Repository
+	psqlcommon.Context
 }
 
 func (self *AddressRepositoryTestSuite) BeforeAll(t provider.T) {
-	self.inserter = psql.NewInserter()
+	self.Context.SetUp(t)
 }
 
 func (self *AddressRepositoryTestSuite) AfterAll(t provider.T) {
-	self.inserter.Close()
+	self.Context.TearDown(t)
 }
 
 func (self *AddressRepositoryTestSuite) BeforeEach(t provider.T) {
@@ -35,7 +36,13 @@ func (self *AddressRepositoryTestSuite) BeforeEach(t provider.T) {
 		"PSQL repository implementation",
 		"Address repository",
 	)
-	self.inserter.ClearDB()
+	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
+		self.Inserter.ClearDB()
+	})
+
+	t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
+		self.repo = self.Factory.CreateAddressRepository()
+	})
 }
 
 var describeGetById = testcommon.MethodDescriptor(
@@ -44,8 +51,6 @@ var describeGetById = testcommon.MethodDescriptor(
 )
 
 func (self *AddressRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
-	var repo *address.Repository
-
 	var reference models.Address
 
 	describeGetById(t,
@@ -59,17 +64,7 @@ func (self *AddressRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 			reference = testcommon.AssignParameter(sCtx, "address",
 				models_om.AddressExmapleWithFlat("1").Build(),
 			)
-			self.inserter.InsertAddress(&reference)
-		})
-
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateAddressRepository()
+			self.Inserter.InsertAddress(&reference)
 		})
 	})
 
@@ -78,7 +73,7 @@ func (self *AddressRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 	var err error
 
 	t.WithNewStep("Get all addresses", func(sCtx provider.StepCtx) {
-		result, err = repo.GetById(reference.Id)
+		result, err = self.repo.GetById(reference.Id)
 	}, allure.NewParameter("addressId", reference.Id))
 
 	// Assert
@@ -87,8 +82,6 @@ func (self *AddressRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 }
 
 func (self *AddressRepositoryTestSuite) TestGetByIdNotFound(t provider.T) {
-	var repo *address.Repository
-
 	var id uuid.UUID
 
 	describeGetById(t,
@@ -101,23 +94,13 @@ func (self *AddressRepositoryTestSuite) TestGetByIdNotFound(t provider.T) {
 		t.WithNewStep("Generate unknonw id", func(sCtx provider.StepCtx) {
 			id = testcommon.AssignParameter(sCtx, "id", uuidgen.Generate())
 		})
-
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateAddressRepository()
-		})
 	})
 
 	// Act
 	var err error
 
 	t.WithNewStep("Get all addresses", func(sCtx provider.StepCtx) {
-		_, err = repo.GetById(id)
+		_, err = self.repo.GetById(id)
 	}, allure.NewParameter("addressId", id))
 
 	// Assert

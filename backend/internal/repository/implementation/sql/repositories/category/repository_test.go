@@ -10,6 +10,7 @@ import (
 	"rent_service/internal/repository/errors/cmnerrors"
 	"rent_service/internal/repository/interfaces/category"
 	"rent_service/misc/testcommon"
+	psqlcommon "rent_service/misc/testcommon/psql"
 	"testing"
 
 	"github.com/google/uuid"
@@ -20,15 +21,16 @@ import (
 
 type CategoryRepositoryTestSuite struct {
 	suite.Suite
-	inserter *psql.Inserter
+	repo category.IRepository
+	psqlcommon.Context
 }
 
 func (self *CategoryRepositoryTestSuite) BeforeAll(t provider.T) {
-	self.inserter = psql.NewInserter()
+	self.Context.SetUp(t)
 }
 
 func (self *CategoryRepositoryTestSuite) AfterAll(t provider.T) {
-	self.inserter.Close()
+	self.Context.TearDown(t)
 }
 
 func (self *CategoryRepositoryTestSuite) BeforeEach(t provider.T) {
@@ -37,7 +39,14 @@ func (self *CategoryRepositoryTestSuite) BeforeEach(t provider.T) {
 		"PSQL repository implementation",
 		"Category repository",
 	)
-	self.inserter.ClearDB()
+
+	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
+		self.Inserter.ClearDB()
+	})
+
+	t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
+		self.repo = self.Factory.CreateCategoryRepository()
+	})
 }
 
 var describeGetAll = testcommon.MethodDescriptor(
@@ -51,8 +60,6 @@ var describeGetPath = testcommon.MethodDescriptor(
 )
 
 func (self *CategoryRepositoryTestSuite) TestGetAllPositive(t provider.T) {
-	var repo category.IRepository
-
 	var reference []models.Category
 
 	describeGetAll(t,
@@ -66,17 +73,7 @@ func (self *CategoryRepositoryTestSuite) TestGetAllPositive(t provider.T) {
 			reference = testcommon.AssignParameter(sCtx, "categories",
 				collect.Do(models_om.CategoryDefaultPath()...),
 			)
-			psql.BulkInsert(self.inserter.InsertCategory, reference...)
-		})
-
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateCategoryRepository()
+			psql.BulkInsert(self.Inserter.InsertCategory, reference...)
 		})
 	})
 
@@ -85,7 +82,7 @@ func (self *CategoryRepositoryTestSuite) TestGetAllPositive(t provider.T) {
 	var err error
 
 	t.WithNewStep("Get all", func(sCtx provider.StepCtx) {
-		result, err = repo.GetAll()
+		result, err = self.repo.GetAll()
 	})
 
 	// Assert
@@ -95,32 +92,20 @@ func (self *CategoryRepositoryTestSuite) TestGetAllPositive(t provider.T) {
 }
 
 func (self *CategoryRepositoryTestSuite) TestGetAllEmpty(t provider.T) {
-	var repo category.IRepository
-
 	describeGetAll(t,
 		"No values to return",
 		"Checks that method return empty collection without error",
 	)
 
 	// Arrange
-	t.WithTestSetup(func(t provider.T) {
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateCategoryRepository()
-		})
-	})
+	// Empty
 
 	// Act
 	var result collection.Collection[models.Category]
 	var err error
 
 	t.WithNewStep("Get all addresses", func(sCtx provider.StepCtx) {
-		result, err = repo.GetAll()
+		result, err = self.repo.GetAll()
 	})
 
 	// Assert
@@ -129,8 +114,6 @@ func (self *CategoryRepositoryTestSuite) TestGetAllEmpty(t provider.T) {
 }
 
 func (self *CategoryRepositoryTestSuite) TestGetPathPositive(t provider.T) {
-	var repo category.IRepository
-
 	var reference []models.Category
 	var last *models.Category
 
@@ -146,17 +129,7 @@ func (self *CategoryRepositoryTestSuite) TestGetPathPositive(t provider.T) {
 				collect.Do(models_om.CategoryDefaultPath()...),
 			)
 			last = &reference[len(reference)-1]
-			psql.BulkInsert(self.inserter.InsertCategory, reference...)
-		})
-
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateCategoryRepository()
+			psql.BulkInsert(self.Inserter.InsertCategory, reference...)
 		})
 	})
 
@@ -165,7 +138,7 @@ func (self *CategoryRepositoryTestSuite) TestGetPathPositive(t provider.T) {
 	var err error
 
 	t.WithNewStep("Get path to leaf", func(sCtx provider.StepCtx) {
-		result, err = repo.GetPath(last.Id)
+		result, err = self.repo.GetPath(last.Id)
 	}, allure.NewParameter("leafId", last.Id))
 
 	// Assert
@@ -175,8 +148,6 @@ func (self *CategoryRepositoryTestSuite) TestGetPathPositive(t provider.T) {
 }
 
 func (self *CategoryRepositoryTestSuite) TestGetPathNotFound(t provider.T) {
-	var repo category.IRepository
-
 	var id uuid.UUID
 
 	describeGetPath(t,
@@ -189,23 +160,13 @@ func (self *CategoryRepositoryTestSuite) TestGetPathNotFound(t provider.T) {
 		t.WithNewStep("Generate unknonw id", func(sCtx provider.StepCtx) {
 			id = testcommon.AssignParameter(sCtx, "id", uuidgen.Generate())
 		})
-
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateCategoryRepository()
-		})
 	})
 
 	// Act
 	var err error
 
 	t.WithNewStep("Get all addresses", func(sCtx provider.StepCtx) {
-		_, err = repo.GetPath(id)
+		_, err = self.repo.GetPath(id)
 	}, allure.NewParameter("leafId", id))
 
 	// Assert

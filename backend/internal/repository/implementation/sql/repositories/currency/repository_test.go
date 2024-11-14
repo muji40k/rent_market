@@ -7,6 +7,7 @@ import (
 	"rent_service/internal/repository/errors/cmnerrors"
 	rcurrency "rent_service/internal/repository/implementation/sql/repositories/currency"
 	"rent_service/misc/testcommon"
+	psqlcommon "rent_service/misc/testcommon/psql"
 	"slices"
 	"testing"
 
@@ -18,15 +19,16 @@ import (
 
 type CurrencyRepositoryTestSuite struct {
 	suite.Suite
-	inserter *psql.Inserter
+	repo *rcurrency.Repository
+	psqlcommon.Context
 }
 
 func (self *CurrencyRepositoryTestSuite) BeforeAll(t provider.T) {
-	self.inserter = psql.NewInserter()
+	self.Context.SetUp(t)
 }
 
 func (self *CurrencyRepositoryTestSuite) AfterAll(t provider.T) {
-	self.inserter.Close()
+	self.Context.TearDown(t)
 }
 
 func (self *CurrencyRepositoryTestSuite) BeforeEach(t provider.T) {
@@ -35,7 +37,14 @@ func (self *CurrencyRepositoryTestSuite) BeforeEach(t provider.T) {
 		"PSQL repository implementation",
 		"Currency repository",
 	)
-	self.inserter.ClearDB()
+
+	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
+		self.Inserter.ClearDB()
+	})
+
+	t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
+		self.repo = self.Factory.CreateCurrencyRepository()
+	})
 }
 
 var describeGetById = testcommon.MethodDescriptor(
@@ -49,8 +58,6 @@ var describeGetId = testcommon.MethodDescriptor(
 )
 
 func (self *CurrencyRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
-	var repo *rcurrency.Repository
-
 	var name string = "rub"
 	var id uuid.UUID = psql.GetCurrency(name)
 
@@ -60,24 +67,14 @@ func (self *CurrencyRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 	)
 
 	// Arrange
-	t.WithTestSetup(func(t provider.T) {
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateCurrencyRepository()
-		})
-	})
+	// Empty
 
 	// Act
 	var result currency.Currency
 	var err error
 
 	t.WithNewStep("Get currency by id", func(sCtx provider.StepCtx) {
-		result, err = repo.GetById(id)
+		result, err = self.repo.GetById(id)
 	}, allure.NewParameter("currencyId", id))
 
 	// Assert
@@ -86,8 +83,6 @@ func (self *CurrencyRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 }
 
 func (self *CurrencyRepositoryTestSuite) TestGetByIdNotFound(t provider.T) {
-	var repo *rcurrency.Repository
-
 	var id uuid.UUID
 
 	describeGetById(t,
@@ -107,23 +102,13 @@ func (self *CurrencyRepositoryTestSuite) TestGetByIdNotFound(t provider.T) {
 
 			sCtx.WithParameters(allure.NewParameter("id", id))
 		})
-
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateCurrencyRepository()
-		})
 	})
 
 	// Act
 	var err error
 
 	t.WithNewStep("Get currency", func(sCtx provider.StepCtx) {
-		_, err = repo.GetById(id)
+		_, err = self.repo.GetById(id)
 	}, allure.NewParameter("currencyId", id))
 
 	// Assert
@@ -134,8 +119,6 @@ func (self *CurrencyRepositoryTestSuite) TestGetByIdNotFound(t provider.T) {
 }
 
 func (self *CurrencyRepositoryTestSuite) TestGetIdPositive(t provider.T) {
-	var repo *rcurrency.Repository
-
 	var name string = "rub"
 	var id uuid.UUID = psql.GetCurrency(name)
 
@@ -145,24 +128,14 @@ func (self *CurrencyRepositoryTestSuite) TestGetIdPositive(t provider.T) {
 	)
 
 	// Arrange
-	t.WithTestSetup(func(t provider.T) {
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateCurrencyRepository()
-		})
-	})
+	// Empty
 
 	// Act
 	var result uuid.UUID
 	var err error
 
 	t.WithNewStep("Get currency by id", func(sCtx provider.StepCtx) {
-		result, err = repo.GetId(name)
+		result, err = self.repo.GetId(name)
 	}, allure.NewParameter("currencyName", name))
 
 	// Assert
@@ -171,8 +144,6 @@ func (self *CurrencyRepositoryTestSuite) TestGetIdPositive(t provider.T) {
 }
 
 func (self *CurrencyRepositoryTestSuite) TestGetByNotFound(t provider.T) {
-	var repo *rcurrency.Repository
-
 	var name string = "definetly unknown currency"
 
 	describeGetId(t,
@@ -181,23 +152,13 @@ func (self *CurrencyRepositoryTestSuite) TestGetByNotFound(t provider.T) {
 	)
 
 	// Arrange
-	t.WithTestSetup(func(t provider.T) {
-		t.WithNewStep("Create repository", func(sCtx provider.StepCtx) {
-			factory, err := psql.PSQLRepositoryFactory().Build()
-
-			if nil != err {
-				t.Breakf("Unable to create repository: %s", err)
-			}
-
-			repo = factory.CreateCurrencyRepository()
-		})
-	})
+	// Empty
 
 	// Act
 	var err error
 
 	t.WithNewStep("Get currency", func(sCtx provider.StepCtx) {
-		_, err = repo.GetId(name)
+		_, err = self.repo.GetId(name)
 	}, allure.NewParameter("currencyName", name))
 
 	// Assert
