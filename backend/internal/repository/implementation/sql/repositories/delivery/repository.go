@@ -13,6 +13,7 @@ import (
 	"rent_service/internal/repository/implementation/sql/repositories/instance"
 	"rent_service/internal/repository/implementation/sql/repositories/pickuppoint"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/delivery"
 	"time"
 
@@ -21,18 +22,18 @@ import (
 )
 
 type Delivery struct {
-	Id                 uuid.UUID    `db:"id"`
-	CompanyId          uuid.UUID    `db:"company_id"`
-	InstanceId         uuid.UUID    `db:"instance_id"`
-	FromId             uuid.UUID    `db:"from_id"`
-	ToId               uuid.UUID    `db:"to_id"`
-	DeliveryId         string       `db:"delivery_id"`
-	ScheduledBeginDate time.Time    `db:"scheduled_begin_date"`
-	ActualBeginDate    sql.NullTime `db:"actual_begin_date"`
-	ScheduledEndDate   time.Time    `db:"scheduled_end_date"`
-	ActualEndDate      sql.NullTime `db:"actual_end_date"`
-	VerificationCode   string       `db:"verification_code"`
-	CreateDate         time.Time    `db:"create_date"`
+	Id                 uuid.UUID                 `db:"id"`
+	CompanyId          uuid.UUID                 `db:"company_id"`
+	InstanceId         uuid.UUID                 `db:"instance_id"`
+	FromId             uuid.UUID                 `db:"from_id"`
+	ToId               uuid.UUID                 `db:"to_id"`
+	DeliveryId         string                    `db:"delivery_id"`
+	ScheduledBeginDate utctime.UTCTime           `db:"scheduled_begin_date"`
+	ActualBeginDate    sql.Null[utctime.UTCTime] `db:"actual_begin_date"`
+	ScheduledEndDate   utctime.UTCTime           `db:"scheduled_end_date"`
+	ActualEndDate      sql.Null[utctime.UTCTime] `db:"actual_end_date"`
+	VerificationCode   string                    `db:"verification_code"`
+	CreateDate         utctime.UTCTime           `db:"create_date"`
 	technical.Info
 }
 
@@ -62,20 +63,20 @@ func mapf(value *Delivery) requests.Delivery {
 		FromId:             value.FromId,
 		ToId:               value.ToId,
 		DeliveryId:         value.DeliveryId,
-		ScheduledBeginDate: value.ScheduledBeginDate,
-		ScheduledEndDate:   value.ScheduledEndDate,
+		ScheduledBeginDate: value.ScheduledBeginDate.Time,
+		ScheduledEndDate:   value.ScheduledEndDate.Time,
 		VerificationCode:   value.VerificationCode,
-		CreateDate:         value.CreateDate,
+		CreateDate:         value.CreateDate.Time,
 	}
 
 	if value.ActualBeginDate.Valid {
 		out.ActualBeginDate = new(time.Time)
-		*out.ActualBeginDate = value.ActualBeginDate.Time
+		*out.ActualBeginDate = value.ActualBeginDate.V.Time
 	}
 
 	if value.ActualEndDate.Valid {
 		out.ActualEndDate = new(time.Time)
-		*out.ActualEndDate = value.ActualEndDate.Time
+		*out.ActualEndDate = value.ActualEndDate.V.Time
 	}
 
 	return out
@@ -89,20 +90,20 @@ func unmapf(value *requests.Delivery) Delivery {
 		FromId:             value.FromId,
 		ToId:               value.ToId,
 		DeliveryId:         value.DeliveryId,
-		ScheduledBeginDate: value.ScheduledBeginDate,
-		ScheduledEndDate:   value.ScheduledEndDate,
+		ScheduledBeginDate: utctime.FromTime(value.ScheduledBeginDate),
+		ScheduledEndDate:   utctime.FromTime(value.ScheduledEndDate),
 		VerificationCode:   value.VerificationCode,
-		CreateDate:         value.CreateDate,
+		CreateDate:         utctime.FromTime(value.CreateDate),
 	}
 
 	if nil != value.ActualBeginDate {
 		out.ActualBeginDate.Valid = true
-		out.ActualBeginDate.Time = *value.ActualBeginDate
+		out.ActualBeginDate.V = utctime.FromTime(*value.ActualBeginDate)
 	}
 
 	if nil != value.ActualEndDate {
 		out.ActualEndDate.Valid = true
-		out.ActualEndDate.Time = *value.ActualEndDate
+		out.ActualEndDate.V = utctime.FromTime(*value.ActualEndDate)
 	}
 
 	return out
