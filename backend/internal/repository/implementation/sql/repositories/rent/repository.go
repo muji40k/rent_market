@@ -15,6 +15,7 @@ import (
 	"rent_service/internal/repository/implementation/sql/repositories/pickuppoint"
 	"rent_service/internal/repository/implementation/sql/repositories/user"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/rent"
 	"time"
 
@@ -23,34 +24,34 @@ import (
 )
 
 type Rent struct {
-	Id              uuid.UUID    `db:"id"`
-	UserId          uuid.UUID    `db:"user_id"`
-	InstanceId      uuid.UUID    `db:"instance_id"`
-	StartDate       time.Time    `db:"start_date"`
-	EndDate         sql.NullTime `db:"end_date"`
-	PaymentPeriodId uuid.UUID    `db:"payment_period_id"`
+	Id              uuid.UUID                 `db:"id"`
+	UserId          uuid.UUID                 `db:"user_id"`
+	InstanceId      uuid.UUID                 `db:"instance_id"`
+	StartDate       utctime.UTCTime           `db:"start_date"`
+	EndDate         sql.Null[utctime.UTCTime] `db:"end_date"`
+	PaymentPeriodId uuid.UUID                 `db:"payment_period_id"`
 	technical.Info
 }
 
 type Request struct {
-	Id               uuid.UUID `db:"id"`
-	InstanceId       uuid.UUID `db:"instance_id"`
-	UserId           uuid.UUID `db:"user_id"`
-	PickUpPointId    uuid.UUID `db:"pick_up_point_id"`
-	PaymentPeriodId  uuid.UUID `db:"payment_period_id"`
-	VerificationCode string    `db:"verification_code"`
-	CreateDate       time.Time `db:"create_date"`
+	Id               uuid.UUID       `db:"id"`
+	InstanceId       uuid.UUID       `db:"instance_id"`
+	UserId           uuid.UUID       `db:"user_id"`
+	PickUpPointId    uuid.UUID       `db:"pick_up_point_id"`
+	PaymentPeriodId  uuid.UUID       `db:"payment_period_id"`
+	VerificationCode string          `db:"verification_code"`
+	CreateDate       utctime.UTCTime `db:"create_date"`
 	technical.Info
 }
 
 type Return struct {
-	Id               uuid.UUID `db:"id"`
-	InstanceId       uuid.UUID `db:"instance_id"`
-	UserId           uuid.UUID `db:"user_id"`
-	PickUpPointId    uuid.UUID `db:"pick_up_point_id"`
-	RentEndDate      time.Time `db:"rent_end_date"`
-	VerificationCode string    `db:"verification_code"`
-	CreateDate       time.Time `db:"create_date"`
+	Id               uuid.UUID       `db:"id"`
+	InstanceId       uuid.UUID       `db:"instance_id"`
+	UserId           uuid.UUID       `db:"user_id"`
+	PickUpPointId    uuid.UUID       `db:"pick_up_point_id"`
+	RentEndDate      utctime.UTCTime `db:"rent_end_date"`
+	VerificationCode string          `db:"verification_code"`
+	CreateDate       utctime.UTCTime `db:"create_date"`
 	technical.Info
 }
 
@@ -68,13 +69,13 @@ func mapf(value *Rent) records.Rent {
 		Id:              value.Id,
 		UserId:          value.UserId,
 		InstanceId:      value.InstanceId,
-		StartDate:       value.StartDate,
+		StartDate:       value.StartDate.Time,
 		PaymentPeriodId: value.PaymentPeriodId,
 	}
 
 	if value.EndDate.Valid {
 		out.EndDate = new(time.Time)
-		*out.EndDate = value.EndDate.Time
+		*out.EndDate = value.EndDate.V.Time
 	}
 
 	return out
@@ -85,13 +86,13 @@ func unmapf(value *records.Rent) Rent {
 		Id:              value.Id,
 		UserId:          value.UserId,
 		InstanceId:      value.InstanceId,
-		StartDate:       value.StartDate,
+		StartDate:       utctime.FromTime(value.StartDate),
 		PaymentPeriodId: value.PaymentPeriodId,
 	}
 
 	if nil != value.EndDate {
 		out.EndDate.Valid = true
-		out.EndDate.Time = *value.EndDate
+		out.EndDate.V = utctime.FromTime(*value.EndDate)
 	}
 
 	return out
@@ -310,7 +311,7 @@ func mapRequest(value *Request) requests.Rent {
 		PickUpPointId:    value.PickUpPointId,
 		PaymentPeriodId:  value.PaymentPeriodId,
 		VerificationCode: value.VerificationCode,
-		CreateDate:       value.CreateDate,
+		CreateDate:       value.CreateDate.Time,
 	}
 }
 
@@ -322,7 +323,7 @@ func unmapRequest(value *requests.Rent) Request {
 		PickUpPointId:    value.PickUpPointId,
 		PaymentPeriodId:  value.PaymentPeriodId,
 		VerificationCode: value.VerificationCode,
-		CreateDate:       value.CreateDate,
+		CreateDate:       utctime.FromTime(value.CreateDate),
 	}
 }
 
@@ -519,9 +520,9 @@ func mapReturn(value *Return) requests.Return {
 		InstanceId:       value.InstanceId,
 		UserId:           value.UserId,
 		PickUpPointId:    value.PickUpPointId,
-		RentEndDate:      value.RentEndDate,
+		RentEndDate:      value.RentEndDate.Time,
 		VerificationCode: value.VerificationCode,
-		CreateDate:       value.CreateDate,
+		CreateDate:       value.CreateDate.Time,
 	}
 }
 
@@ -531,9 +532,9 @@ func unmapReturn(value *requests.Return) Return {
 		InstanceId:       value.InstanceId,
 		UserId:           value.UserId,
 		PickUpPointId:    value.PickUpPointId,
-		RentEndDate:      value.RentEndDate,
+		RentEndDate:      utctime.FromTime(value.RentEndDate),
 		VerificationCode: value.VerificationCode,
-		CreateDate:       value.CreateDate,
+		CreateDate:       utctime.FromTime(value.CreateDate),
 	}
 }
 

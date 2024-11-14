@@ -8,6 +8,7 @@ import (
 	"rent_service/internal/repository/implementation/sql/exist"
 	gen_uuid "rent_service/internal/repository/implementation/sql/generate/uuid"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/photo"
 	"time"
 
@@ -16,22 +17,22 @@ import (
 )
 
 type Photo struct {
-	Id          uuid.UUID `db:"id"`
-	Placeholder string    `db:"placeholder"`
-	Description string    `db:"description"`
-	Path        string    `db:"path"`
-	Mime        string    `db:"mime"`
-	Date        time.Time `db:"date"`
+	Id          uuid.UUID       `db:"id"`
+	Placeholder string          `db:"placeholder"`
+	Description string          `db:"description"`
+	Path        string          `db:"path"`
+	Mime        string          `db:"mime"`
+	Date        utctime.UTCTime `db:"date"`
 	technical.Info
 }
 
 type TempPhoto struct {
-	Id          uuid.UUID      `db:"id"`
-	Placeholder string         `db:"placeholder"`
-	Description string         `db:"description"`
-	Path        sql.NullString `db:"path"`
-	Mime        string         `db:"mime"`
-	Create      time.Time      `db:"date"`
+	Id          uuid.UUID       `db:"id"`
+	Placeholder string          `db:"placeholder"`
+	Description string          `db:"description"`
+	Path        sql.NullString  `db:"path"`
+	Mime        string          `db:"mime"`
+	Create      utctime.UTCTime `db:"date"`
 	technical.Info
 }
 
@@ -51,7 +52,7 @@ func mapf(value *Photo) models.Photo {
 		Mime:        value.Mime,
 		Placeholder: value.Placeholder,
 		Description: value.Description,
-		Date:        value.Date,
+		Date:        value.Date.Time,
 	}
 }
 
@@ -62,7 +63,7 @@ func unmapf(value *models.Photo) Photo {
 		Mime:        value.Mime,
 		Placeholder: value.Placeholder,
 		Description: value.Description,
-		Date:        value.Date,
+		Date:        utctime.FromTime(value.Date),
 	}
 }
 
@@ -144,7 +145,7 @@ func mapTemp(value *TempPhoto) models.TempPhoto {
 		Mime:        value.Mime,
 		Placeholder: value.Placeholder,
 		Description: value.Description,
-		Create:      value.Create,
+		Create:      value.Create.Time,
 	}
 
 	if value.Path.Valid {
@@ -161,7 +162,7 @@ func unmapTemp(value *models.TempPhoto) TempPhoto {
 		Mime:        value.Mime,
 		Placeholder: value.Placeholder,
 		Description: value.Description,
-		Create:      value.Create,
+		Create:      utctime.FromTime(value.Create),
 	}
 
 	if nil != value.Path {

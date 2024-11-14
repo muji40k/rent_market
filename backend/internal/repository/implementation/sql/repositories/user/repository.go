@@ -12,6 +12,7 @@ import (
 	"rent_service/internal/repository/implementation/sql/repositories/photo"
 	"rent_service/internal/repository/implementation/sql/repositories/pickuppoint"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/user"
 
 	"github.com/google/uuid"
@@ -30,13 +31,13 @@ type User struct {
 }
 
 type Profile struct {
-	Id         uuid.UUID      `db:"id"`
-	UserId     uuid.UUID      `db:"user_id"`
-	Name       sql.NullString `db:"name"`
-	Surname    sql.NullString `db:"surname"`
-	Patronymic sql.NullString `db:"patronymic"`
-	BirthDate  sql.NullTime   `db:"birth_date"`
-	PhotoId    uuid.NullUUID  `db:"photo_id"`
+	Id         uuid.UUID                 `db:"id"`
+	UserId     uuid.UUID                 `db:"user_id"`
+	Name       sql.NullString            `db:"name"`
+	Surname    sql.NullString            `db:"surname"`
+	Patronymic sql.NullString            `db:"patronymic"`
+	BirthDate  sql.Null[utctime.UTCTime] `db:"birth_date"`
+	PhotoId    uuid.NullUUID             `db:"photo_id"`
 	technical.Info
 }
 
@@ -319,7 +320,7 @@ func mapProfile(value *Profile) models.UserProfile {
 	setter(&out.Name, value.Name.Valid, value.Name.String)
 	setter(&out.Surname, value.Surname.Valid, value.Surname.String)
 	setter(&out.Patronymic, value.Patronymic.Valid, value.Patronymic.String)
-	setter(&out.BirthDate, value.BirthDate.Valid, value.BirthDate.Time)
+	setter(&out.BirthDate, value.BirthDate.Valid, value.BirthDate.V.Time)
 	setter(&out.PhotoId, value.PhotoId.Valid, value.PhotoId.UUID)
 
 	return out
@@ -348,7 +349,7 @@ func unmapProfile(value *models.UserProfile) Profile {
 
 	if nil != value.BirthDate {
 		out.BirthDate.Valid = true
-		out.BirthDate.Time = *value.BirthDate
+		out.BirthDate.V = utctime.FromTime(*value.BirthDate)
 	}
 
 	if nil != value.PhotoId {

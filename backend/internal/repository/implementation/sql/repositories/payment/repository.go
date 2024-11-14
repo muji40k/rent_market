@@ -9,6 +9,7 @@ import (
 	"rent_service/internal/repository/implementation/sql/repositories/instance"
 	"rent_service/internal/repository/implementation/sql/repositories/rent"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/payment"
 	"time"
 
@@ -17,17 +18,17 @@ import (
 )
 
 type Payment struct {
-	Id          uuid.UUID      `db:"id"`
-	RentId      uuid.UUID      `db:"rent_id"`
-	PayMethodId uuid.NullUUID  `db:"pay_method_id"`
-	PaymentId   sql.NullString `db:"payment_id"`
-	PeriodStart time.Time      `db:"period_strat"`
-	PeriodEnd   time.Time      `db:"period_end"`
-	CurrencyId  uuid.UUID      `db:"currncy_id"`
-	Value       float64        `db:"value"`
-	Status      sql.NullString `db:"status"`
-	CreateDate  time.Time      `db:"create_date"`
-	PaymentDate sql.NullTime   `db:"payment_date"`
+	Id          uuid.UUID                 `db:"id"`
+	RentId      uuid.UUID                 `db:"rent_id"`
+	PayMethodId uuid.NullUUID             `db:"pay_method_id"`
+	PaymentId   sql.NullString            `db:"payment_id"`
+	PeriodStart utctime.UTCTime           `db:"period_strat"`
+	PeriodEnd   utctime.UTCTime           `db:"period_end"`
+	CurrencyId  uuid.UUID                 `db:"currncy_id"`
+	Value       float64                   `db:"value"`
+	Status      sql.NullString            `db:"status"`
+	CreateDate  utctime.UTCTime           `db:"create_date"`
+	PaymentDate sql.Null[utctime.UTCTime] `db:"payment_date"`
 	technical.Info
 }
 
@@ -47,9 +48,9 @@ func (self *repository) mapPayment(value *Payment) models.Payment {
 	out := models.Payment{
 		Id:          value.Id,
 		RentId:      value.RentId,
-		PeriodStart: value.PeriodStart,
-		PeriodEnd:   value.PeriodEnd,
-		CreateDate:  value.CreateDate,
+		PeriodStart: value.PeriodStart.Time,
+		PeriodEnd:   value.PeriodEnd.Time,
+		CreateDate:  value.CreateDate.Time,
 	}
 
 	if value.Status.Valid {
@@ -68,7 +69,7 @@ func (self *repository) mapPayment(value *Payment) models.Payment {
 
 	if value.PaymentDate.Valid {
 		out.PaymentDate = new(time.Time)
-		*out.PaymentDate = value.PaymentDate.Time
+		*out.PaymentDate = value.PaymentDate.V.Time
 	}
 
 	out.Value, _ = self.currency.GetById(value.CurrencyId)

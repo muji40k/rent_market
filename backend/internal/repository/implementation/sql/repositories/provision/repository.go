@@ -19,6 +19,7 @@ import (
 	"rent_service/internal/repository/implementation/sql/repositories/role"
 	"rent_service/internal/repository/implementation/sql/repositories/user"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/provision"
 	"time"
 
@@ -27,24 +28,24 @@ import (
 )
 
 type Provision struct {
-	Id         uuid.UUID    `db:"id"`
-	RenterId   uuid.UUID    `db:"renter_id"`
-	InstanceId uuid.UUID    `db:"instance_id"`
-	StartDate  time.Time    `db:"start_date"`
-	EndDate    sql.NullTime `db:"end_date"`
+	Id         uuid.UUID                 `db:"id"`
+	RenterId   uuid.UUID                 `db:"renter_id"`
+	InstanceId uuid.UUID                 `db:"instance_id"`
+	StartDate  utctime.UTCTime           `db:"start_date"`
+	EndDate    sql.Null[utctime.UTCTime] `db:"end_date"`
 	technical.Info
 }
 
 type Request struct {
-	Id               uuid.UUID `db:"id"`
-	ProductId        uuid.UUID `db:"product_id"`
-	RenterId         uuid.UUID `db:"renter_id"`
-	PickUpPointId    uuid.UUID `db:"pick_up_point_id"`
-	Name             string    `db:"name"`
-	Description      string    `db:"description"`
-	Condition        string    `db:"condition"`
-	VerificationCode string    `db:"verification_code"`
-	CreateDate       time.Time `db:"create_date"`
+	Id               uuid.UUID       `db:"id"`
+	ProductId        uuid.UUID       `db:"product_id"`
+	RenterId         uuid.UUID       `db:"renter_id"`
+	PickUpPointId    uuid.UUID       `db:"pick_up_point_id"`
+	Name             string          `db:"name"`
+	Description      string          `db:"description"`
+	Condition        string          `db:"condition"`
+	VerificationCode string          `db:"verification_code"`
+	CreateDate       utctime.UTCTime `db:"create_date"`
 	technical.Info
 }
 
@@ -58,12 +59,12 @@ type RequestPayPlans struct {
 }
 
 type Revoke struct {
-	Id               uuid.UUID `db:"id"`
-	InstanceId       uuid.UUID `db:"instance_id"`
-	RenterId         uuid.UUID `db:"renter_id"`
-	PickUpPointId    uuid.UUID `db:"pick_up_point_id"`
-	VerificationCode string    `db:"verification_code"`
-	CreateDate       time.Time `db:"create_date"`
+	Id               uuid.UUID       `db:"id"`
+	InstanceId       uuid.UUID       `db:"instance_id"`
+	RenterId         uuid.UUID       `db:"renter_id"`
+	PickUpPointId    uuid.UUID       `db:"pick_up_point_id"`
+	VerificationCode string          `db:"verification_code"`
+	CreateDate       utctime.UTCTime `db:"create_date"`
 	technical.Info
 }
 
@@ -81,12 +82,12 @@ func mapf(value *Provision) records.Provision {
 		Id:         value.Id,
 		RenterId:   value.RenterId,
 		InstanceId: value.InstanceId,
-		StartDate:  value.StartDate,
+		StartDate:  value.StartDate.Time,
 	}
 
 	if value.EndDate.Valid {
 		out.EndDate = new(time.Time)
-		*out.EndDate = value.EndDate.Time
+		*out.EndDate = value.EndDate.V.Time
 	}
 
 	return out
@@ -97,12 +98,12 @@ func unmapf(value *records.Provision) Provision {
 		Id:         value.Id,
 		RenterId:   value.RenterId,
 		InstanceId: value.InstanceId,
-		StartDate:  value.StartDate,
+		StartDate:  utctime.FromTime(value.StartDate),
 	}
 
 	if nil != value.EndDate {
 		out.EndDate.Valid = true
-		out.EndDate.Time = *value.EndDate
+		out.EndDate.V = utctime.FromTime(*value.EndDate)
 	}
 
 	return out
@@ -346,7 +347,7 @@ func (self *requestRepository) mapRequest(
 		Description:      value.Description,
 		Condition:        value.Condition,
 		VerificationCode: value.VerificationCode,
-		CreateDate:       value.CreateDate,
+		CreateDate:       value.CreateDate.Time,
 	}
 
 	for _, plan := range payPlans {
@@ -375,7 +376,7 @@ func (self *requestRepository) unmapRequest(
 		Description:      value.Description,
 		Condition:        value.Condition,
 		VerificationCode: value.VerificationCode,
-		CreateDate:       value.CreateDate,
+		CreateDate:       utctime.FromTime(value.CreateDate),
 	}
 
 	payPlans := make([]RequestPayPlans, 0, len(value.PayPlans))
@@ -672,7 +673,7 @@ func mapRevoke(value *Revoke) requests.Revoke {
 		RenterId:         value.RenterId,
 		PickUpPointId:    value.PickUpPointId,
 		VerificationCode: value.VerificationCode,
-		CreateDate:       value.CreateDate,
+		CreateDate:       value.CreateDate.Time,
 	}
 }
 
@@ -683,7 +684,7 @@ func unmapRevoke(value *requests.Revoke) Revoke {
 		RenterId:         value.RenterId,
 		PickUpPointId:    value.PickUpPointId,
 		VerificationCode: value.VerificationCode,
-		CreateDate:       value.CreateDate,
+		CreateDate:       utctime.FromTime(value.CreateDate),
 	}
 }
 

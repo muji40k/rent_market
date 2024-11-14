@@ -12,20 +12,20 @@ import (
 	"rent_service/internal/repository/implementation/sql/repositories/instance"
 	"rent_service/internal/repository/implementation/sql/repositories/user"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/review"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
 type Review struct {
-	Id         uuid.UUID `db:"id"`
-	InstanceId uuid.UUID `db:"instance_id"`
-	UserId     uuid.UUID `db:"user_id"`
-	Content    string    `db:"content"`
-	Rating     float64   `db:"rating"`
-	Date       time.Time `db:"date"`
+	Id         uuid.UUID       `db:"id"`
+	InstanceId uuid.UUID       `db:"instance_id"`
+	UserId     uuid.UUID       `db:"user_id"`
+	Content    string          `db:"content"`
+	Rating     float64         `db:"rating"`
+	Date       utctime.UTCTime `db:"date"`
 	technical.Info
 }
 
@@ -45,7 +45,7 @@ func mapf(value *Review) models.Review {
 		UserId:     value.UserId,
 		Content:    value.Content,
 		Rating:     value.Rating,
-		Date:       value.Date,
+		Date:       value.Date.Time,
 	}
 }
 
@@ -56,7 +56,7 @@ func unmapf(value *models.Review) Review {
 		UserId:     value.UserId,
 		Content:    value.Content,
 		Rating:     value.Rating,
-		Date:       value.Date,
+		Date:       utctime.FromTime(value.Date),
 	}
 }
 

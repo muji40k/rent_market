@@ -12,6 +12,7 @@ import (
 	"rent_service/internal/repository/implementation/sql/repositories/instance"
 	"rent_service/internal/repository/implementation/sql/repositories/pickuppoint"
 	"rent_service/internal/repository/implementation/sql/technical"
+	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/storage"
 	"time"
 
@@ -20,11 +21,11 @@ import (
 )
 
 type Storage struct {
-	Id            uuid.UUID    `db:"id"`
-	PickUpPointId uuid.UUID    `db:"pick_up_point_id"`
-	InstanceId    uuid.UUID    `db:"instance_id"`
-	InDate        time.Time    `db:"in_date"`
-	OutDate       sql.NullTime `db:"out_date"`
+	Id            uuid.UUID                 `db:"id"`
+	PickUpPointId uuid.UUID                 `db:"pick_up_point_id"`
+	InstanceId    uuid.UUID                 `db:"instance_id"`
+	InDate        utctime.UTCTime           `db:"in_date"`
+	OutDate       sql.Null[utctime.UTCTime] `db:"out_date"`
 	technical.Info
 }
 
@@ -42,12 +43,12 @@ func mapf(value *Storage) records.Storage {
 		Id:            value.Id,
 		PickUpPointId: value.PickUpPointId,
 		InstanceId:    value.InstanceId,
-		InDate:        value.InDate,
+		InDate:        value.InDate.Time,
 	}
 
 	if value.OutDate.Valid {
 		out.OutDate = new(time.Time)
-		*out.OutDate = value.OutDate.Time
+		*out.OutDate = value.OutDate.V.Time
 	}
 
 	return out
@@ -58,12 +59,12 @@ func unmapf(value *records.Storage) Storage {
 		Id:            value.Id,
 		PickUpPointId: value.PickUpPointId,
 		InstanceId:    value.InstanceId,
-		InDate:        value.InDate,
+		InDate:        utctime.FromTime(value.InDate),
 	}
 
 	if nil != value.OutDate {
 		out.OutDate.Valid = true
-		out.OutDate.Time = *value.OutDate
+		out.OutDate.V = utctime.FromTime(*value.OutDate)
 	}
 
 	return out
