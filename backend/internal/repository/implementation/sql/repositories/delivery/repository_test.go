@@ -945,7 +945,7 @@ func (self *DeliveryCompanyRepositoryTestSuite) TestGetByIdPositive(t provider.T
 func (self *DeliveryCompanyRepositoryTestSuite) TestGetByIdNotFound(t provider.T) {
 	var id uuid.UUID
 
-	describeGetById(t,
+	describeCompanyGetById(t,
 		"Delivery company not found",
 		"Checks that method return error NotFound",
 	)
