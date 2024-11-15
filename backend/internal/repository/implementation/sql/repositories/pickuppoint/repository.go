@@ -39,8 +39,10 @@ type WorkingHours struct {
 
 const FORMAT = "15:04:05"
 
+var clockZero, _ = time.Parse(FORMAT, "00:00:00")
+
 func (self Time) Value() (driver.Value, error) {
-	return time.Time{}.Add(self.Time).Format(FORMAT), nil
+	return clockZero.Add(self.Time).Format(FORMAT), nil
 }
 
 func (self *Time) Scan(src interface{}) error {
@@ -58,7 +60,7 @@ func (self *Time) Scan(src interface{}) error {
 	ptime, err := time.Parse(FORMAT, source)
 
 	if nil == err {
-		self.Time = ptime.Sub(time.Time{})
+		self.Time = ptime.Sub(clockZero)
 	}
 
 	return err

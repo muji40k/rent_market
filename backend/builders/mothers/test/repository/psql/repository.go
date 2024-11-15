@@ -560,32 +560,41 @@ func (self *Inserter) InsertRevokeRequest(value *requests.Revoke) {
 		value.CreateDate)
 }
 
-type PhotoPair struct {
+type Photo struct {
+	Id     *nullable.Nullable[uuid.UUID]
 	Target uuid.UUID
 	Photo  uuid.UUID
+}
+
+func NewPhoto(id *nullable.Nullable[uuid.UUID], target uuid.UUID, photo uuid.UUID) *Photo {
+	return &Photo{id, target, photo}
+}
+
+func (self *Photo) getId() uuid.UUID {
+	return nullable.GetOrFunc(self.Id, uuidgen.Generate)
 }
 
 var insertInstancePhotoQuery = prepareInsert("instances.photos",
 	"id", "instance_id", "photo_id")
 
-func (self *Inserter) InsertInstancePhoto(pair *PhotoPair) {
-	callWrap(self.db, insertInstancePhotoQuery, uuidgen.Generate(),
+func (self *Inserter) InsertInstancePhoto(pair *Photo) {
+	callWrap(self.db, insertInstancePhotoQuery, pair.getId(),
 		pair.Target, pair.Photo)
 }
 
 var insertPickUpPointPhotoQuery = prepareInsert("pick_up_points.photos",
 	"id", "pick_up_point_id", "photo_id")
 
-func (self *Inserter) InsertPickUpPointPhoto(pair *PhotoPair) {
-	callWrap(self.db, insertPickUpPointPhotoQuery, uuidgen.Generate(),
+func (self *Inserter) InsertPickUpPointPhoto(pair *Photo) {
+	callWrap(self.db, insertPickUpPointPhotoQuery, pair.getId(),
 		pair.Target, pair.Photo)
 }
 
 var insertProductPhotoQuery = prepareInsert("products.photos",
 	"id", "product_id", "photo_id")
 
-func (self *Inserter) InsertProductPhoto(pair *PhotoPair) {
-	callWrap(self.db, insertProductPhotoQuery, uuidgen.Generate(),
+func (self *Inserter) InsertProductPhoto(pair *Photo) {
+	callWrap(self.db, insertProductPhotoQuery, pair.getId(),
 		pair.Target, pair.Photo)
 }
 
