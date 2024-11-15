@@ -10,7 +10,6 @@ import (
 	"rent_service/internal/repository/implementation/sql/technical"
 	"rent_service/internal/repository/implementation/sql/utctime"
 	"rent_service/internal/repository/interfaces/photo"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -89,7 +88,6 @@ func (self *repository) Create(photo models.Photo) (models.Photo, error) {
 	}
 
 	if nil == err {
-		photo.Date = time.Now()
 		mapped := unmapf(&photo)
 		self.setter.Update(&mapped.Info)
 		_, err = self.connection.NamedExec(insert_query, mapped)
@@ -201,7 +199,6 @@ func (self *tempRepository) Create(
 	}
 
 	if nil == err {
-		photo.Create = time.Now()
 		mapped := unmapTemp(&photo)
 		self.setter.Update(&mapped.Info)
 		_, err = self.connection.NamedExec(insert_temp_query, mapped)

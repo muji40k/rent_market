@@ -2,6 +2,7 @@ package photo_test
 
 import (
 	"errors"
+	"reflect"
 	"rent_service/builders/misc/uuidgen"
 	models_om "rent_service/builders/mothers/domain/models"
 	auth_builder "rent_service/builders/test/mock/defmisc/authenticator"
@@ -127,6 +128,29 @@ var describeGetPhoto = testcommon.MethodDescriptor(
 	"Get meta information of the photo",
 )
 
+type TempPhotoMatcher struct {
+	value *models.TempPhoto
+}
+
+func (self TempPhotoMatcher) Matches(x any) bool {
+	if reflect.TypeOf(models.TempPhoto{}) != reflect.TypeOf(x) {
+		return false
+	}
+
+	xc := reflect.ValueOf(x).Interface().(models.TempPhoto)
+
+	return gomock.Eq(self.value.Id).Matches(xc.Id) &&
+		gomock.Eq(self.value.Path).Matches(xc.Path) &&
+		gomock.Eq(self.value.Mime).Matches(xc.Mime) &&
+		gomock.Eq(self.value.Placeholder).Matches(xc.Placeholder) &&
+		gomock.Eq(self.value.Description).Matches(xc.Description) &&
+		gomock.Any().Matches(xc.Create)
+}
+
+func (self TempPhotoMatcher) String() string {
+	return "Temp photo match with any create date"
+}
+
 func (self *PhotoServiceTestSuite) TestCreateTempPhotoPositive(t provider.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -177,7 +201,7 @@ func (self *PhotoServiceTestSuite) TestCreateTempPhotoPositive(t provider.T) {
 						Placeholder: refphoto.Placeholder,
 						Description: refphoto.Description,
 					}
-					repo.EXPECT().Create(toBeCreated).
+					repo.EXPECT().Create(TempPhotoMatcher{&toBeCreated}).
 						Return(refphoto, nil).
 						Times(1)
 				}).
@@ -258,7 +282,7 @@ func (self *PhotoServiceTestSuite) TestCreateTempPhotoUnknownMime(t provider.T) 
 						Placeholder: refphoto.Placeholder,
 						Description: refphoto.Description,
 					}
-					repo.EXPECT().Create(toBeCreated).
+					repo.EXPECT().Create(TempPhotoMatcher{&toBeCreated}).
 						Return(refphoto, nil).
 						Times(0)
 				}).

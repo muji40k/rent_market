@@ -7,6 +7,7 @@ import (
 	"rent_service/internal/logic/services/implementations/defservices/photoregistry"
 	photo_provider "rent_service/internal/repository/context/providers/photo"
 	repo_errors "rent_service/internal/repository/errors/cmnerrors"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -104,6 +105,7 @@ func (self *Registry) MoveFromTemp(tempId uuid.UUID) (uuid.UUID, error) {
 
 	if nil == err {
 		photo = mapTempPhoto(&temp)
+		photo.Date = time.Now()
 		photo.Path, err = self.storage.SaveTempData(*temp.Path)
 
 		if nil != err {

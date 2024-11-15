@@ -3,6 +3,7 @@ package photo
 import (
 	"errors"
 	"slices"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -61,6 +62,7 @@ func (self *service) CreateTempPhoto(
 		Mime:        photo.Mime,
 		Placeholder: photo.Placeholder,
 		Description: photo.Description,
+		Create:      time.Now(),
 	}
 
 	err := emptymathcer.Match(
