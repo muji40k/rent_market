@@ -1,9 +1,13 @@
 package testcommon
 
 import (
+	"math"
+
 	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
+
+var EPSILON float64 = math.Nextafter(1, 2) - 1
 
 func SetBase(t provider.T, parent string, epic string, feature string) {
 	t.AddParentSuite(parent)
