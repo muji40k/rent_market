@@ -25,6 +25,7 @@ services:
   backend:
     build:
       context: ../backend/
+      dockerfile: ./Dockerfile
     restart: always
     depends_on:
       postgresql_db:
@@ -54,6 +55,7 @@ services:
   backend_ro1:
     build:
       context: ../backend/
+      dockerfile: ./Dockerfile
     restart: always
     depends_on:
       postgresql_db:
@@ -78,6 +80,7 @@ services:
   backend_ro2:
     build:
       context: ../backend/
+      dockerfile: ./Dockerfile
     restart: always
     depends_on:
       postgresql_db:
@@ -98,6 +101,26 @@ services:
       LOGGER_TYPE: "stderr"
     volumes:
       - /etc/localtime:/etc/localtime:ro
+
+### TESTS #####################################################################
+  backend_unit_tests:
+    build:
+      context: ../backend/
+      dockerfile: ./test.Dockerfile
+    depends_on:
+      test_db:
+        condition: service_healthy
+        restart: true
+    environment:
+      TASK: unit_tests
+      TEST_DB_HOST: test_db
+      TEST_DB_PORT: 5432
+      TEST_DB_NAME: rent_market
+      TEST_DB_USERNAME: postgres
+      TEST_DB_PASSWORD: postgres
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
 ###############################################################################
 
   postgresql_db:
@@ -132,10 +155,14 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    ports:
-      - "127.0.0.1:5434:5432"
+      - PGPORT=5432
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: 'pg_isready -U postgres --dbname=rent_market && pg_isready -U postgres --dbname authentication'
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -171,6 +198,7 @@ services:
   mirror_backend:
     build:
       context: ../backend/
+      dockerfile: ./Dockerfile
     restart: always
     depends_on:
       mirror_postgresql_db:

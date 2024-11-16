@@ -1,5 +1,4 @@
-
-.PHONY: default unit_tests report_show
+GO_FILES = $(shell find . -type f -name "*.go")
 
 SHUFFLE=1
 RACE=0
@@ -20,14 +19,32 @@ ifeq ($(SHORT), 1)
 PIPE=| grep -E -v "no (test files|tests to run)"
 endif
 
-default: unit_tests
+.PHONY: default
+default: build
 
+.PHONY: build run
+build: main
+run: build
+	./main
+
+main: $(GO_FILES)
+	go build ./cmd/main.go
+
+.PHONY: unit_tests
 unit_tests:
-	$(MAKE) -f allure-report/Makefile before
-	ALLURE_OUTPUT_PATH=$(PWD)/allure-report/ TEST_DB_PORT=5434 go test $(TEST_FLAGS)  ./internal/logic/services/implementations/... $(PIPE)
-	ALLURE_OUTPUT_PATH=$(PWD)/allure-report/ TEST_DB_PORT=5434 go test $(TEST_FLAGS) -p 1  ./internal/repository/implementation/... $(PIPE)
-	$(MAKE) -f allure-report/Makefile report
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
+	go test $(TEST_FLAGS)  ./internal/logic/services/implementations/... $(PIPE)
+	go test $(TEST_FLAGS) -p 1  ./internal/repository/implementation/... $(PIPE)
 
+.PHONY: report
+report:
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} report
+
+.PHONY: report_show
 report_show:
-	$(MAKE) -f allure-report/Makefile show
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} show
+
+.PHONY: test
+test:
+	echo ${ALLURE_OUTPUT_PATH}
 

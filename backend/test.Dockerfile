@@ -1,5 +1,4 @@
-
-FROM golang:latest AS build
+FROM golang:latest
 
 ADD go.mod /go/
 ADD go.sum /go/
@@ -14,13 +13,10 @@ ADD internal/ /go/internal/
 ADD server/ /go/server/
 ADD cmd/ /go/cmd/
 ADD misc/ /go/misc/
+ADD allure-report/Makefile /go/allure-report/Makefile
 ADD Makefile /go/Makefile
 
-RUN make build
+ENV ALLURE_OUTPUT_PATH=/go/allure-report
 
-FROM golang:latest
-
-COPY --from=build /go/main /main
-
-ENTRYPOINT /main
+ENTRYPOINT make $TASK
 

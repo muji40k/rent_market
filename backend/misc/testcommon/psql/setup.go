@@ -29,8 +29,13 @@ func (self *Context) SetUp(t provider.T) {
 
 func (self *Context) TearDown(t provider.T) {
 	t.WithNewStep("Close connections", func(sCtx provider.StepCtx) {
-		self.Inserter.Close()
-		self.Factory.Clear()
+		if nil != self.Inserter {
+			self.Inserter.Close()
+		}
+
+		if nil != self.Factory {
+			self.Factory.Clear()
+		}
 	})
 }
 
