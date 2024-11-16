@@ -20,6 +20,7 @@ services:
       - "80:80"
     volumes:
       - ../server/media/:/static/img
+      - /etc/localtime:/etc/localtime:ro
 
   backend:
     build:
@@ -47,6 +48,7 @@ services:
     volumes:
       - ../server/media/:/server/media
       - ../server/temp/:/server/temp
+      - /etc/localtime:/etc/localtime:ro
 
 ######## RO Instances #########################################################
   backend_ro1:
@@ -70,6 +72,8 @@ services:
       DB_USER_PASSWORD: "reader"
       GIN_MODE: "release"
       LOGGER_TYPE: "stderr"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   backend_ro2:
     build:
@@ -92,6 +96,8 @@ services:
       DB_USER_PASSWORD: "reader"
       GIN_MODE: "release"
       LOGGER_TYPE: "stderr"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 ###############################################################################
 
   postgresql_db:
@@ -105,6 +111,7 @@ services:
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     volumes:
       - /mnt/rent_market:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "127.0.0.1:5432:5432"
     command: |
@@ -118,6 +125,18 @@ services:
       timeout: 5s
       retries: 5
 
+  test_db:
+    build:
+      context: ../scripts/psql/.
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
   pgadmin:
     image: dpage/pgadmin4:latest
     restart: always
@@ -130,6 +149,7 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=psswd
     volumes:
       - ./pgadmin/:/var/lib/pgadmin
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "127.0.0.1:42069:80"
 
@@ -146,6 +166,7 @@ services:
       - "8080:80"
     volumes:
       - ../server/media/:/static/img
+      - /etc/localtime:/etc/localtime:ro
 
   mirror_backend:
     build:
@@ -173,6 +194,7 @@ services:
     volumes:
       - ../server/media/:/server/media
       - ../server/temp/:/server/temp
+      - /etc/localtime:/etc/localtime:ro
 
   mirror_postgresql_db:
     build:
@@ -188,6 +210,7 @@ services:
       - PGPASSWORD=replicator
     volumes:
       - /mnt/rent_market_mirror:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "127.0.0.1:5433:5432"
     healthcheck:
