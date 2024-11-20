@@ -16,11 +16,12 @@ unit-tests:
     before_script:
         - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
-        - pwd
-        - ls
         - docker compose -f docker/docker-compose.yml --env-file ${env} run backend_unit_tests
     after_script:
         - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+        - ls ./backend
+        - ls ./backend/allure-report/
+        - ls ./backend/allure-report/allure-results/
     artifacts:
       paths:
         - ./backend/allure-report/allure-results/
