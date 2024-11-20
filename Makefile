@@ -13,7 +13,7 @@ default: unit_tests
 
 .PHONY: unit_tests unit_tests_build unit_tests_clean
 unit_tests_build:
-	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) build backend_unit_tests test_db
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build --no-cache backend_unit_tests test_db
 
 unit_tests_clean:
 	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) down --remove-orphans

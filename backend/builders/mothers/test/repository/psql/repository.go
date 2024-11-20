@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"os"
+	"rent_service/builders/misc/generator"
 	"rent_service/builders/misc/uuidgen"
 	"rent_service/builders/repository/factory/v1/psql"
 	"rent_service/internal/domain/models"
@@ -82,6 +83,94 @@ func (self *dbConfig) getConnection() (*sqlx.DB, error) {
 			self.database,
 		),
 	)
+}
+
+func GeneratorStepNewList[T any](
+	t generator.IAllureProvider,
+	name string,
+	base func(uint, map[string]generator.GFunc) (T, uuid.UUID),
+	inserter func(*T),
+	gens ...generator.Gpair,
+) generator.IGenerator {
+	out := make([]T, 0)
+	return GeneratorStepList(t, name, &out, base, inserter, gens...)
+}
+
+func GeneratorStepList[T any](
+	t generator.IAllureProvider,
+	name string,
+	reference *[]T,
+	base func(uint, map[string]generator.GFunc) (T, uuid.UUID),
+	inserter func(*T),
+	gens ...generator.Gpair,
+) generator.IGenerator {
+	i := uint(0)
+	spy := nullable.Some(generator.Spy{})
+
+	return generator.NewAllureWrap(
+		t, fmt.Sprintf("Create and insert %v", name),
+		generator.NewFuncWrapped(
+			generator.FuncListWrap(
+				reference,
+				func(m map[string]generator.GFunc) (T, uuid.UUID) {
+					p, id := base(i, m)
+					i++
+					return p, id
+				},
+				func(items []T) {
+					nullable.IfSome(spy, func(spy *generator.Spy) {
+						spy.SniffValue(name, items)
+					})
+					BulkInsert(inserter, items...)
+				},
+			),
+			gens...,
+		),
+		spy,
+	)
+}
+
+func GeneratorStepValue[T any](
+	t generator.IAllureProvider,
+	name string,
+	reference *T,
+	base func(map[string]generator.GFunc) (T, uuid.UUID),
+	inserter func(*T),
+	gens ...generator.Gpair,
+) generator.IGenerator {
+	id := nullable.None[uuid.UUID]()
+	spy := nullable.Some(generator.Spy{})
+
+	return generator.NewAllureWrap(
+		t, fmt.Sprintf("Create and insert %v", name),
+		generator.NewFunc(
+			func(m map[string]generator.GFunc) uuid.UUID {
+				return nullable.GetOrInsertFunc(id, func() uuid.UUID {
+					var id uuid.UUID
+					*reference, id = base(m)
+					return id
+				})
+			},
+			func() {
+				nullable.IfSome(spy, func(spy *generator.Spy) {
+					spy.SniffValue(name, *reference)
+				})
+				inserter(reference)
+			},
+			gens...,
+		),
+		spy,
+	)
+}
+
+func GeneratorStepNewValue[T any](
+	t generator.IAllureProvider,
+	name string,
+	base func(map[string]generator.GFunc) (T, uuid.UUID),
+	inserter func(*T),
+	gens ...generator.Gpair,
+) generator.IGenerator {
+	return GeneratorStepValue(t, name, new(T), base, inserter, gens...)
 }
 
 func prepareInsert(table string, columnNames ...string) string {

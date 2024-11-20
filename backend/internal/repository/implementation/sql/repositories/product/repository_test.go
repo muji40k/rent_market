@@ -4,6 +4,7 @@ import (
 	"math/rand/v2"
 	models_b "rent_service/builders/domain/models"
 	"rent_service/builders/misc/collect"
+	"rent_service/builders/misc/generator"
 	"rent_service/builders/misc/uuidgen"
 	models_om "rent_service/builders/mothers/domain/models"
 	"rent_service/builders/mothers/test/repository/psql"
@@ -65,10 +66,7 @@ var describeGetWithFilter = testcommon.MethodDescriptor(
 )
 
 func (self *ProductRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
-	var (
-		category  models.Category
-		reference models.Product
-	)
+	var reference models.Product
 
 	describeGetById(t,
 		"Simple return test",
@@ -77,18 +75,33 @@ func (self *ProductRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
-		t.WithNewStep("Create and insert category", func(sCtx provider.StepCtx) {
-			category = testcommon.AssignParameter(sCtx, "category",
-				models_om.CategoryRandomId().WithName("1").Build(),
-			)
-			self.Inserter.InsertCategory(&category)
-		})
-		t.WithNewStep("Create and insert product", func(sCtx provider.StepCtx) {
-			reference = testcommon.AssignParameter(sCtx, "product",
-				models_om.ProductExmaple("1", category.Id).Build(),
-			)
-			self.Inserter.InsertProduct(&reference)
-		})
+		t.Parallel()
+
+		gg := generator.NewGeneratorGroup()
+
+		cgen := psql.GeneratorStepNewValue(
+			t, "category",
+			func(_ map[string]generator.GFunc) (models.Category, uuid.UUID) {
+				c := models_om.CategoryRandomId().WithName("1").Build()
+				return c, c.Id
+			},
+			self.Inserter.InsertCategory,
+		)
+		gg.AddFinish(cgen)
+
+		pgen := psql.GeneratorStepValue(
+			t, "product", &reference,
+			func(m map[string]generator.GFunc) (models.Product, uuid.UUID) {
+				p := models_om.ProductExmaple("1", m["category"]()).Build()
+				return p, p.Id
+			},
+			self.Inserter.InsertProduct,
+			generator.Pair("category", cgen.Generate),
+		)
+		gg.Add(pgen, 1)
+
+		gg.Generate()
+		gg.Finish()
 	})
 
 	// Act
