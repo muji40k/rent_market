@@ -35,9 +35,6 @@ unit_tests:
 	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
 	go test $(TEST_FLAGS)  ./internal/logic/services/implementations/... $(PIPE)
 	go test $(TEST_FLAGS) -p 1  ./internal/repository/implementation/... $(PIPE)
-
-.PHONY: report
-report:
 	$(MAKE) -C ${ALLURE_OUTPUT_PATH} report
 
 .PHONY: report_show
