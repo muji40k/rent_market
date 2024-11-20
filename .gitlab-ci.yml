@@ -7,18 +7,18 @@ stages:
 build-unit-tests:
     stage: build
     before_script:
-        - make unit_tests_clean PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
-        - make unit_tests_build PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} build backend_unit_tests test_db
 
 unit-tests:
     stage: test
     before_script:
-        - make unit_tests_clean PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
-        - make unit_tests PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} run backend_unit_tests
     after_script:
-        - make unit_tests_clean PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
 
 # Integration tests
 #  
