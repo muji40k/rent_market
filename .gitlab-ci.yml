@@ -1,0 +1,40 @@
+stages:
+    - build
+    - test
+
+# Unit tests
+
+build-unit-tests:
+    stage: build
+    before_script:
+        - make unit_tests_clean PERSONAL=0
+    script:
+        - make unit_tests_build PERSONAL=0
+
+unit-tests:
+    stage: test
+    before_script:
+        - make unit_tests_clean PERSONAL=0
+    script:
+        - make unit_tests PERSONAL=0
+    after_script:
+        - make unit_tests_clean PERSONAL=0
+
+# Integration tests
+#  
+# build-integration-tests:
+#     stage: build
+#     before_script:
+#         - make integration_tests_clean PERSONAL=0
+#     script:
+#         - make integration_tests_build PERSONAL=0
+#  
+# integration-tests:
+#     stage: test
+#     before_script:
+#         - make integration_tests_clean PERSONAL=0
+#     script:
+#         - make integration_tests PERSONAL=0
+#     after_script:
+#         - make integration_tests_clean PERSONAL=0
+
