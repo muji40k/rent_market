@@ -16,14 +16,13 @@ unit-tests:
     before_script:
         - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
-        - mkdir -p backend/allure-report/allure-results/
         - docker compose -f docker/docker-compose.yml --env-file ${env} run backend_unit_tests
     after_script:
         - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     artifacts:
       paths:
         - backend/allure-report/allure-results/
-      expire_in: 1 day
+      expire_in: 1 hour
 
 # Integration tests
 #  
