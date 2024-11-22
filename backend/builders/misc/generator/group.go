@@ -32,12 +32,14 @@ func (self *GeneratorGroup) AddFinish(gen IGenerator) *GeneratorGroup {
 	return self
 }
 
-func (self *GeneratorGroup) Generate() {
+func (self *GeneratorGroup) Generate() *GeneratorGroup {
 	for _, call := range self.generateCalls {
 		for range call.amount {
 			call.call()
 		}
 	}
+
+	return self
 }
 
 func (self *GeneratorGroup) Finish() {

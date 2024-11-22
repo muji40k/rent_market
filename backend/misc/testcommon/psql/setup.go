@@ -17,7 +17,7 @@ func (self *Context) SetUp(t provider.T) {
 		self.Inserter = psql.NewInserter()
 	})
 
-	t.WithNewStep("Create factory", func(sCtx provider.StepCtx) {
+	t.WithNewStep("Create repository factory", func(sCtx provider.StepCtx) {
 		var err error
 		self.Factory, err = psql.PSQLRepositoryFactory().Build()
 

@@ -137,11 +137,11 @@ func generalCustomComparator[T any](
 	name string,
 ) {
 	s(name, func(sCtx provider.StepCtx) {
-		a(sCtx).True(cmp(expected, actual))
 		sCtx.WithParameters(
 			allure.NewParameter("Expected", expected),
 			allure.NewParameter("Actual", actual),
 		)
+		a(sCtx).True(cmp(expected, actual))
 	})
 }
 

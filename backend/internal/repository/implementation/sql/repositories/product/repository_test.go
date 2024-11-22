@@ -75,13 +75,11 @@ func (self *ProductRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 
 	// Arrange
 	t.WithTestSetup(func(t provider.T) {
-		t.Parallel()
-
 		gg := generator.NewGeneratorGroup()
 
 		cgen := psql.GeneratorStepNewValue(
 			t, "category",
-			func(_ map[string]generator.GFunc) (models.Category, uuid.UUID) {
+			func() (models.Category, uuid.UUID) {
 				c := models_om.CategoryRandomId().WithName("1").Build()
 				return c, c.Id
 			},
@@ -91,12 +89,11 @@ func (self *ProductRepositoryTestSuite) TestGetByIdPositive(t provider.T) {
 
 		pgen := psql.GeneratorStepValue(
 			t, "product", &reference,
-			func(m map[string]generator.GFunc) (models.Product, uuid.UUID) {
-				p := models_om.ProductExmaple("1", m["category"]()).Build()
+			func() (models.Product, uuid.UUID) {
+				p := models_om.ProductExmaple("1", cgen.Generate()).Build()
 				return p, p.Id
 			},
 			self.Inserter.InsertProduct,
-			generator.Pair("category", cgen.Generate),
 		)
 		gg.Add(pgen, 1)
 

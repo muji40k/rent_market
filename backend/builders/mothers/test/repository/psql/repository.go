@@ -88,21 +88,19 @@ func (self *dbConfig) getConnection() (*sqlx.DB, error) {
 func GeneratorStepNewList[T any](
 	t generator.IAllureProvider,
 	name string,
-	base func(uint, map[string]generator.GFunc) (T, uuid.UUID),
+	base func(uint) (T, uuid.UUID),
 	inserter func(*T),
-	gens ...generator.Gpair,
 ) generator.IGenerator {
 	out := make([]T, 0)
-	return GeneratorStepList(t, name, &out, base, inserter, gens...)
+	return GeneratorStepList(t, name, &out, base, inserter)
 }
 
 func GeneratorStepList[T any](
 	t generator.IAllureProvider,
 	name string,
 	reference *[]T,
-	base func(uint, map[string]generator.GFunc) (T, uuid.UUID),
+	base func(uint) (T, uuid.UUID),
 	inserter func(*T),
-	gens ...generator.Gpair,
 ) generator.IGenerator {
 	i := uint(0)
 	spy := nullable.Some(generator.Spy{})
@@ -112,10 +110,10 @@ func GeneratorStepList[T any](
 		generator.NewFuncWrapped(
 			generator.FuncListWrap(
 				reference,
-				func(m map[string]generator.GFunc) (T, uuid.UUID) {
-					p, id := base(i, m)
+				func() (T, uuid.UUID) {
+					j := i
 					i++
-					return p, id
+					return base(j)
 				},
 				func(items []T) {
 					nullable.IfSome(spy, func(spy *generator.Spy) {
@@ -124,7 +122,6 @@ func GeneratorStepList[T any](
 					BulkInsert(inserter, items...)
 				},
 			),
-			gens...,
 		),
 		spy,
 	)
@@ -134,9 +131,8 @@ func GeneratorStepValue[T any](
 	t generator.IAllureProvider,
 	name string,
 	reference *T,
-	base func(map[string]generator.GFunc) (T, uuid.UUID),
+	base func() (T, uuid.UUID),
 	inserter func(*T),
-	gens ...generator.Gpair,
 ) generator.IGenerator {
 	id := nullable.None[uuid.UUID]()
 	spy := nullable.Some(generator.Spy{})
@@ -144,10 +140,10 @@ func GeneratorStepValue[T any](
 	return generator.NewAllureWrap(
 		t, fmt.Sprintf("Create and insert %v", name),
 		generator.NewFunc(
-			func(m map[string]generator.GFunc) uuid.UUID {
+			func() uuid.UUID {
 				return nullable.GetOrInsertFunc(id, func() uuid.UUID {
 					var id uuid.UUID
-					*reference, id = base(m)
+					*reference, id = base()
 					return id
 				})
 			},
@@ -157,7 +153,6 @@ func GeneratorStepValue[T any](
 				})
 				inserter(reference)
 			},
-			gens...,
 		),
 		spy,
 	)
@@ -166,11 +161,23 @@ func GeneratorStepValue[T any](
 func GeneratorStepNewValue[T any](
 	t generator.IAllureProvider,
 	name string,
-	base func(map[string]generator.GFunc) (T, uuid.UUID),
+	base func() (T, uuid.UUID),
 	inserter func(*T),
-	gens ...generator.Gpair,
 ) generator.IGenerator {
-	return GeneratorStepValue(t, name, new(T), base, inserter, gens...)
+	return GeneratorStepValue(t, name, new(T), base, inserter)
+}
+
+func GeneratorStep(
+	t generator.IAllureProvider,
+	name string,
+	gen func(spy *nullable.Nullable[generator.Spy]) generator.IGenerator,
+) generator.IGenerator {
+	spy := nullable.Some(generator.Spy{})
+
+	return generator.NewAllureWrap(
+		t, fmt.Sprintf("Create and insert %v", name),
+		gen(spy), spy,
+	)
 }
 
 func prepareInsert(table string, columnNames ...string) string {

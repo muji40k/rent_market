@@ -13,6 +13,7 @@ ADD internal/ /go/internal/
 ADD server/ /go/server/
 ADD cmd/ /go/cmd/
 ADD misc/ /go/misc/
+ADD tests/ /go/tests/
 ADD allure-report/Makefile /go/allure-report/Makefile
 ADD Makefile /go/Makefile
 

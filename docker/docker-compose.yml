@@ -121,6 +121,25 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
+
+  backend_integration_tests:
+    build:
+      context: ../backend/
+      dockerfile: ./test.Dockerfile
+    depends_on:
+      test_db:
+        condition: service_healthy
+        restart: true
+    environment:
+      TASK: integration_tests
+      TEST_DB_HOST: test_db
+      TEST_DB_PORT: 5432
+      TEST_DB_NAME: ${DB_MAIN_NAME}
+      TEST_DB_USERNAME: ${DB_USER}
+      TEST_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
 ###############################################################################
 
   postgresql_db:
@@ -157,6 +176,8 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       PGPORT: 5432
+    ports:
+      - "127.0.0.1:5434:5432"
     volumes:
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
