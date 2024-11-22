@@ -25,20 +25,20 @@ unit-tests:
       expire_in: 1 hour
 
 # Integration tests
-#  
-# build-integration-tests:
-#     stage: build
-#     before_script:
-#         - make integration_tests_clean PERSONAL=0
-#     script:
-#         - make integration_tests_build PERSONAL=0
-#  
-# integration-tests:
-#     stage: test
-#     before_script:
-#         - make integration_tests_clean PERSONAL=0
-#     script:
-#         - make integration_tests PERSONAL=0
-#     after_script:
-#         - make integration_tests_clean PERSONAL=0
+
+build-integration-tests:
+    stage: build
+    before_script:
+        - make integration_tests_clean PERSONAL=0
+    script:
+        - make integration_tests_build PERSONAL=0
+
+integration-tests:
+    stage: test
+    before_script:
+        - make integration_tests_clean PERSONAL=0
+    script:
+        - make integration_tests PERSONAL=0
+    after_script:
+        - make integration_tests_clean PERSONAL=0
 
