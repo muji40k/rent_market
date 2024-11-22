@@ -33,13 +33,17 @@ main: $(GO_FILES)
 .PHONY: unit_tests
 unit_tests:
 	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
-	go test $(TEST_FLAGS)  ./internal/logic/services/implementations/... $(PIPE)
-	go test $(TEST_FLAGS) -p 1  ./internal/repository/implementation/... $(PIPE)
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS)  ./internal/logic/services/implementations/... $(PIPE);'` \
+	`'err=$$?;'` \
+	`'go test $(TEST_FLAGS) -p 1  ./internal/repository/implementation/... $(PIPE) && exit $$err'
+
 
 .PHONY: integration_tests
 integration_tests:
 	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
-	go test $(TEST_FLAGS) -p 1  ./tests/integration/defservices/... $(PIPE)
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) -p 1  ./tests/integration/defservices/... $(PIPE)'
 
 .PHONY: report
 report:
