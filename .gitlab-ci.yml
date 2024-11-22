@@ -29,16 +29,20 @@ unit-tests:
 build-integration-tests:
     stage: build
     before_script:
-        - make integration_tests_clean PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
-        - make integration_tests_build PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} build backend_integration_tests test_db
 
 integration-tests:
     stage: test
     before_script:
-        - make integration_tests_clean PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
-        - make integration_tests PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} run backend_integration_tests
     after_script:
-        - make integration_tests_clean PERSONAL=0
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    artifacts:
+      paths:
+        - backend/allure-report/allure-results/
+      expire_in: 1 hour
 
