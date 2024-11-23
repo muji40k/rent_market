@@ -2,6 +2,12 @@ package delivery_test
 
 import (
 	"fmt"
+	"rent_service/builders/misc/generator"
+	"rent_service/builders/misc/nullcommon"
+	"rent_service/builders/misc/uuidgen"
+	models_om "rent_service/builders/mothers/domain/models"
+	records_om "rent_service/builders/mothers/domain/records"
+	requests_om "rent_service/builders/mothers/domain/requests"
 	"rent_service/builders/mothers/test/repository/psql"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/domain/records"
@@ -11,7 +17,6 @@ import (
 	"rent_service/internal/logic/services/interfaces/delivery"
 	"rent_service/internal/logic/services/types/date"
 	"rent_service/internal/logic/services/types/token"
-
 	"rent_service/internal/misc/types/collection"
 	"rent_service/misc/nullable"
 	"rent_service/misc/testcommon"
@@ -19,14 +24,6 @@ import (
 	psqlcommon "rent_service/misc/testcommon/psql"
 	"testing"
 	"time"
-
-	"rent_service/builders/misc/generator"
-	"rent_service/builders/misc/nullcommon"
-
-	"rent_service/builders/misc/uuidgen"
-	models_om "rent_service/builders/mothers/domain/models"
-	records_om "rent_service/builders/mothers/domain/records"
-	requests_om "rent_service/builders/mothers/domain/requests"
 
 	"github.com/google/uuid"
 	"github.com/ozontech/allure-go/pkg/allure"
