@@ -184,6 +184,24 @@ services:
       timeout: 5s
       retries: 5
 
+  debug_db:
+    build:
+      context: ../scripts/psql/.
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGPORT: 5432
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: 'pg_isready -U postgres --dbname=rent_market && pg_isready -U postgres --dbname authentication'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   pgadmin:
     image: dpage/pgadmin4:latest
     restart: always
