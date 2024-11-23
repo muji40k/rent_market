@@ -65,18 +65,6 @@ func MapDelivery(value *requests.Delivery) delivery.Delivery {
 	}
 }
 
-func UnwrapDate(d *date.Date) *time.Time {
-	return nullable.GetOr(
-		nullable.Map(
-			nullable.FromPtr(d),
-			func(d *date.Date) *time.Time {
-				return &d.Time
-			},
-		),
-		nil,
-	)
-}
-
 func CompareDelivery(reference delivery.Delivery, actual delivery.Delivery) bool {
 	return reference.Id == actual.Id &&
 		reference.CompanyId == actual.CompanyId &&
@@ -84,13 +72,13 @@ func CompareDelivery(reference delivery.Delivery, actual delivery.Delivery) bool
 		reference.FromId == actual.FromId &&
 		reference.ToId == actual.ToId &&
 		psqlcommon.CompareTimePtrMicro(
-			UnwrapDate(reference.BeginDate.Actual),
-			UnwrapDate(actual.BeginDate.Actual),
+			psqlcommon.UnwrapDate(reference.BeginDate.Actual),
+			psqlcommon.UnwrapDate(actual.BeginDate.Actual),
 		) &&
 		psqlcommon.CompareTimeMicro(reference.BeginDate.Scheduled.Time, actual.BeginDate.Scheduled.Time) &&
 		psqlcommon.CompareTimePtrMicro(
-			UnwrapDate(reference.EndDate.Actual),
-			UnwrapDate(actual.EndDate.Actual),
+			psqlcommon.UnwrapDate(reference.EndDate.Actual),
+			psqlcommon.UnwrapDate(actual.EndDate.Actual),
 		) &&
 		psqlcommon.CompareTimeMicro(reference.EndDate.Scheduled.Time, actual.EndDate.Scheduled.Time) &&
 		reference.VerificationCode == actual.VerificationCode &&
