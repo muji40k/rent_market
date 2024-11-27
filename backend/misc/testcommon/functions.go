@@ -2,6 +2,7 @@ package testcommon
 
 import (
 	"math"
+	"rent_service/internal/misc/types/currency"
 
 	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
@@ -65,9 +66,9 @@ func Require[T any](p IProvider) Asserter[T] {
 }
 
 // Adopted from testify
-func diffLists[T any](cmp func(T, T) bool, expected []T, actual []T) ([]T, []T) {
+func diffLists[T any, F any](cmp func(T, F) bool, expected []T, actual []F) ([]T, []F) {
 	eEx := make([]T, 0)
-	aEx := make([]T, 0)
+	aEx := make([]F, 0)
 	eLen := len(expected)
 	aLen := len(actual)
 	aVisited := make([]bool, aLen)
@@ -96,16 +97,18 @@ func diffLists[T any](cmp func(T, T) bool, expected []T, actual []T) ([]T, []T) 
 	return eEx, aEx
 }
 
-func (self *asserter[T]) ElementsMatchFunc(cmp func(T, T) bool, expected []T, actual []T, name string) {
-	wrap := func(e, a []T) bool {
-		if len(e) != len(a) {
-			return false
-		}
-
-		extraA, extraB := diffLists(cmp, e, a)
-
-		return len(extraA) == 0 && len(extraB) == 0
+func ElementsMatchFunc[T any, F any](cmp func(T, F) bool, expected []T, actual []F) bool {
+	if len(expected) != len(actual) {
+		return false
 	}
+
+	extraA, extraB := diffLists(cmp, expected, actual)
+
+	return len(extraA) == 0 && len(extraB) == 0
+}
+
+func (self *asserter[T]) ElementsMatchFunc(cmp func(T, T) bool, expected []T, actual []T, name string) {
+	wrap := func(e, a []T) bool { return ElementsMatchFunc(cmp, e, a) }
 
 	generalCustomComparator(
 		self.provider.WithNewStep,
@@ -143,5 +146,10 @@ func generalCustomComparator[T any](
 		)
 		a(sCtx).True(cmp(expected, actual))
 	})
+}
+
+func CompareCurrency(expected currency.Currency, actual currency.Currency) bool {
+	return expected.Name == actual.Name &&
+		EPSILON > math.Abs(expected.Value-actual.Value)
 }
 

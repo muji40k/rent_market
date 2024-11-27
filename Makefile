@@ -45,6 +45,23 @@ integration_tests:
 	-$(MAKE) integration_tests_run
 	$(MAKE) integration_tests_clean
 
+.PHONY: e2e_tests e2e_tests_run e2e_tests_build e2e_tests_clean
+e2e_tests_build:
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build --no-cache backend_e2e_tests test_db
+
+e2e_tests_clean:
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) down --remove-orphans
+
+e2e_tests_run:
+	-docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) run backend_e2e_tests
+	ALLURE_OUTPUT_PATH=$(PWD)/backend/allure-report/ $(MAKE) -C ./backend/ report
+
+e2e_tests:
+	$(MAKE) e2e_tests_clean
+	$(MAKE) e2e_tests_build
+	-$(MAKE) e2e_tests_run
+	$(MAKE) e2e_tests_clean
+
 .PHONY: report_show
 report_show:
 	ALLURE_OUTPUT_PATH=$(PWD)/backend/allure-report/ $(MAKE) -C ./backend/ report_show

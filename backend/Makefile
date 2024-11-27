@@ -16,7 +16,7 @@ TEST_FLAGS += -race
 endif
 
 ifeq ($(SHORT), 1)
-PIPE=| grep -E -v "no (test files|tests to run)"
+PIPE=| grep -a -E -v "no (test files|tests to run)"
 endif
 
 .PHONY: default
@@ -43,7 +43,13 @@ unit_tests:
 integration_tests:
 	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
 	/bin/bash -o pipefail -c ` \
-	`'go test $(TEST_FLAGS) -p 1  ./tests/integration/defservices/... $(PIPE)'
+	`'go test $(TEST_FLAGS) -p 1  ./tests/integration/... $(PIPE)'
+
+.PHONY: e2e_tests
+e2e_tests:
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) -p 1  ./tests/e2e/... $(PIPE)'
 
 .PHONY: report
 report:
