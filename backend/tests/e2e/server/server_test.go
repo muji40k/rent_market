@@ -13,8 +13,6 @@ import (
 	"rent_service/builders/mothers/test/repository/psql"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/domain/requests"
-	"time"
-
 	sinstance "rent_service/internal/logic/services/interfaces/instance"
 	sphoto "rent_service/internal/logic/services/interfaces/photo"
 	sprovide "rent_service/internal/logic/services/interfaces/provide"
@@ -22,8 +20,6 @@ import (
 	suser "rent_service/internal/logic/services/interfaces/user"
 	"rent_service/internal/logic/services/types/date"
 	"rent_service/internal/misc/types/collection"
-
-	// "rent_service/internal/misc/types/currency"
 	"rent_service/misc/nullable"
 	"rent_service/misc/testcommon"
 	"rent_service/misc/testcommon/defservices"
@@ -31,13 +27,11 @@ import (
 	"rent_service/misc/testcommon/server"
 	"rent_service/server/authenticator"
 	"rent_service/server/headers"
+	"time"
 
-	// "slices"
 	"testing"
 
-	// "github.com/gavv/httpexpect/v2"
 	"github.com/google/uuid"
-	// "github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 )
@@ -96,9 +90,11 @@ func (self *ServerE2ETestSuite) BeforeEach(t provider.T) {
 	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
 		self.rContext.Inserter.ClearDB()
 	})
-}
 
-func (self *ServerE2ETestSuite) AfterEach(t provider.T) {
+	t.WithNewStep("Clear sessions", func(sCtx provider.StepCtx) {
+		self.seContext.Inserter.ClearDB()
+	})
+
 	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
 		self.sContext.PhotoRegistry.Clear()
 	})

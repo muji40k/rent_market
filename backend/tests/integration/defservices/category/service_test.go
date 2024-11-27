@@ -61,9 +61,7 @@ func (self *CategoryServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
 		self.service = self.sContext.Factory.CreateCategoryService()
 	})
-}
 
-func (self *CategoryServiceIntegrationTestSuite) AfterEach(t provider.T) {
 	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
 		self.sContext.PhotoRegistry.Clear()
 	})

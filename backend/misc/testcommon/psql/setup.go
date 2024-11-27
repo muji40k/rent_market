@@ -30,6 +30,7 @@ func (self *Context) SetUp(t provider.T) {
 func (self *Context) TearDown(t provider.T) {
 	t.WithNewStep("Close connections", func(sCtx provider.StepCtx) {
 		if nil != self.Inserter {
+			self.Inserter.ClearDB()
 			self.Inserter.Close()
 		}
 

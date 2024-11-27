@@ -12,7 +12,8 @@ import (
 )
 
 type Context struct {
-	Server *gin.Engine
+	Server   *gin.Engine
+	Inserter *server.Inserter
 }
 
 func (self *Context) SetUp(
@@ -23,9 +24,20 @@ func (self *Context) SetUp(
 	t.WithNewStep("Create server", func(sCtx provider.StepCtx) {
 		self.Server = server.TestServer(factories, controllers...)
 	})
+
+	t.WithNewStep("Create session database helper", func(sCtx provider.StepCtx) {
+		self.Inserter = server.NewInserter()
+	})
 }
 
-func (self *Context) TearDown(t provider.T) {}
+func (self *Context) TearDown(t provider.T) {
+	t.WithNewStep("Close session database connection", func(sCtx provider.StepCtx) {
+		if nil != self.Inserter {
+			self.Inserter.ClearDB()
+			self.Inserter.Close()
+		}
+	})
+}
 
 type Provider interface {
 	assert.TestingT
@@ -39,9 +51,9 @@ func (self *Context) GetClient(t Provider) *httpexpect.Expect {
 			Jar:       httpexpect.NewCookieJar(),
 		},
 		Reporter: httpexpect.NewAssertReporter(t),
-		// Printers: []httpexpect.Printer{
-		//     httpexpect.NewDebugPrinter(t, true),
-		// },
+		Printers: []httpexpect.Printer{
+			httpexpect.NewCompactPrinter(t),
+		},
 	})
 }
 

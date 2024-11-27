@@ -1,9 +1,11 @@
 package server
 
 import (
+	"fmt"
 	"os"
 	"rent_service/builders/application/web/authenticator/apikey"
 	"rent_service/builders/application/web/authenticator/apikey/repository/psql"
+	"rent_service/internal/domain/models"
 	"rent_service/internal/logic/context/v1"
 	"rent_service/server"
 	"rent_service/server/authenticator"
@@ -31,6 +33,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 )
 
 const (
@@ -110,6 +114,63 @@ func TestServer(
 	}
 
 	return engine
+}
+
+type Inserter struct {
+	db *sqlx.DB
+}
+
+func (self *dbConfig) getConnection() (*sqlx.DB, error) {
+	return sqlx.Connect("pgx",
+		fmt.Sprintf(
+			"postgres://%v:%v@%v:%v/%v",
+			self.user,
+			self.password,
+			self.host,
+			self.port,
+			self.database,
+		),
+	)
+}
+
+func NewInserter() *Inserter {
+	config := parse()
+	db, err := config.getConnection()
+
+	if nil != err {
+		panic(err)
+	}
+
+	return &Inserter{db}
+}
+
+func (self *Inserter) Close() {
+	self.db.Close()
+}
+
+func (self *Inserter) ClearDB() {
+	_, err := self.db.Exec("delete from public.sessions")
+
+	if nil != err {
+		panic(err)
+	}
+}
+
+func (self *Inserter) InsertSession(user models.User, access string, renew string) {
+	now := time.Now()
+	_, err := self.db.Exec(`
+        INSERT INTO public.sessions (
+            access_token, access_valid_to, renew_token, renew_valid_to, token
+        ) VALUES (
+            $1, $2, $3, $4, $5
+        )`,
+		access, now.Add(ACCESS_TIME), renew, now.Add(RENEW_TIME),
+		string(user.Token),
+	)
+
+	if nil != err {
+		panic(err)
+	}
 }
 
 func DefaultControllers() []ControllerCreator {
