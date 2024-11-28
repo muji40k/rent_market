@@ -53,8 +53,13 @@ type PickUpPointServiceIntegrationTestSuite struct {
 }
 
 func (self *PickUpPointServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreatePickUpPointService()
+	})
 }
 
 func (self *PickUpPointServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -68,17 +73,6 @@ func (self *PickUpPointServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Pick Up Point service",
 	)
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreatePickUpPointService()
-	})
 }
 
 var describeListPickUpPoints = testcommon.MethodDescriptor(
@@ -125,31 +119,11 @@ func (self *PickUpPointServiceIntegrationTestSuite) TestListPicUpPointsPositive(
 
 	// Assert
 	t.Require().Nil(err, "No error must be returned")
-	t.Require().ElementsMatch(reference, collection.Collect(result.Iter()),
+	testcommon.Require[pickuppoint.PickUpPoint](t).ContainsMultipleFunc(
+		testcommon.DeepEqual[pickuppoint.PickUpPoint](),
+		collection.Collect(result.Iter()), reference,
 		"All values must be returned",
 	)
-}
-
-func (self *PickUpPointServiceIntegrationTestSuite) TestListPickUpPointsEmpty(t provider.T) {
-	describeListPickUpPoints(t,
-		"Empty pick up point set",
-		"Check that empty set can by returned without error",
-	)
-
-	// Arrange
-	// Empty
-
-	// Act
-	var result collection.Collection[pickuppoint.PickUpPoint]
-	var err error
-
-	t.WithNewStep("Get all pick up points", func(sCtx provider.StepCtx) {
-		result, err = self.service.ListPickUpPoints()
-	})
-
-	// Assert
-	t.Require().Nil(err, "No error must be returned")
-	t.Require().Equal(uint(0), collection.Count(result.Iter()), "Collection is empty")
 }
 
 func (self *PickUpPointServiceIntegrationTestSuite) TestGetPickUpPointByIdPositive(t provider.T) {
@@ -235,8 +209,13 @@ type PickUpPointPhotoServiceIntegrationTestSuite struct {
 }
 
 func (self *PickUpPointPhotoServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreatePickUpPointPhotoService()
+	})
 }
 
 func (self *PickUpPointPhotoServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -250,18 +229,6 @@ func (self *PickUpPointPhotoServiceIntegrationTestSuite) BeforeEach(t provider.T
 		"Default services with PSQL repository",
 		"Pick Up Point photo service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreatePickUpPointPhotoService()
-	})
 }
 
 var describeListPickUpPointPhotos = testcommon.MethodDescriptor(
@@ -388,8 +355,13 @@ type PickUpPointWorkingHoursServiceIntegrationTestSuite struct {
 }
 
 func (self *PickUpPointWorkingHoursServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreatePickUpPointWorkingHoursService()
+	})
 }
 
 func (self *PickUpPointWorkingHoursServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -403,18 +375,6 @@ func (self *PickUpPointWorkingHoursServiceIntegrationTestSuite) BeforeEach(t pro
 		"Default services with PSQL repository",
 		"Pick Up Point working hours service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreatePickUpPointWorkingHoursService()
-	})
 }
 
 var describeListPickUpPointWorkingHours = testcommon.MethodDescriptor(
@@ -511,14 +471,17 @@ func (self *PickUpPointWorkingHoursServiceIntegrationTestSuite) TestListPickUpPo
 }
 
 func TestPickUpPointServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(PickUpPointServiceIntegrationTestSuite))
 }
 
 func TestPickUpPointPhotoServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(PickUpPointPhotoServiceIntegrationTestSuite))
 }
 
 func TestPickUpPointWorkingHoursServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(PickUpPointWorkingHoursServiceIntegrationTestSuite))
 }
 

@@ -70,8 +70,13 @@ type PhotoServiceIntegrationTestSuite struct {
 }
 
 func (self *PhotoServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreatePhotoService()
+	})
 }
 
 func (self *PhotoServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -85,18 +90,6 @@ func (self *PhotoServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Photo service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreatePhotoService()
-	})
 }
 
 var describeCreateTempPhoto = testcommon.MethodDescriptor(
@@ -553,6 +546,7 @@ func (self *PhotoServiceIntegrationTestSuite) TestGetPhotoNotFound(t provider.T)
 }
 
 func TestPhotoServiceIntegrationTestSuiteRunner(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(PhotoServiceIntegrationTestSuite))
 }
 

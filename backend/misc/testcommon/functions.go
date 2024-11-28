@@ -2,7 +2,9 @@ package testcommon
 
 import (
 	"math"
+	"reflect"
 	"rent_service/internal/misc/types/currency"
+	"slices"
 
 	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
@@ -37,6 +39,14 @@ type IProvider interface {
 type Asserter[T any] interface {
 	EqualFunc(cmp func(T, T) bool, expected T, actual T, name string)
 	ElementsMatchFunc(cmp func(T, T) bool, expected []T, actual []T, name string)
+	ContainsFunc(cmp func(T, T) bool, where []T, what T, name string)
+	ContainsMultipleFunc(cmp func(T, T) bool, where []T, what []T, name string)
+}
+
+func DeepEqual[T any]() func(e, a T) bool {
+	return func(e, a T) bool {
+		return reflect.DeepEqual(e, a)
+	}
 }
 
 type asserter[T any] struct {
@@ -120,6 +130,48 @@ func (self *asserter[T]) ElementsMatchFunc(cmp func(T, T) bool, expected []T, ac
 	)
 }
 
+func (self *asserter[T]) ContainsFunc(cmp func(T, T) bool, where []T, what T, name string) {
+	generalCustomComparator(
+		self.provider.WithNewStep,
+		self.getter,
+		func(e T, a []T) bool {
+			return slices.ContainsFunc(a, func(v T) bool {
+				return cmp(v, e)
+			})
+		},
+		what,
+		where,
+		self.prefix+name,
+	)
+}
+
+func (self *asserter[T]) ContainsMultipleFunc(cmp func(T, T) bool, where []T, what []T, name string) {
+	generalCustomComparator(
+		self.provider.WithNewStep,
+		self.getter,
+		func(e, a []T) bool {
+			for _, ve := range e {
+				visited := false
+
+				for _, va := range a {
+					if !visited {
+						visited = cmp(ve, va)
+					}
+				}
+
+				if !visited {
+					return false
+				}
+			}
+
+			return true
+		},
+		what,
+		where,
+		self.prefix+name,
+	)
+}
+
 func (self *asserter[T]) EqualFunc(cmp func(T, T) bool, expected T, actual T, name string) {
 	generalCustomComparator(
 		self.provider.WithNewStep,
@@ -131,12 +183,12 @@ func (self *asserter[T]) EqualFunc(cmp func(T, T) bool, expected T, actual T, na
 	)
 }
 
-func generalCustomComparator[T any](
+func generalCustomComparator[T any, F any](
 	s func(string, func(sCtx provider.StepCtx), ...*allure.Parameter),
 	a func(provider.StepCtx) provider.Asserts,
-	cmp func(T, T) bool,
+	cmp func(T, F) bool,
 	expected T,
-	actual T,
+	actual F,
 	name string,
 ) {
 	s(name, func(sCtx provider.StepCtx) {

@@ -43,13 +43,21 @@ unit_tests:
 integration_tests:
 	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
 	/bin/bash -o pipefail -c ` \
-	`'go test $(TEST_FLAGS) -p 1  ./tests/integration/... $(PIPE)'
+	`'go test $(TEST_FLAGS) -p 5  ./tests/integration/... $(PIPE)'
 
 .PHONY: e2e_tests
 e2e_tests:
 	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
 	/bin/bash -o pipefail -c ` \
-	`'go test $(TEST_FLAGS) -p 1  ./tests/e2e/... $(PIPE)'
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
 
 .PHONY: report
 report:

@@ -93,8 +93,13 @@ type DeliveryServiceIntegrationTestSuite struct {
 }
 
 func (self *DeliveryServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreateDeliveryService()
+	})
 }
 
 func (self *DeliveryServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -108,18 +113,6 @@ func (self *DeliveryServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Delivery service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreateDeliveryService()
-	})
 }
 
 var describeAcceptDelivery = testcommon.MethodDescriptor(
@@ -1837,8 +1830,13 @@ type DeliveryCompanyServiceIntegrationTestSuite struct {
 }
 
 func (self *DeliveryCompanyServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreateDeliveryCompanyService()
+	})
 }
 
 func (self *DeliveryCompanyServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -1852,18 +1850,6 @@ func (self *DeliveryCompanyServiceIntegrationTestSuite) BeforeEach(t provider.T)
 		"Default services with PSQL repository",
 		"Delivery company service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreateDeliveryCompanyService()
-	})
 }
 
 var describeGetDeliveryCompanyById = testcommon.MethodDescriptor(
@@ -1927,7 +1913,9 @@ func (self *DeliveryCompanyServiceIntegrationTestSuite) TestListDeliveryCompanie
 
 	// Assert
 	t.Require().Nil(err, "No error must be returned")
-	t.Require().ElementsMatch(reference, collection.Collect(result.Iter()),
+	testcommon.Require[delivery.DeliveryCompany](t).ContainsMultipleFunc(
+		testcommon.DeepEqual[delivery.DeliveryCompany](),
+		collection.Collect(result.Iter()), reference,
 		"All companies returned",
 	)
 }
@@ -2080,10 +2068,12 @@ func (self *DeliveryCompanyServiceIntegrationTestSuite) TestGetDeliveryCompanyBy
 }
 
 func TestDeliveryServiceIntegrationTestSuiteRunner(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(DeliveryServiceIntegrationTestSuite))
 }
 
 func TestDeliveryCompanyServiceIntegrationTestSuiteRunner(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(DeliveryCompanyServiceIntegrationTestSuite))
 }
 

@@ -41,8 +41,13 @@ type ProductServiceIntegrationTestSuite struct {
 }
 
 func (self *ProductServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreateProductService()
+	})
 }
 
 func (self *ProductServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -56,18 +61,6 @@ func (self *ProductServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Product service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreateProductService()
-	})
 }
 
 var describeListProducts = testcommon.MethodDescriptor(
@@ -217,7 +210,9 @@ func (self *ProductServiceIntegrationTestSuite) TestListProductsPositive(t provi
 
 	// Assert
 	t.Require().Nil(err, "No error must be returned")
-	t.Require().ElementsMatch(reference, collection.Collect(result.Iter()),
+	testcommon.Require[product.Product](t).ContainsMultipleFunc(
+		testcommon.DeepEqual[product.Product](),
+		collection.Collect(result.Iter()), reference,
 		"All values must be returned",
 	)
 }
@@ -283,11 +278,11 @@ func (self *ProductServiceIntegrationTestSuite) TestListProductsEmptyCollection(
 					CategoryId: cgen.Generate(),
 					Query:      &query,
 					Characteristics: []product.FilterCharachteristic{
-						{Key: "key1", Values: []string{"value1", "value2", "value3"}},
+						{Key: "key1", Values: []string{"forbidden"}},
 						{Key: "key2", Range: &struct {
 							Min float64
 							Max float64
-						}{Min: 1, Max: 2}},
+						}{Min: 12345, Max: 123456}},
 					},
 				},
 			)
@@ -422,8 +417,13 @@ type ProductCharacteristicsServiceIntegrationTestSuite struct {
 }
 
 func (self *ProductCharacteristicsServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreateProductCharacteristicsService()
+	})
 }
 
 func (self *ProductCharacteristicsServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -437,18 +437,6 @@ func (self *ProductCharacteristicsServiceIntegrationTestSuite) BeforeEach(t prov
 		"Default services with PSQL repository",
 		"Product characteristics service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreateProductCharacteristicsService()
-	})
 }
 
 var describeListProductCharacteristics = testcommon.MethodDescriptor(
@@ -563,8 +551,13 @@ type ProductPhotoServiceIntegrationTestSuite struct {
 }
 
 func (self *ProductPhotoServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreateProductPhotoService()
+	})
 }
 
 func (self *ProductPhotoServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -578,18 +571,6 @@ func (self *ProductPhotoServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Product photo service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreateProductPhotoService()
-	})
 }
 
 var describeListProductPhotos = testcommon.MethodDescriptor(
@@ -705,14 +686,17 @@ func (self *ProductPhotoServiceIntegrationTestSuite) TestListProductPhotosNotFou
 }
 
 func TestProductServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(ProductServiceIntegrationTestSuite))
 }
 
 func TestProductCharacteristicsServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(ProductCharacteristicsServiceIntegrationTestSuite))
 }
 
 func TestProductPhotoServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(ProductPhotoServiceIntegrationTestSuite))
 }
 

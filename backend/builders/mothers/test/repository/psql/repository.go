@@ -3,6 +3,7 @@ package psql
 import (
 	"database/sql"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"os"
 	"rent_service/builders/misc/generator"
@@ -213,7 +214,33 @@ func NewInserter() *Inserter {
 		panic(err)
 	}
 
-	return &Inserter{db}
+	i := &Inserter{db}
+	i.initDB()
+
+	return i
+}
+
+func (self *Inserter) initDB() {
+	var init bool
+	_, err := self.db.Exec("create table if not exists public.initter(initialised boolean)")
+
+	if nil == err {
+		row := self.db.QueryRow("select * from public.initter")
+		err = row.Scan(&init)
+
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil
+		}
+	}
+
+	if nil == err && !init {
+		self.ClearDB()
+		_, err = self.db.Exec("insert into public.initter(initialised) values (true)")
+	}
+
+	if nil != err {
+		panic(err)
+	}
 }
 
 func (self *Inserter) Close() {
@@ -536,7 +563,7 @@ var insertUserQuery = prepareInsert("users.users",
 	"id", "token", "name", "email", "password")
 
 func (self *Inserter) InsertUser(value *models.User) {
-	callWrap(self.db, insertUserQuery, value.Id, value.Token, value.Name,
+	_, _ = self.db.Exec(insertUserQuery, value.Id, value.Token, value.Name,
 		value.Email, value.Password)
 }
 

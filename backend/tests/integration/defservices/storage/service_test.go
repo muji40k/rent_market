@@ -62,8 +62,13 @@ type StorageServiceIntegrationTestSuite struct {
 }
 
 func (self *StorageServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreateStorageService()
+	})
 }
 
 func (self *StorageServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -77,18 +82,6 @@ func (self *StorageServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Storage service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreateStorageService()
-	})
 }
 
 var describeListStoragesByPickUpPoint = testcommon.MethodDescriptor(
@@ -539,6 +532,7 @@ func (self *StorageServiceIntegrationTestSuite) TestGetStorageByInstanceNotFound
 }
 
 func TestStorageServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(StorageServiceIntegrationTestSuite))
 }
 

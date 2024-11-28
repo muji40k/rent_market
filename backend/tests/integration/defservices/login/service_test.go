@@ -28,8 +28,13 @@ type LoginServiceIntegrationTestSuite struct {
 }
 
 func (self *LoginServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreateLoginService()
+	})
 }
 
 func (self *LoginServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -43,18 +48,6 @@ func (self *LoginServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Login service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreateLoginService()
-	})
 }
 
 var describeRegister = testcommon.MethodDescriptor(
@@ -226,6 +219,7 @@ func (self *LoginServiceIntegrationTestSuite) TestRegisterUserAlreadyExists(t pr
 }
 
 func TestLoginServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(LoginServiceIntegrationTestSuite))
 }
 

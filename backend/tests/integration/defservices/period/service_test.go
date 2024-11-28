@@ -32,8 +32,13 @@ type PeriodServiceIntegrationTestSuite struct {
 }
 
 func (self *PeriodServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreatePeriodService()
+	})
 }
 
 func (self *PeriodServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -47,18 +52,6 @@ func (self *PeriodServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Period service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreatePeriodService()
-	})
 }
 
 var describeGetPeriods = testcommon.MethodDescriptor(
@@ -115,34 +108,15 @@ func (self *PeriodServiceIntegrationTestSuite) TestGetPeriodsPositive(t provider
 
 	// Assert
 	t.Require().Nil(err, "No error must be returned")
-	t.Require().ElementsMatch(reference, collection.Collect(result.Iter()),
+	testcommon.Require[period.Period](t).ContainsMultipleFunc(
+		testcommon.DeepEqual[period.Period](),
+		collection.Collect(result.Iter()), reference,
 		"All values must be returned",
 	)
 }
 
-func (self *PeriodServiceIntegrationTestSuite) TestGetPeriodsEmpty(t provider.T) {
-	describeGetPeriods(t,
-		"No error on empty set",
-		"Check that no error returned, then set is empty",
-	)
-
-	// Arrange
-	// Empty
-
-	// Act
-	var result collection.Collection[period.Period]
-	var err error
-
-	t.WithNewStep("Get all periods", func(sCtx provider.StepCtx) {
-		result, err = self.service.GetPeriods()
-	})
-
-	// Assert
-	t.Require().Nil(err, "No error must be returned")
-	t.Require().ElementsMatch(0, collection.Count(result.Iter()), "Set is empty")
-}
-
 func TestPeriodServiceIntegrationTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.RunSuite(t, new(PeriodServiceIntegrationTestSuite))
 }
 

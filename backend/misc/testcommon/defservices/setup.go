@@ -35,10 +35,10 @@ func (self *Context) TearDown(t provider.T) {
 		}
 	})
 
-	t.WithNewStep("Remove photos", func(sCtx provider.StepCtx) {
-		if nil != self.PhotoRegistry {
-			self.PhotoRegistry.Clear()
-		}
-	})
+	// t.WithNewStep("Remove photos", func(sCtx provider.StepCtx) {
+	//     if nil != self.PhotoRegistry {
+	//         self.PhotoRegistry.Clear()
+	//     }
+	// })
 }
 

@@ -86,18 +86,6 @@ func (self *ServerE2ETestSuite) BeforeEach(t provider.T) {
 		"Server api tests",
 		"MVP",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear sessions", func(sCtx provider.StepCtx) {
-		self.seContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
 }
 
 func (self *ServerE2ETestSuite) TestStartProvision(t provider.T) {

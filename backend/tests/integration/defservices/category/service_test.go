@@ -38,8 +38,13 @@ type CategoryServiceIntegrationTestSuite struct {
 }
 
 func (self *CategoryServiceIntegrationTestSuite) BeforeAll(t provider.T) {
+	// t.Parallel()
 	self.rContext.SetUp(t)
 	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
+
+	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
+		self.service = self.sContext.Factory.CreateCategoryService()
+	})
 }
 
 func (self *CategoryServiceIntegrationTestSuite) AfterAll(t provider.T) {
@@ -53,18 +58,6 @@ func (self *CategoryServiceIntegrationTestSuite) BeforeEach(t provider.T) {
 		"Default services with PSQL repository",
 		"Category service",
 	)
-
-	t.WithNewStep("Clear database", func(sCtx provider.StepCtx) {
-		self.rContext.Inserter.ClearDB()
-	})
-
-	t.WithNewStep("Create service", func(sCtx provider.StepCtx) {
-		self.service = self.sContext.Factory.CreateCategoryService()
-	})
-
-	t.WithNewStep("Clear photo registry", func(sCtx provider.StepCtx) {
-		self.sContext.PhotoRegistry.Clear()
-	})
 }
 
 var describeListCategories = testcommon.MethodDescriptor(
@@ -110,7 +103,9 @@ func (self *CategoryServiceIntegrationTestSuite) TestListCategoriesPositive(t pr
 
 	// Assert
 	t.Require().Nil(err, "No error must be returned")
-	t.Require().ElementsMatch(reference, collection.Collect(result.Iter()),
+	testcommon.Require[category.Category](t).ContainsMultipleFunc(
+		testcommon.DeepEqual[category.Category](),
+		collection.Collect(result.Iter()), reference,
 		"All values must be returned",
 	)
 }
