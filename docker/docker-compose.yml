@@ -160,6 +160,32 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
+
+  backend_sandbox:
+    build:
+      context: ../backend/
+      dockerfile: ./Dockerfile
+    depends_on:
+      debug_db:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "127.0.0.1:54321:80"
+    environment:
+      APP_PHOTO_BASE_URL: ${PHOTO_BASE_URL}
+      APP_PHOTO_PATH_MAIN: /server/media
+      APP_PHOTO_PATH_TEMP: /server/temp
+      APP_SWAGGER_CONF_URL: ${SWAGGER_CONF}
+      DB_AUTH_NAME: ${DB_AUTH_NAME}
+      DB_MAIN_NAME: ${DB_MAIN_NAME}
+      DB_HOST: debug_db
+      DB_PORT: 5432
+      DB_USER_NAME: ${DB_USER}
+      DB_USER_PASSWORD: ${DB_PASSWORD}
+      GIN_MODE: release
+      LOGGER_TYPE: ${LOGGER_TYPE}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 ###############################################################################
 
   postgresql_db:

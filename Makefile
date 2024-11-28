@@ -62,6 +62,14 @@ e2e_tests:
 	-$(MAKE) e2e_tests_run
 	$(MAKE) e2e_tests_clean
 
+.PHONY: sandbox sandbox_down
+sandbox:
+	docker compose -f docker/docker-compose.yml --env-file .env/sandbox build backend_sandbox debug_db
+	docker compose -f docker/docker-compose.yml --env-file .env/sandbox up -d backend_sandbox debug_db
+
+sandbox_down:
+	docker compose -f docker/docker-compose.yml --env-file .env/sandbox down --remove-orphans backend_sandbox debug_db
+
 .PHONY: report_show
 report_show:
 	ALLURE_OUTPUT_PATH=$(PWD)/backend/allure-report/ $(MAKE) -C ./backend/ report_show
