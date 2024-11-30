@@ -196,7 +196,7 @@ func mapPayPlans(value *models.InstancePayPlans) Collection[instance.PayPlan] {
 
 	for _, payPlan := range value.Map {
 		out[i] = instance.PayPlan{
-			InstanceId: payPlan.Id,
+			InstanceId: value.InstanceId,
 			PeriodId:   payPlan.PeriodId,
 			Price:      payPlan.Price,
 		}

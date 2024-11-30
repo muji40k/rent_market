@@ -19,12 +19,13 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ../server/media/:/static/img
+      - ${SERVER_PHOTO_PATH}:/static/img
       - /etc/localtime:/etc/localtime:ro
 
   backend:
     build:
       context: ../backend/
+      dockerfile: ./Dockerfile
     restart: always
     depends_on:
       postgresql_db:
@@ -33,27 +34,28 @@ services:
     ports:
       - "127.0.0.1:12345:80"
     environment:
-      APP_PHOTO_BASE_URL: "/img"
-      APP_PHOTO_PATH_MAIN: "/server/media"
-      APP_PHOTO_PATH_TEMP: "/server/temp"
-      APP_SWAGGER_CONF_URL: "/docs/openapi.json"
-      DB_AUTH_NAME: "authentication"
-      DB_MAIN_NAME: "rent_market"
-      DB_HOST: "postgresql_db"
-      DB_PORT: "5432"
-      DB_USER_NAME: "postgres"
-      DB_USER_PASSWORD: "postgres"
-      GIN_MODE: "release"
-      LOGGER_TYPE: "stderr"
+      APP_PHOTO_BASE_URL: ${PHOTO_BASE_URL}
+      APP_PHOTO_PATH_MAIN: /server/media
+      APP_PHOTO_PATH_TEMP: /server/temp
+      APP_SWAGGER_CONF_URL: ${SWAGGER_CONF}
+      DB_AUTH_NAME: ${DB_AUTH_NAME}
+      DB_MAIN_NAME: ${DB_MAIN_NAME}
+      DB_HOST: postgresql_db
+      DB_PORT: 5432
+      DB_USER_NAME: ${DB_USER}
+      DB_USER_PASSWORD: ${DB_PASSWORD}
+      GIN_MODE: release
+      LOGGER_TYPE: ${LOGGER_TYPE}
     volumes:
-      - ../server/media/:/server/media
-      - ../server/temp/:/server/temp
+      - ${SERVER_PHOTO_PATH}:/server/media
+      - ${SERVER_TEMP_PHOTO_PATH}:/server/temp
       - /etc/localtime:/etc/localtime:ro
 
 ######## RO Instances #########################################################
   backend_ro1:
     build:
       context: ../backend/
+      dockerfile: ./Dockerfile
     restart: always
     depends_on:
       postgresql_db:
@@ -62,22 +64,23 @@ services:
     ports:
       - "127.0.0.1:12346:80"
     environment:
-      APP_PHOTO_BASE_URL: "/img"
-      APP_SWAGGER_CONF_URL: "/docs/openapi.json"
-      DB_AUTH_NAME: "authentication"
-      DB_MAIN_NAME: "rent_market"
-      DB_HOST: "postgresql_db"
-      DB_PORT: "5432"
-      DB_USER_NAME: "reader"
-      DB_USER_PASSWORD: "reader"
-      GIN_MODE: "release"
-      LOGGER_TYPE: "stderr"
+      APP_PHOTO_BASE_URL: ${PHOTO_BASE_URL}
+      APP_SWAGGER_CONF_URL: ${SWAGGER_CONF}
+      DB_AUTH_NAME: ${DB_AUTH_NAME}
+      DB_MAIN_NAME: ${DB_MAIN_NAME}
+      DB_HOST: postgresql_db
+      DB_PORT: 5432
+      DB_USER_NAME: ${DB_RO_USER}
+      DB_USER_PASSWORD: ${DB_RO_PASSWORD}
+      GIN_MODE: release
+      LOGGER_TYPE: ${LOGGER_TYPE}
     volumes:
       - /etc/localtime:/etc/localtime:ro
 
   backend_ro2:
     build:
       context: ../backend/
+      dockerfile: ./Dockerfile
     restart: always
     depends_on:
       postgresql_db:
@@ -86,16 +89,101 @@ services:
     ports:
       - "127.0.0.1:12347:80"
     environment:
-      APP_PHOTO_BASE_URL: "/img"
-      APP_SWAGGER_CONF_URL: "/docs/openapi.json"
-      DB_AUTH_NAME: "authentication"
-      DB_MAIN_NAME: "rent_market"
-      DB_HOST: "postgresql_db"
-      DB_PORT: "5432"
-      DB_USER_NAME: "reader"
-      DB_USER_PASSWORD: "reader"
-      GIN_MODE: "release"
-      LOGGER_TYPE: "stderr"
+      APP_PHOTO_BASE_URL: ${PHOTO_BASE_URL}
+      APP_SWAGGER_CONF_URL: ${SWAGGER_CONF}
+      DB_AUTH_NAME: ${DB_AUTH_NAME}
+      DB_MAIN_NAME: ${DB_MAIN_NAME}
+      DB_HOST: postgresql_db
+      DB_PORT: 5432
+      DB_USER_NAME: ${DB_RO_USER}
+      DB_USER_PASSWORD: ${DB_RO_PASSWORD}
+      GIN_MODE: release
+      LOGGER_TYPE: ${LOGGER_TYPE}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+### TESTS #####################################################################
+  backend_unit_tests:
+    build:
+      context: ../backend/
+      dockerfile: ./test.Dockerfile
+    depends_on:
+      test_db:
+        condition: service_healthy
+        restart: true
+    environment:
+      TASK: unit_tests
+      TEST_DB_HOST: test_db
+      TEST_DB_PORT: 5432
+      TEST_DB_NAME: ${DB_MAIN_NAME}
+      TEST_DB_USERNAME: ${DB_USER}
+      TEST_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
+
+  backend_integration_tests:
+    build:
+      context: ../backend/
+      dockerfile: ./test.Dockerfile
+    depends_on:
+      test_db:
+        condition: service_healthy
+        restart: true
+    environment:
+      TASK: integration_tests
+      TEST_DB_HOST: test_db
+      TEST_DB_PORT: 5432
+      TEST_DB_NAME: ${DB_MAIN_NAME}
+      TEST_DB_USERNAME: ${DB_USER}
+      TEST_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
+
+  backend_e2e_tests:
+    build:
+      context: ../backend/
+      dockerfile: ./test.Dockerfile
+    depends_on:
+      test_db:
+        condition: service_healthy
+        restart: true
+    environment:
+      TASK: e2e_tests
+      TEST_DB_HOST: test_db
+      TEST_DB_PORT: 5432
+      TEST_DB_NAME: ${DB_MAIN_NAME}
+      TEST_DB_AUTH_NAME: ${DB_AUTH_NAME}
+      TEST_DB_USERNAME: ${DB_USER}
+      TEST_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
+
+  backend_sandbox:
+    build:
+      context: ../backend/
+      dockerfile: ./Dockerfile
+    depends_on:
+      debug_db:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "127.0.0.1:54321:80"
+    environment:
+      APP_PHOTO_BASE_URL: ${PHOTO_BASE_URL}
+      APP_PHOTO_PATH_MAIN: /server/media
+      APP_PHOTO_PATH_TEMP: /server/temp
+      APP_SWAGGER_CONF_URL: ${SWAGGER_CONF}
+      DB_AUTH_NAME: ${DB_AUTH_NAME}
+      DB_MAIN_NAME: ${DB_MAIN_NAME}
+      DB_HOST: debug_db
+      DB_PORT: 5432
+      DB_USER_NAME: ${DB_USER}
+      DB_USER_PASSWORD: ${DB_PASSWORD}
+      GIN_MODE: release
+      LOGGER_TYPE: ${LOGGER_TYPE}
     volumes:
       - /etc/localtime:/etc/localtime:ro
 ###############################################################################
@@ -105,10 +193,11 @@ services:
       context: ../scripts/psql/.
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
-      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGPORT: 5432
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
     volumes:
       - /mnt/rent_market:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
@@ -130,12 +219,34 @@ services:
       context: ../scripts/psql/.
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGPORT: 5432
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: 'pg_isready -U postgres --dbname=rent_market && pg_isready -U postgres --dbname authentication'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  debug_db:
+    build:
+      context: ../scripts/psql/.
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGPORT: 5432
     ports:
       - "127.0.0.1:5434:5432"
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: 'pg_isready -U postgres --dbname=rent_market && pg_isready -U postgres --dbname authentication'
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -145,8 +256,8 @@ services:
         condition: service_healthy
         restart: true
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@domain.org
-      - PGADMIN_DEFAULT_PASSWORD=psswd
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_USER}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     volumes:
       - ./pgadmin/:/var/lib/pgadmin
       - /etc/localtime:/etc/localtime:ro
@@ -165,12 +276,13 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ../server/media/:/static/img
+      - ${SERVER_PHOTO_PATH}:/static/img
       - /etc/localtime:/etc/localtime:ro
 
   mirror_backend:
     build:
       context: ../backend/
+      dockerfile: ./Dockerfile
     restart: always
     depends_on:
       mirror_postgresql_db:
@@ -179,21 +291,21 @@ services:
     ports:
       - "127.0.0.1:12344:80"
     environment:
-      APP_PHOTO_BASE_URL: "/img"
-      APP_PHOTO_PATH_MAIN: "/server/media"
-      APP_PHOTO_PATH_TEMP: "/server/temp"
-      APP_SWAGGER_CONF_URL: "/docs/openapi.json"
-      DB_AUTH_NAME: "authentication"
-      DB_MAIN_NAME: "rent_market"
-      DB_HOST: "mirror_postgresql_db"
-      DB_PORT: "5432"
-      DB_USER_NAME: "reader"
-      DB_USER_PASSWORD: "reader"
-      GIN_MODE: "release"
-      LOGGER_TYPE: "stderr"
+      APP_PHOTO_BASE_URL: ${PHOTO_BASE_URL}
+      APP_PHOTO_PATH_MAIN: /server/media
+      APP_PHOTO_PATH_TEMP: /server/temp
+      APP_SWAGGER_CONF_URL: ${SWAGGER_CONF}
+      DB_AUTH_NAME: ${DB_AUTH_NAME}
+      DB_MAIN_NAME: ${DB_MAIN_NAME}
+      DB_HOST: mirror_postgresql_db
+      DB_PORT: 5432
+      DB_USER_NAME: ${DB_USER}
+      DB_USER_PASSWORD: ${DB_PASSWORD}
+      GIN_MODE: release
+      LOGGER_TYPE: ${LOGGER_TYPE}
     volumes:
-      - ../server/media/:/server/media
-      - ../server/temp/:/server/temp
+      - ${SERVER_PHOTO_PATH}:/server/media
+      - ${SERVER_TEMP_PHOTO_PATH}:/server/temp
       - /etc/localtime:/etc/localtime:ro
 
   mirror_postgresql_db:
@@ -206,8 +318,9 @@ services:
         condition: service_healthy
         restart: true
     environment:
-      - PGUSER=replicator
-      - PGPASSWORD=replicator
+      PGUSER: ${DB_REPLICA_USER}
+      PGPASSWORD: ${DB_REPLICA_PASSWORD}
+      PGPORT: 5432
     volumes:
       - /mnt/rent_market_mirror:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro

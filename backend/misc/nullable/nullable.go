@@ -1,8 +1,8 @@
 package nullable
 
 type Nullable[T any] struct {
-	Value T
-	Valid bool
+	value T
+	valid bool
 }
 
 func Some[T any](value T) *Nullable[T] {
@@ -26,7 +26,7 @@ func And[T any, F any](self *Nullable[T], value *Nullable[F]) *Nullable[F] {
 		return nil
 	}
 
-	if self.Valid {
+	if self.valid {
 		return value
 	} else {
 		return &Nullable[F]{}
@@ -38,8 +38,8 @@ func AndFunc[T any, F any](self *Nullable[T], f func(*T) *Nullable[F]) *Nullable
 		return nil
 	}
 
-	if self.Valid {
-		return f(&self.Value)
+	if self.valid {
+		return f(&self.value)
 	} else {
 		return &Nullable[F]{}
 	}
@@ -50,7 +50,7 @@ func Or[T any](self *Nullable[T], value *Nullable[T]) *Nullable[T] {
 		return nil
 	}
 
-	if !self.Valid {
+	if !self.valid {
 		return value
 	} else {
 		return self
@@ -62,7 +62,7 @@ func OrFunc[T any](self *Nullable[T], f func() *Nullable[T]) *Nullable[T] {
 		return nil
 	}
 
-	if !self.Valid {
+	if !self.valid {
 		return f()
 	} else {
 		return self
@@ -76,39 +76,65 @@ func Map[T any, F any](self *Nullable[T], f func(*T) F) *Nullable[F] {
 
 	var out = &Nullable[F]{}
 
-	if self.Valid {
-		out.Value = f(&self.Value)
-		out.Valid = true
+	if self.valid {
+		out.value = f(&self.value)
+		out.valid = true
 	}
 
 	return out
 }
 
 func IfSome[T any](self *Nullable[T], f func(*T)) {
-	if nil != self && self.Valid {
-		f(&self.Value)
+	if nil != self && self.valid {
+		f(&self.value)
 	}
 }
 
 func IfNone[T any](self *Nullable[T], f func()) {
-	if nil != self && !self.Valid {
+	if nil != self && !self.valid {
 		f()
 	}
 }
 
 func GetOr[T any](self *Nullable[T], def T) T {
-	if nil != self && self.Valid {
-		return self.Value
+	if nil != self && self.valid {
+		return self.value
 	} else {
 		return def
 	}
 }
 
 func GetOrFunc[T any](self *Nullable[T], f func() T) T {
-	if nil != self && self.Valid {
-		return self.Value
+	if nil != self && self.valid {
+		return self.value
 	} else {
 		return f()
 	}
+}
+
+func GetOrInsert[T any](self *Nullable[T], def T) T {
+	if nil == self {
+		return def
+	}
+
+	if !self.valid {
+		self.value = def
+		self.valid = true
+	}
+
+	return self.value
+}
+
+func GetOrInsertFunc[T any](self *Nullable[T], f func() T) T {
+	if nil == self {
+		return f()
+	}
+
+	if !self.valid {
+		self.value = f()
+		self.valid = true
+	}
+
+	return self.value
 }
 

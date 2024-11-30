@@ -1,24 +1,20 @@
 
-DIR_TEST_REPORT := allure-report/
-
 .PHONY: default report show before
 
 default: report
 
-report: $(DIR_TEST_REPORT)/.report
+report: ./allure-results/.report
 
 show: report
-	cd $(DIR_TEST_REPORT) && allure open -p 16258
+	allure open -p 16258
 
-$(DIR_TEST_REPORT)/.report: $(DIR_TEST_REPORT)/allure-results/*
-	mkdir -p $(DIR_TEST_REPORT)
-	-rm -rf $(DIR_TEST_REPORT)/allure-results/history/
-	-cp -rf $(DIR_TEST_REPORT)/allure-report/history $(DIR_TEST_REPORT)/allure-results
-	-rm -rf $(DIR_TEST_REPORT)/allure-report
-	cd $(DIR_TEST_REPORT) && allure generate
-	touch $(DIR_TEST_REPORT)/.report
+./allure-results/.report: ./allure-results/*
+	-rm -rf ./allure-results/history/
+	-cp -rf ./allure-report/history ./allure-results
+	-rm -rf ./allure-report
+	allure generate
+	touch ./allure-results/.report
 
 before:
-	rm -rf $(DIR_TEST_REPORT)/.report
-	rm -rf $(DIR_TEST_REPORT)/allure-results
+	rm -rf ./allure-results/*
 

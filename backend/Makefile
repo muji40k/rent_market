@@ -1,5 +1,4 @@
-
-.PHONY: default unit_tests report_show
+GO_FILES = $(shell find . -type f -name "*.go")
 
 SHUFFLE=1
 RACE=0
@@ -17,17 +16,58 @@ TEST_FLAGS += -race
 endif
 
 ifeq ($(SHORT), 1)
-PIPE=| grep -E -v "no (test files|tests to run)"
+PIPE=| grep -a -E -v "no (test files|tests to run)"
 endif
 
-default: unit_tests
+.PHONY: default
+default: build
 
+.PHONY: build run
+build: main
+run: build
+	./main
+
+main: $(GO_FILES)
+	go build ./cmd/main.go
+
+.PHONY: unit_tests
 unit_tests:
-	$(MAKE) -f allure-report/Makefile before
-	ALLURE_OUTPUT_PATH=$(PWD)/allure-report/ TEST_DB_PORT=5434 go test $(TEST_FLAGS)  ./internal/logic/services/implementations/... $(PIPE)
-	ALLURE_OUTPUT_PATH=$(PWD)/allure-report/ TEST_DB_PORT=5434 go test $(TEST_FLAGS) -p 1  ./internal/repository/implementation/... $(PIPE)
-	$(MAKE) -f allure-report/Makefile report
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS)  ./internal/logic/services/implementations/... $(PIPE);'` \
+	`'err=$$?;'` \
+	`'go test $(TEST_FLAGS) -p 1  ./internal/repository/implementation/... $(PIPE) && exit $$err'
 
+
+.PHONY: integration_tests
+integration_tests:
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) -p 5  ./tests/integration/... $(PIPE)'
+
+.PHONY: e2e_tests
+e2e_tests:
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} before
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
+
+.PHONY: report
+report:
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} report
+
+.PHONY: report_show
 report_show:
-	$(MAKE) -f allure-report/Makefile show
+	$(MAKE) -C ${ALLURE_OUTPUT_PATH} show
+
+.PHONY: test
+test:
+	echo ${ALLURE_OUTPUT_PATH}
 
