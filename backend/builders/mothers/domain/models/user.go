@@ -26,12 +26,12 @@ func UserExample(name string, email string, password string) *modelsb.UserBuilde
 }
 
 func getName(base string, prefix *nullable.Nullable[string]) string {
-	return nullable.GetOr(
+	return fmt.Sprintf("%v%v", nullable.GetOr(
 		nullable.Map(prefix, func(prefix *string) string {
 			return fmt.Sprintf("%v_%v", base, *prefix)
 		}),
 		base,
-	)
+	), uuidgen.Generate())
 }
 
 func packUser(name string) *modelsb.UserBuilder {

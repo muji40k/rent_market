@@ -3,8 +3,10 @@ package psql
 import (
 	"database/sql"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"os"
+	"rent_service/builders/misc/generator"
 	"rent_service/builders/misc/uuidgen"
 	"rent_service/builders/repository/factory/v1/psql"
 	"rent_service/internal/domain/models"
@@ -84,6 +86,101 @@ func (self *dbConfig) getConnection() (*sqlx.DB, error) {
 	)
 }
 
+func GeneratorStepNewList[T any](
+	t generator.IAllureProvider,
+	name string,
+	base func(uint) (T, uuid.UUID),
+	inserter func(*T),
+) generator.IGenerator {
+	out := make([]T, 0)
+	return GeneratorStepList(t, name, &out, base, inserter)
+}
+
+func GeneratorStepList[T any](
+	t generator.IAllureProvider,
+	name string,
+	reference *[]T,
+	base func(uint) (T, uuid.UUID),
+	inserter func(*T),
+) generator.IGenerator {
+	i := uint(0)
+	spy := nullable.Some(generator.Spy{})
+
+	return generator.NewAllureWrap(
+		t, fmt.Sprintf("Create and insert %v", name),
+		generator.NewFuncWrapped(
+			generator.FuncListWrap(
+				reference,
+				func() (T, uuid.UUID) {
+					j := i
+					i++
+					return base(j)
+				},
+				func(items []T) {
+					nullable.IfSome(spy, func(spy *generator.Spy) {
+						spy.SniffValue(name, items)
+					})
+					BulkInsert(inserter, items...)
+				},
+			),
+		),
+		spy,
+	)
+}
+
+func GeneratorStepValue[T any](
+	t generator.IAllureProvider,
+	name string,
+	reference *T,
+	base func() (T, uuid.UUID),
+	inserter func(*T),
+) generator.IGenerator {
+	id := nullable.None[uuid.UUID]()
+	spy := nullable.Some(generator.Spy{})
+
+	return generator.NewAllureWrap(
+		t, fmt.Sprintf("Create and insert %v", name),
+		generator.NewFunc(
+			func() uuid.UUID {
+				return nullable.GetOrInsertFunc(id, func() uuid.UUID {
+					var id uuid.UUID
+					*reference, id = base()
+					return id
+				})
+			},
+			func() {
+				nullable.IfSome(spy, func(spy *generator.Spy) {
+					spy.SniffValue(name, *reference)
+				})
+				inserter(reference)
+			},
+		),
+		spy,
+	)
+}
+
+func GeneratorStepNewValue[T any](
+	t generator.IAllureProvider,
+	name string,
+	base func() (T, uuid.UUID),
+	inserter func(*T),
+) generator.IGenerator {
+	return GeneratorStepValue(t, name, new(T), base, inserter)
+}
+
+func GeneratorStep(
+	t generator.IAllureProvider,
+	name string,
+	gen func(spy *nullable.Nullable[generator.Spy]) generator.IGenerator,
+) generator.IGenerator {
+	spy := nullable.Some(generator.Spy{})
+
+	return generator.NewAllureWrap(
+		t, fmt.Sprintf("Create and insert %v", name),
+		gen(spy), spy,
+	)
+}
+
 func prepareInsert(table string, columnNames ...string) string {
 	lim := len(columnNames)
 	var columns = make([]string, lim+2)
@@ -117,7 +214,33 @@ func NewInserter() *Inserter {
 		panic(err)
 	}
 
-	return &Inserter{db}
+	i := &Inserter{db}
+	i.initDB()
+
+	return i
+}
+
+func (self *Inserter) initDB() {
+	var init bool
+	_, err := self.db.Exec("create table if not exists public.initter(initialised boolean)")
+
+	if nil == err {
+		row := self.db.QueryRow("select * from public.initter")
+		err = row.Scan(&init)
+
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil
+		}
+	}
+
+	if nil == err && !init {
+		self.ClearDB()
+		_, err = self.db.Exec("insert into public.initter(initialised) values (true)")
+	}
+
+	if nil != err {
+		panic(err)
+	}
 }
 
 func (self *Inserter) Close() {
@@ -440,7 +563,7 @@ var insertUserQuery = prepareInsert("users.users",
 	"id", "token", "name", "email", "password")
 
 func (self *Inserter) InsertUser(value *models.User) {
-	callWrap(self.db, insertUserQuery, value.Id, value.Token, value.Name,
+	_, _ = self.db.Exec(insertUserQuery, value.Id, value.Token, value.Name,
 		value.Email, value.Password)
 }
 

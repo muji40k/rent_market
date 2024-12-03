@@ -1,0 +1,70 @@
+stages:
+    - build
+    - test
+
+# Unit tests
+
+build-unit-tests:
+    stage: build
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} build backend_unit_tests test_db
+
+unit-tests:
+    stage: test
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} run backend_unit_tests
+    after_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    artifacts:
+      paths:
+        - backend/allure-report/allure-results/
+      expire_in: 1 hour
+
+# Integration tests
+
+build-integration-tests:
+    stage: build
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} build backend_integration_tests test_db
+
+integration-tests:
+    stage: test
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} run backend_integration_tests
+    after_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    artifacts:
+      paths:
+        - backend/allure-report/allure-results/
+      expire_in: 1 hour
+
+# E2E tests
+
+build-e2e-tests:
+    stage: build
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} build backend_e2e_tests test_db
+
+e2e-tests:
+    stage: test
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} run backend_e2e_tests
+    after_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    artifacts:
+      paths:
+        - backend/allure-report/allure-results/
+      expire_in: 1 hour
+

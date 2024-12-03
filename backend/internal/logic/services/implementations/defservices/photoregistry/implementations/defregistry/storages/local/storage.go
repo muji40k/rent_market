@@ -29,6 +29,20 @@ func New(
 	}
 }
 
+func mkdir(path string) error {
+	_, err := os.Stat(path)
+
+	if errors.Is(err, os.ErrNotExist) {
+		err = os.MkdirAll(path, os.ModePerm)
+	}
+
+	if nil != err {
+		err = cmnerrors.Internal(err)
+	}
+
+	return err
+}
+
 func checkFile(path string) (bool, error) {
 	if _, cerr := os.Stat(path); errors.Is(cerr, os.ErrNotExist) {
 		return false, nil
@@ -61,7 +75,12 @@ func generatePath(base string) (string, error) {
 // Returns path to temp data
 func (self *storage) WriteTempData(content []byte) (string, error) {
 	var file *os.File
-	path, err := generatePath(self.tempPath)
+	var path string
+	err := mkdir(self.tempPath)
+
+	if nil == err {
+		path, err = generatePath(self.tempPath)
+	}
 
 	if nil == err {
 		file, err = os.Create(path)
@@ -92,8 +111,17 @@ func (self *storage) SaveTempData(tempPath string) (string, error) {
 	var path string
 	const BUFSIZE int64 = 4096
 	var chunk [BUFSIZE]byte
+	var tempFile *os.File
 
-	tempFile, err := os.Open(tempPath)
+	err := mkdir(self.persistentPath)
+
+	if nil == err {
+		err = mkdir(self.tempPath)
+	}
+
+	if nil == err {
+		tempFile, err = os.Open(tempPath)
+	}
 
 	if nil != err {
 		err = cmnerrors.Internal(err)

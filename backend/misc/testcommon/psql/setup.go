@@ -17,7 +17,7 @@ func (self *Context) SetUp(t provider.T) {
 		self.Inserter = psql.NewInserter()
 	})
 
-	t.WithNewStep("Create factory", func(sCtx provider.StepCtx) {
+	t.WithNewStep("Create repository factory", func(sCtx provider.StepCtx) {
 		var err error
 		self.Factory, err = psql.PSQLRepositoryFactory().Build()
 
@@ -29,8 +29,13 @@ func (self *Context) SetUp(t provider.T) {
 
 func (self *Context) TearDown(t provider.T) {
 	t.WithNewStep("Close connections", func(sCtx provider.StepCtx) {
-		self.Inserter.Close()
-		self.Factory.Clear()
+		if nil != self.Inserter {
+			self.Inserter.Close()
+		}
+
+		if nil != self.Factory {
+			self.Factory.Clear()
+		}
 	})
 }
 

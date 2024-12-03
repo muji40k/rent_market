@@ -7,9 +7,9 @@ drop table if exists users.users;
 create table users.users
 (
     id uuid primary key,
-    token text not null,
+    token text not null unique,
     name text not null,
-    email text not null,
+    email text not null unique,
     password text not null,
     modification_date timestamptz not null default now(),
     modification_source text not null

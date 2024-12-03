@@ -2,6 +2,9 @@ package testcommon
 
 import (
 	"math"
+	"reflect"
+	"rent_service/internal/misc/types/currency"
+	"slices"
 
 	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
@@ -36,6 +39,14 @@ type IProvider interface {
 type Asserter[T any] interface {
 	EqualFunc(cmp func(T, T) bool, expected T, actual T, name string)
 	ElementsMatchFunc(cmp func(T, T) bool, expected []T, actual []T, name string)
+	ContainsFunc(cmp func(T, T) bool, where []T, what T, name string)
+	ContainsMultipleFunc(cmp func(T, T) bool, where []T, what []T, name string)
+}
+
+func DeepEqual[T any]() func(e, a T) bool {
+	return func(e, a T) bool {
+		return reflect.DeepEqual(e, a)
+	}
 }
 
 type asserter[T any] struct {
@@ -65,9 +76,9 @@ func Require[T any](p IProvider) Asserter[T] {
 }
 
 // Adopted from testify
-func diffLists[T any](cmp func(T, T) bool, expected []T, actual []T) ([]T, []T) {
+func diffLists[T any, F any](cmp func(T, F) bool, expected []T, actual []F) ([]T, []F) {
 	eEx := make([]T, 0)
-	aEx := make([]T, 0)
+	aEx := make([]F, 0)
 	eLen := len(expected)
 	aLen := len(actual)
 	aVisited := make([]bool, aLen)
@@ -96,16 +107,18 @@ func diffLists[T any](cmp func(T, T) bool, expected []T, actual []T) ([]T, []T) 
 	return eEx, aEx
 }
 
-func (self *asserter[T]) ElementsMatchFunc(cmp func(T, T) bool, expected []T, actual []T, name string) {
-	wrap := func(e, a []T) bool {
-		if len(e) != len(a) {
-			return false
-		}
-
-		extraA, extraB := diffLists(cmp, e, a)
-
-		return len(extraA) == 0 && len(extraB) == 0
+func ElementsMatchFunc[T any, F any](cmp func(T, F) bool, expected []T, actual []F) bool {
+	if len(expected) != len(actual) {
+		return false
 	}
+
+	extraA, extraB := diffLists(cmp, expected, actual)
+
+	return len(extraA) == 0 && len(extraB) == 0
+}
+
+func (self *asserter[T]) ElementsMatchFunc(cmp func(T, T) bool, expected []T, actual []T, name string) {
+	wrap := func(e, a []T) bool { return ElementsMatchFunc(cmp, e, a) }
 
 	generalCustomComparator(
 		self.provider.WithNewStep,
@@ -113,6 +126,48 @@ func (self *asserter[T]) ElementsMatchFunc(cmp func(T, T) bool, expected []T, ac
 		wrap,
 		expected,
 		actual,
+		self.prefix+name,
+	)
+}
+
+func (self *asserter[T]) ContainsFunc(cmp func(T, T) bool, where []T, what T, name string) {
+	generalCustomComparator(
+		self.provider.WithNewStep,
+		self.getter,
+		func(e T, a []T) bool {
+			return slices.ContainsFunc(a, func(v T) bool {
+				return cmp(v, e)
+			})
+		},
+		what,
+		where,
+		self.prefix+name,
+	)
+}
+
+func (self *asserter[T]) ContainsMultipleFunc(cmp func(T, T) bool, where []T, what []T, name string) {
+	generalCustomComparator(
+		self.provider.WithNewStep,
+		self.getter,
+		func(e, a []T) bool {
+			for _, ve := range e {
+				visited := false
+
+				for _, va := range a {
+					if !visited {
+						visited = cmp(ve, va)
+					}
+				}
+
+				if !visited {
+					return false
+				}
+			}
+
+			return true
+		},
+		what,
+		where,
 		self.prefix+name,
 	)
 }
@@ -128,20 +183,25 @@ func (self *asserter[T]) EqualFunc(cmp func(T, T) bool, expected T, actual T, na
 	)
 }
 
-func generalCustomComparator[T any](
+func generalCustomComparator[T any, F any](
 	s func(string, func(sCtx provider.StepCtx), ...*allure.Parameter),
 	a func(provider.StepCtx) provider.Asserts,
-	cmp func(T, T) bool,
+	cmp func(T, F) bool,
 	expected T,
-	actual T,
+	actual F,
 	name string,
 ) {
 	s(name, func(sCtx provider.StepCtx) {
-		a(sCtx).True(cmp(expected, actual))
 		sCtx.WithParameters(
 			allure.NewParameter("Expected", expected),
 			allure.NewParameter("Actual", actual),
 		)
+		a(sCtx).True(cmp(expected, actual))
 	})
+}
+
+func CompareCurrency(expected currency.Currency, actual currency.Currency) bool {
+	return expected.Name == actual.Name &&
+		EPSILON > math.Abs(expected.Value-actual.Value)
 }
 

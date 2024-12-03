@@ -144,10 +144,11 @@ func (self *Server) Run() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	logger.Log(self.logger, logger.INFO, "Server shutting down")
+	logger.Log(self.logger, logger.INFO, "Server detached")
 }
 
 func (self *Server) Clear() {
+	logger.Log(self.logger, logger.INFO, "Server shutting down")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
