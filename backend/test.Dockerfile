@@ -19,5 +19,5 @@ ADD Makefile /go/Makefile
 
 ENV ALLURE_OUTPUT_PATH=/go/allure-report
 
-ENTRYPOINT make $TASK
+ENTRYPOINT ["make", "$TASK"]
 

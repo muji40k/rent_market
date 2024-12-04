@@ -22,5 +22,5 @@ FROM golang:latest
 
 COPY --from=build /go/main /main
 
-ENTRYPOINT /main
+ENTRYPOINT ["/main"]
 

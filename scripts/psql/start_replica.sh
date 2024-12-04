@@ -17,5 +17,5 @@ if [ 0 -eq $(ls -A /var/lib/postgresql/data | wc -l) ]; then
     chown postgres:postgres -R /var/lib/postgresql/data/*
 fi
 
-su postgres - -c 'postgres'
+exec su postgres - -c 'postgres'
 

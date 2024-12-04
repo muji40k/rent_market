@@ -8,8 +8,22 @@ ifeq ($(PERSONAL), 1)
 PERSONAL_FLAGS=-p ${USER}
 endif
 
+BACKEND_BUILD_FLAGS=
+
+ifeq ($(NO_CACHE), 1)
+BACKEND_BUILD_FLAGS += --no-cache
+endif
+
 .PHONY: default
-default: unit_tests
+default: backend
+
+.PHONY: backend
+backend:
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) build $(BACKEND_BUILD_FLAGS)
+	-docker compose -f docker/docker-compose.yml $(DOCKER_ENV) up nginx backend \
+		backend_ro1 backend_ro2 postgresql_db pgadmin \
+		mirror_nginx mirror_backend mirror_postgresql_db
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) down
 
 .PHONY: unit_tests unit_tests_run unit_tests_build unit_tests_clean
 unit_tests_build:
