@@ -149,14 +149,10 @@ func (self *Server) Run() {
 
 func (self *Server) Clear() {
 	logger.Log(self.logger, logger.INFO, "Server shutting down")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
-	if err := self.srv.Shutdown(ctx); err != nil {
+	if err := self.srv.Shutdown(context.Background()); err != nil {
 		logger.Logf(self.logger, logger.ERROR, "Shutdown error: %s", err)
 	}
-
-	<-ctx.Done()
 
 	logger.Log(self.logger, logger.INFO, "Server down")
 }
