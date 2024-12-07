@@ -19,5 +19,8 @@ ADD Makefile /go/Makefile
 
 ENV ALLURE_OUTPUT_PATH=/go/allure-report
 
-ENTRYPOINT ["make", "$TASK"]
+RUN echo '#!/bin/bash\n exec make ${TASK}' > ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
 
