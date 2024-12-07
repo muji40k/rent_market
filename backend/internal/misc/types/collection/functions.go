@@ -1,6 +1,29 @@
 package collection
 
-import "cmp"
+import (
+	"cmp"
+	"fmt"
+	"strings"
+)
+
+func String[T any](iterator Iterator[T]) string {
+	builder := new(strings.Builder)
+
+	builder.WriteRune('[')
+
+	if item, next := iterator.Next(); next {
+		builder.WriteString(fmt.Sprint(item))
+
+		ForEach(iterator, func(item *T) {
+			builder.WriteRune(',')
+			builder.WriteString(fmt.Sprint(*item))
+		})
+	}
+
+	builder.WriteRune(']')
+
+	return builder.String()
+}
 
 func Collect[T any](iterator Iterator[T]) []T {
 	if nil == iterator {

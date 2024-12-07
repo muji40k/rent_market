@@ -1,0 +1,48 @@
+
+services:
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - /etc/localtime:/etc/localtime:ro
+
+  benchmark:
+    build:
+      context: ../../backend/
+      dockerfile: ./benchmark.Dockerfile
+    ports:
+      - "127.0.0.1:2112:2112"
+    depends_on:
+      prometheus:
+        condition: service_started
+      benchmark_db:
+        condition: service_healthy
+    environment:
+      TEST_DB_HOST: benchmark_db
+      TEST_DB_PORT: 5432
+      TEST_DB_NAME: ${DB_MAIN_NAME}
+      TEST_DB_USERNAME: ${DB_USER}
+      TEST_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  benchmark_db:
+    build:
+      context: ../../scripts/psql/.
+      dockerfile: ./benchmark.Dockerfile
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGPORT: 5432
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: 'pg_isready -U postgres --dbname=rent_market'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
