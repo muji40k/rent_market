@@ -10,10 +10,24 @@ import (
 type IService interface {
 	GetSelfUserInfo(token token.Token) (Info, error)
 	UpdateSelfUserInfo(token token.Token, form UpdateForm) error
+	// Deprecated: moved to 2FA. Use IPasswordUpdateService instead.
 	UpdateSelfUserPassword(
 		token token.Token,
 		old_password string,
 		new_password string,
+	) error
+}
+
+type IPasswordUpdateService interface {
+	RequestPasswordUpdate(
+		token token.Token,
+		old_password string,
+		new_password string,
+	) (PasswordUpdateRequest, error)
+	AuthenticatePasswordUpdateRequest(
+		token token.Token,
+		request uuid.UUID,
+		code string,
 	) error
 }
 

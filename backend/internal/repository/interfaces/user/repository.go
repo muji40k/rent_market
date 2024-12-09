@@ -18,6 +18,14 @@ type IRepository interface {
 	GetByToken(token models.Token) (models.User, error)
 }
 
+type IPasswordUpdateRepository interface {
+	Create(request models.UserPasswordUpdateRequest) (models.UserPasswordUpdateRequest, error)
+
+	GetById(requestId uuid.UUID) (models.UserPasswordUpdateRequest, error)
+
+	Remove(requestId uuid.UUID) error
+}
+
 type IProfileRepository interface {
 	Create(profile models.UserProfile) (models.UserProfile, error)
 

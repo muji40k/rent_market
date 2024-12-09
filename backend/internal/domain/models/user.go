@@ -13,6 +13,14 @@ type User struct {
 	Token    Token
 }
 
+type UserPasswordUpdateRequest struct {
+	Id          uuid.UUID
+	UserId      uuid.UUID
+	NewPassword string
+	Code        string
+	ValidTo     time.Time
+}
+
 type UserProfile struct {
 	Id         uuid.UUID
 	UserId     uuid.UUID

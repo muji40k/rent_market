@@ -17,6 +17,12 @@ type UpdateForm struct {
 	Email string `json:"email" binding:"required"`
 }
 
+type PasswordUpdateRequest struct {
+	Required bool      `json:"required"`
+	Id       uuid.UUID `json:"id"`
+	ValidTo  date.Date `json:"valid_to"`
+}
+
 type UserProfile struct {
 	Name       *string    `json:"name"`
 	Surname    *string    `json:"surname"`

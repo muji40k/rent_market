@@ -6,6 +6,10 @@ type IProvider interface {
 	GetUserRepository() user.IRepository
 }
 
+type IPasswordUpdateProvider interface {
+	GetUserPasswordUpdateRepository() user.IPasswordUpdateRepository
+}
+
 type IProfileProvider interface {
 	GetUserProfileRepository() user.IProfileRepository
 }

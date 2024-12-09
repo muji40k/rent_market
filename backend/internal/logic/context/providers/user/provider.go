@@ -6,6 +6,10 @@ type IProvider interface {
 	GetUserService() user.IService
 }
 
+type IPasswordUpdateProvider interface {
+	GetUserPasswordUpdateService() user.IPasswordUpdateService
+}
+
 type IProfileProvider interface {
 	GetUserProfileService() user.IProfileService
 }
