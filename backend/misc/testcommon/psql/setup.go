@@ -3,6 +3,7 @@ package psql
 import (
 	"rent_service/builders/mothers/test/repository/psql"
 	psqlfactory "rent_service/internal/factory/repositories/v1/psql"
+	"rent_service/misc/nullable"
 
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
@@ -10,6 +11,23 @@ import (
 type Context struct {
 	Inserter *psql.Inserter
 	Factory  *psqlfactory.Factory
+}
+
+func New() Context {
+	return Context{
+		psql.NewInserter(),
+		nullable.UnwrapF(psql.PSQLRepositoryFactory().Build()),
+	}
+}
+
+func (self *Context) Close() {
+	if nil != self.Inserter {
+		self.Inserter.Close()
+	}
+
+	if nil != self.Factory {
+		self.Factory.Clear()
+	}
 }
 
 func (self *Context) SetUp(t provider.T) {

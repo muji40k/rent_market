@@ -4,6 +4,7 @@ import (
 	"rent_service/builders/mothers/test/service/defservices"
 	"rent_service/internal/factory/services/v1/deffactory"
 	rv1 "rent_service/internal/repository/context/v1"
+	"rent_service/misc/nullable"
 
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
@@ -11,6 +12,19 @@ import (
 type Context struct {
 	Factory       *deffactory.Factory
 	PhotoRegistry *defservices.PhotoRegistry
+}
+
+func New(factories rv1.Factories) Context {
+	return Context{
+		nullable.UnwrapF(defservices.DefaultServiceFactory(factories).Build()),
+		defservices.NewPhotoRegistry(),
+	}
+}
+
+func (self *Context) Close() {
+	if nil != self.Factory {
+		self.Factory.Clear()
+	}
 }
 
 func (self *Context) SetUp(t provider.T, factories rv1.Factories) {
@@ -34,11 +48,5 @@ func (self *Context) TearDown(t provider.T) {
 			self.Factory.Clear()
 		}
 	})
-
-	// t.WithNewStep("Remove photos", func(sCtx provider.StepCtx) {
-	//     if nil != self.PhotoRegistry {
-	//         self.PhotoRegistry.Clear()
-	//     }
-	// })
 }
 

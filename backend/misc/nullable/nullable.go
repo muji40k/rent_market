@@ -1,5 +1,7 @@
 package nullable
 
+import "fmt"
+
 type Nullable[T any] struct {
 	value T
 	valid bool
@@ -94,6 +96,32 @@ func IfNone[T any](self *Nullable[T], f func()) {
 	if nil != self && !self.valid {
 		f()
 	}
+}
+
+func UnwrapF[T any](value T, err error) T {
+	fmt.Println(err)
+
+	if nil != err {
+		panic(err)
+	}
+
+	return value
+}
+
+func Unwrap[T any](self *Nullable[T]) T {
+	if !self.valid {
+		panic("No value set")
+	}
+
+	return self.value
+}
+
+func Expect[T any](self *Nullable[T], reason string) T {
+	if !self.valid {
+		panic(reason)
+	}
+
+	return self.value
 }
 
 func GetOr[T any](self *Nullable[T], def T) T {

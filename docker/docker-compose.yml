@@ -161,6 +161,25 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
 
+  backend_bdd_e2e_tests:
+    build:
+      context: ../backend/
+      dockerfile: ./test.Dockerfile
+    depends_on:
+      test_db:
+        condition: service_healthy
+        restart: true
+    environment:
+      TASK: bdd_e2e_tests
+      TEST_DB_HOST: test_db
+      TEST_DB_PORT: 5432
+      TEST_DB_NAME: ${DB_MAIN_NAME}
+      TEST_DB_AUTH_NAME: ${DB_AUTH_NAME}
+      TEST_DB_USERNAME: ${DB_USER}
+      TEST_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
   backend_sandbox:
     build:
       context: ../backend/

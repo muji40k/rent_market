@@ -38,7 +38,7 @@ func getOr(variable string, def string) string {
 	}
 }
 
-type dbConfig struct {
+type DBConfig struct {
 	host     string
 	port     string
 	database string
@@ -46,8 +46,8 @@ type dbConfig struct {
 	password string
 }
 
-func parse() dbConfig {
-	return dbConfig{
+func Parse() DBConfig {
+	return DBConfig{
 		host:     getOr(TEST_HOST, "localhost"),
 		port:     getOr(TEST_PORT, "5432"),
 		database: getOr(TEST_DATABASE, "rent_market"),
@@ -57,7 +57,7 @@ func parse() dbConfig {
 }
 
 func PSQLRepositoryFactory() *psql.Builder {
-	conf := parse()
+	conf := Parse()
 
 	return psql.New().
 		WithHost(conf.host).
@@ -73,7 +73,7 @@ func stubHasher(user *models.User) string {
 	return user.Email + user.Name + user.Password
 }
 
-func (self *dbConfig) getConnection() (*sqlx.DB, error) {
+func (self *DBConfig) GetConnection() (*sqlx.DB, error) {
 	return sqlx.Connect("pgx",
 		fmt.Sprintf(
 			"postgres://%v:%v@%v:%v/%v",
@@ -207,8 +207,8 @@ type Inserter struct {
 }
 
 func NewInserter() *Inserter {
-	config := parse()
-	db, err := config.getConnection()
+	config := Parse()
+	db, err := config.GetConnection()
 
 	if nil != err {
 		panic(err)

@@ -76,6 +76,22 @@ e2e_tests:
 	-$(MAKE) e2e_tests_run
 	$(MAKE) e2e_tests_clean
 
+.PHONY: bdd_e2e_tests bdd_e2e_tests_run bdd_e2e_tests_build bdd_e2e_tests_clean
+bdd_e2e_tests_build:
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build --no-cache backend_bdd_e2e_tests test_db
+
+bdd_e2e_tests_clean:
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) down --remove-orphans
+
+bdd_e2e_tests_run:
+	-docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) run backend_bdd_e2e_tests
+
+bdd_e2e_tests:
+	$(MAKE) bdd_e2e_tests_clean
+	$(MAKE) bdd_e2e_tests_build
+	-$(MAKE) bdd_e2e_tests_run
+	$(MAKE) bdd_e2e_tests_clean
+
 .PHONY: sandbox sandbox_down
 sandbox:
 	docker compose -f docker/docker-compose.yml --env-file .env/sandbox build backend_sandbox debug_db

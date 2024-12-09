@@ -59,6 +59,11 @@ e2e_tests:
 	/bin/bash -o pipefail -c ` \
 	`'go test $(TEST_FLAGS) ./tests/e2e/... $(PIPE)'
 
+.PHONY: bdd_e2e_tests
+bdd_e2e_tests:
+	/bin/bash -o pipefail -c ` \
+	`'go test $(TEST_FLAGS) ./tests/BDD/... $(PIPE)'
+
 .PHONY: report
 report:
 	$(MAKE) -C ${ALLURE_OUTPUT_PATH} report

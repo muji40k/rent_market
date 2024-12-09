@@ -16,6 +16,22 @@ type Context struct {
 	Inserter *server.Inserter
 }
 
+func New(
+	factories v1.Factories,
+	controllers ...server.ControllerCreator,
+) Context {
+	return Context{
+		server.TestServer(factories, controllers...),
+		server.NewInserter(),
+	}
+}
+
+func (self *Context) Close() {
+	if nil != self.Inserter {
+		self.Inserter.Close()
+	}
+}
+
 func (self *Context) SetUp(
 	t provider.T,
 	factories v1.Factories,
@@ -33,7 +49,6 @@ func (self *Context) SetUp(
 func (self *Context) TearDown(t provider.T) {
 	t.WithNewStep("Close session database connection", func(sCtx provider.StepCtx) {
 		if nil != self.Inserter {
-			self.Inserter.ClearDB()
 			self.Inserter.Close()
 		}
 	})
