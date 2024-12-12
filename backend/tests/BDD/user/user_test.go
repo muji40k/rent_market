@@ -270,10 +270,6 @@ func GetCodeFromEmail() string {
 	gomega.Expect(c).NotTo(gomega.BeNil())
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-	defer func() {
-		_ = c.Logout().Wait()
-	}()
-
 	gomega.Expect(
 		c.Login(
 			os.Getenv(RECEPTIENT_NAME),
@@ -307,26 +303,38 @@ func GetCodeFromEmail() string {
 
 	md := cmd.Next()
 	gomega.Expect(md).NotTo(gomega.BeNil())
-	id := md.Next()
-	gomega.Expect(id).NotTo(gomega.BeNil())
-	body, ok := id.(imapclient.FetchItemDataBodySection)
-	gomega.Expect(body).NotTo(gomega.BeNil())
+
+	var body imapclient.FetchItemDataBodySection
+	var ok bool = false
+	for item := md.Next(); !ok && nil != item; {
+		body, ok = item.(imapclient.FetchItemDataBodySection)
+
+		if !ok {
+			item = md.Next()
+		}
+	}
+	gomega.Expect(body).NotTo(gomega.BeZero())
 	gomega.Expect(ok).To(gomega.BeTrue())
+
 	var reader *mail.Reader
 	reader, err = mail.CreateReader(body.Literal)
 	gomega.Expect(reader).NotTo(gomega.BeNil())
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
 	var prt *mail.Part
 	prt, err = reader.NextPart()
 	gomega.Expect(prt).NotTo(gomega.BeNil())
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
 	var b []byte
 	b, err = io.ReadAll(prt.Body)
 	gomega.Expect(b).NotTo(gomega.BeNil())
 	gomega.Expect(len(b)).NotTo(gomega.Equal(0))
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
 	gomega.Expect(reader.Close()).NotTo(gomega.HaveOccurred())
 	gomega.Expect(cmd.Close()).NotTo(gomega.HaveOccurred())
+	gomega.Expect(c.Logout().Wait()).NotTo(gomega.HaveOccurred())
 
 	text := strings.TrimSpace(string(b))
 	lines := strings.Split(text, "\n")
