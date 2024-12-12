@@ -44,22 +44,30 @@ var filter = product.Filter{
 	},
 }
 
+func SingleCall(repo product.IRepository) (time.Duration, time.Duration) {
+	start := time.Now()
+	res, err := repo.GetWithFilter(filter, product.SORT_NONE)
+	call := time.Since(start)
+
+	if nil != err {
+		panic(err)
+	}
+
+	start = time.Now()
+	collection.Collect(res.Iter())
+	serialization := time.Since(start)
+
+	return call, serialization
+}
+
 func (self *TestProductRepository) Func(b *testing.B) {
 	var totalCall time.Duration
 	var totalSerialization time.Duration
 
 	for range b.N {
-		start := time.Now()
-		res, err := self.repo.GetWithFilter(filter, product.SORT_NONE)
-		totalCall += time.Since(start)
-
-		if nil != err {
-			panic(err)
-		}
-
-		start = time.Now()
-		collection.Collect(res.Iter())
-		totalSerialization += time.Since(start)
+		call, ser := SingleCall(self.repo)
+		totalCall += call
+		totalSerialization += ser
 	}
 
 	b.ReportMetric(

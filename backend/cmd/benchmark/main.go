@@ -75,6 +75,44 @@ func main() {
 	engine := gin.Default()
 
 	engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	engine.GET("/call/gorm", func(ctx *gin.Context) {
+		db, err := gorm.Open(
+			postgres.Open(getGormConnectionString(config)),
+			&gorm.Config{},
+		)
+
+		if nil != err {
+			ctx.Status(http.StatusInternalServerError)
+			panic(err)
+		}
+
+		defer func() {
+			sqldb, _ := db.DB()
+
+			if nil != sqldb {
+				sqldb.Close()
+			}
+		}()
+
+		c, s := product_bench.SingleCall(gormrepo.New(db))
+		ctx.Data(http.StatusOK, "text", []byte(fmt.Sprintf("%v %v", c, s)))
+	})
+	engine.GET("/call/sqlx", func(ctx *gin.Context) {
+		db, err := sqlx.Connect("pgx", getPgxConnectionString(config))
+
+		if nil != err {
+			panic(err)
+		}
+
+		defer func() {
+			if nil != db {
+				db.Close()
+			}
+		}()
+
+		c, s := product_bench.SingleCall(sqlxrepo.New(db))
+		ctx.Data(http.StatusOK, "text", []byte(fmt.Sprintf("%v %v", c, s)))
+	})
 	engine.GET(
 		fmt.Sprintf("/bench/sqlx/:%v", router.ITER),
 		router.BenchmarkRunnerRoute(
