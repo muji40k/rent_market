@@ -1,9 +1,14 @@
-FROM golang:latest
+FROM golang:bookworm
+
+RUN apt-get update && apt-get upgrade && apt-get install -y ca-certificates
 
 ADD go.mod /go/
 ADD go.sum /go/
 
 RUN go mod download
+
+COPY crts/keeper.crt crts/* /usr/local/share/ca-certificates/
+RUN rm /usr/local/share/ca-certificates/keeper.crt && update-ca-certificates
 
 ADD application/ /go/application/
 ADD builders/ /go/builders

@@ -2,6 +2,7 @@ package user
 
 import (
 	"rent_service/internal/logic/services/types/date"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +21,7 @@ type UpdateForm struct {
 type PasswordUpdateRequest struct {
 	Required bool      `json:"required"`
 	Id       uuid.UUID `json:"id"`
-	ValidTo  date.Date `json:"valid_to"`
+	ValidTo  time.Time `json:"valid_to"`
 }
 
 type UserProfile struct {

@@ -30,6 +30,15 @@ type User struct {
 	technical.Info
 }
 
+type PasswordUpdateRequest struct {
+	Id       uuid.UUID       `db:"id"`
+	UserId   uuid.UUID       `db:"user_id"`
+	Password string          `db:"password"`
+	Code     string          `db:"code"`
+	ValidTo  utctime.UTCTime `db:"valid_to"`
+	technical.Info
+}
+
 type Profile struct {
 	Id         uuid.UUID                 `db:"id"`
 	UserId     uuid.UUID                 `db:"user_id"`
@@ -290,6 +299,150 @@ var count_by_id_and_name_query string = `
 
 func CheckExistsByIdAndName(db *sqlx.DB, id uuid.UUID, name string) error {
 	return exist.Check("user_name", db, count_by_id_and_name_query, id, name)
+}
+
+type passwordUpdateRepository struct {
+	connection *sqlx.DB
+	setter     technical.ISetter
+}
+
+func NewPasswordUpdate(
+	connection *sqlx.DB,
+	setter technical.ISetter,
+) user.IPasswordUpdateRepository {
+	return &passwordUpdateRepository{connection, setter}
+}
+
+func mapPasswordUpdateRequest(
+	value *PasswordUpdateRequest,
+) models.UserPasswordUpdateRequest {
+	return models.UserPasswordUpdateRequest{
+		Id:          value.Id,
+		UserId:      value.UserId,
+		NewPassword: value.Password,
+		Code:        value.Code,
+		ValidTo:     value.ValidTo.Time,
+	}
+}
+
+func unmapPasswordUpdateRequest(
+	value *models.UserPasswordUpdateRequest,
+) PasswordUpdateRequest {
+	return PasswordUpdateRequest{
+		Id:       value.Id,
+		UserId:   value.UserId,
+		Password: value.NewPassword,
+		Code:     value.Code,
+		ValidTo:  utctime.FromTime(value.ValidTo),
+	}
+}
+
+const insert_password_update_request_query string = `
+    insert into users.password_update_requests (
+        id, user_id, "password", code, valid_to, modification_date,
+        modification_source
+    ) values (
+        :id, :user_id, :password, :code, :valid_to, :modification_date,
+        :modification_source
+    )
+`
+
+func (self *passwordUpdateRepository) Create(
+	request models.UserPasswordUpdateRequest,
+) (models.UserPasswordUpdateRequest, error) {
+	err := CheckExistsById(self.connection, request.UserId)
+
+	if nil == err {
+		err = CheckPasswordUpdateRequestExistsByUserId(
+			self.connection, request.UserId,
+		)
+
+		if nil == err {
+			err = cmnerrors.Duplicate("password_update_request_user_id")
+		} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = nil
+		}
+	}
+
+	if nil == err {
+		request.Id, err = gen_uuid.GenerateAvailable(
+			self.connection,
+			CheckPasswordUpdateRequestExistsById,
+		)
+	}
+
+	if nil == err {
+		value := unmapPasswordUpdateRequest(&request)
+		self.setter.Update(&value.Info)
+		_, err = self.connection.NamedExec(
+			insert_password_update_request_query,
+			value,
+		)
+	}
+
+	return request, err
+}
+
+const get_password_update_request_query string = `
+    select * from users.password_update_requests where id = $1
+`
+
+func (self *passwordUpdateRepository) GetById(
+	requestId uuid.UUID,
+) (models.UserPasswordUpdateRequest, error) {
+	var value PasswordUpdateRequest
+	err := CheckPasswordUpdateRequestExistsById(self.connection, requestId)
+
+	if nil == err {
+		err = self.connection.Get(
+			&value,
+			get_password_update_request_query,
+			requestId,
+		)
+	}
+
+	return mapPasswordUpdateRequest(&value), err
+}
+
+const delete_password_update_request_query string = `
+    delete from users.password_update_requests where user_id = $1
+`
+
+func (self *passwordUpdateRepository) Remove(requestId uuid.UUID) error {
+	err := CheckPasswordUpdateRequestExistsById(self.connection, requestId)
+
+	if nil == err {
+		_, err = self.connection.Exec(
+			delete_password_update_request_query,
+			requestId,
+		)
+	}
+
+	return err
+}
+
+var count_password_update_requests_by_id_query string = exist.GenericCounter("users.password_update_requests")
+
+func CheckPasswordUpdateRequestExistsById(db *sqlx.DB, id uuid.UUID) error {
+	return exist.Check(
+		"password_update_request",
+		db,
+		count_password_update_requests_by_id_query,
+		id,
+	)
+}
+
+var count_password_update_requests_by_user_id_query string = `
+    select count(*) from users.password_update_requests where user_id = $1
+`
+
+func CheckPasswordUpdateRequestExistsByUserId(db *sqlx.DB, id uuid.UUID) error {
+	return exist.Check(
+		"password_update_request_user_id",
+		db,
+		count_password_update_requests_by_user_id_query,
+		id,
+	)
 }
 
 type profileRepository struct {

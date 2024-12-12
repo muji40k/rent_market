@@ -1,7 +1,5 @@
 package nullable
 
-import "fmt"
-
 type Nullable[T any] struct {
 	value T
 	valid bool
@@ -99,8 +97,6 @@ func IfNone[T any](self *Nullable[T], f func()) {
 }
 
 func UnwrapF[T any](value T, err error) T {
-	fmt.Println(err)
-
 	if nil != err {
 		panic(err)
 	}

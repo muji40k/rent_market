@@ -17,6 +17,8 @@ ADD Makefile /go/Makefile
 
 RUN go build ./cmd/benchmark/main.go
 
+ENV GOMAXPROCS=1
+
 FROM golang:latest
 
 COPY --from=build /go/main /main

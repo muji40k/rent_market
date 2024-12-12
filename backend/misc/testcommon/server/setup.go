@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"rent_service/builders/mothers/test/application/server"
 	"rent_service/internal/logic/context/v1"
+	"rent_service/internal/misc/types/collection"
 
 	"github.com/gavv/httpexpect/v2"
 	"github.com/gin-gonic/gin"
@@ -59,16 +60,32 @@ type Provider interface {
 	httpexpect.Logger
 }
 
-func (self *Context) GetClient(t Provider) *httpexpect.Expect {
+func (self *Context) GetClient(
+	t Provider,
+	printers ...func(Provider) httpexpect.Printer,
+) *httpexpect.Expect {
+	var iter collection.Iterator[func(Provider) httpexpect.Printer]
+
+	if 0 != len(printers) {
+		iter = collection.SliceIterator(printers)
+	} else {
+		iter = collection.SingleIterator(func(t Provider) httpexpect.Printer {
+			return httpexpect.NewCompactPrinter(t)
+		})
+	}
+
 	return httpexpect.WithConfig(httpexpect.Config{
 		Client: &http.Client{
 			Transport: httpexpect.NewBinder(self.Server),
 			Jar:       httpexpect.NewCookieJar(),
 		},
 		Reporter: httpexpect.NewAssertReporter(t),
-		Printers: []httpexpect.Printer{
-			httpexpect.NewCompactPrinter(t),
-		},
+		Printers: collection.Collect(collection.MapIterator(
+			func(ctor *func(Provider) httpexpect.Printer) httpexpect.Printer {
+				return (*ctor)(t)
+			},
+			iter,
+		)),
 	})
 }
 

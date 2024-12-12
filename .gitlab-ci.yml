@@ -68,3 +68,24 @@ e2e-tests:
         - backend/allure-report/allure-results/
       expire_in: 1 hour
 
+# BDD E2E tests
+
+build-bdd-e2e-tests:
+    stage: build
+    before_script:
+        - cp ${mailservercrt} ./backend/crts/mailserver.crt
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} build backend_bdd_e2e_tests test_db
+    after_script:
+        - rm -f ./backend/crts/mailserver.crt
+
+bdd-e2e-tests:
+    stage: test
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} run backend_bdd_e2e_tests
+    after_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+

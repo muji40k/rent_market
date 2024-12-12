@@ -6,6 +6,7 @@ import (
 	"rent_service/internal/logic/services/errors/cmnerrors"
 	"rent_service/internal/logic/services/implementations/defservices/authenticator"
 	"rent_service/internal/logic/services/implementations/defservices/authorizer"
+	"rent_service/internal/logic/services/implementations/defservices/codegen"
 	"rent_service/internal/logic/services/implementations/defservices/emptymathcer"
 	"rent_service/internal/logic/services/implementations/defservices/photoregistry"
 	"rent_service/internal/logic/services/interfaces/user"
@@ -145,6 +146,185 @@ func (self *service) UpdateSelfUserPassword(
 		user.Password = new_password
 		repo := self.repos.user.GetUserRepository()
 		err = repo.Update(user)
+
+		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = cmnerrors.NotFound(cerr.What...)
+		} else if nil != err {
+			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+		}
+	}
+
+	return err
+}
+
+type passwordUpdateProviders struct {
+	user     user_provider.IProvider
+	password user_provider.IPasswordUpdateProvider
+}
+
+type passwordUpdateService struct {
+	repos         passwordUpdateProviders
+	authenticator authenticator.IAuthenticator
+	verificator   I2FA
+	generator     codegen.IGenerator
+	encoder       ICodeEncoder
+	validTime     time.Duration
+}
+
+func mapPassowrdUpdateRequest(value *models.UserPasswordUpdateRequest) user.PasswordUpdateRequest {
+	return user.PasswordUpdateRequest{
+		Required: true,
+		Id:       value.Id,
+		ValidTo:  value.ValidTo,
+	}
+}
+
+type ICodeEncoder interface {
+	Encode(code string) string
+}
+
+type I2FA interface {
+	SendCode(user models.User, code string) error
+}
+
+func NewPasswordUpdate(
+	authenticator authenticator.IAuthenticator,
+	verificator I2FA,
+	generator codegen.IGenerator,
+	encoder ICodeEncoder,
+	validTime time.Duration,
+	userRepo user_provider.IProvider,
+	passwordRepo user_provider.IPasswordUpdateProvider,
+) user.IPasswordUpdateService {
+	return &passwordUpdateService{
+		passwordUpdateProviders{userRepo, passwordRepo},
+		authenticator,
+		verificator,
+		generator,
+		encoder,
+		validTime,
+	}
+}
+
+func (self *passwordUpdateService) updatePassword(
+	user models.User,
+	password string,
+) error {
+	user.Password = password
+	repo := self.repos.user.GetUserRepository()
+	err := repo.Update(user)
+
+	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
+		err = cmnerrors.NotFound(cerr.What...)
+	} else if nil != err {
+		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+	}
+
+	return err
+}
+
+func (self *passwordUpdateService) RequestPasswordUpdate(
+	token token.Token,
+	old_password string,
+	new_password string,
+) (user.PasswordUpdateRequest, error) {
+	result := user.PasswordUpdateRequest{Required: false}
+	var user models.User
+	err := emptymathcer.Match(
+		emptymathcer.Item("old_password", old_password),
+		emptymathcer.Item("new_password", new_password),
+	)
+
+	if nil == err {
+		user, err = self.authenticator.LoginWithToken(token)
+	}
+
+	if nil == err && old_password != user.Password {
+		err = cmnerrors.Authentication(errors.New("Passwords don't match"))
+	}
+
+	if nil == err && nil == self.verificator {
+		err = self.updatePassword(user, new_password)
+	} else if nil == err {
+		var request models.UserPasswordUpdateRequest
+		code := self.generator.Generate()
+		err = self.verificator.SendCode(user, code)
+
+		if nil != err {
+			err = cmnerrors.Internal(err)
+		} else {
+			request = models.UserPasswordUpdateRequest{
+				UserId:      user.Id,
+				NewPassword: new_password,
+				Code:        self.encoder.Encode(code),
+				ValidTo:     time.Now().Add(self.validTime),
+			}
+			repo := self.repos.password.GetUserPasswordUpdateRepository()
+			request, err = repo.Create(request)
+
+			if cerr := (repo_errors.ErrorDuplicate{}); errors.As(err, &cerr) {
+				err = cmnerrors.AlreadyExists("password_update_request")
+			} else if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
+				err = cmnerrors.NotFound(cerr.What...)
+			} else if nil != err {
+				err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+			}
+		}
+
+		if nil == err {
+			result = mapPassowrdUpdateRequest(&request)
+		}
+	}
+
+	return result, err
+}
+
+func (self *passwordUpdateService) AuthenticatePasswordUpdateRequest(
+	token token.Token,
+	requestId uuid.UUID,
+	code string,
+) error {
+	var user models.User
+	var request models.UserPasswordUpdateRequest
+	err := emptymathcer.Match(
+		emptymathcer.Item("code", code),
+	)
+
+	if nil == err {
+		user, err = self.authenticator.LoginWithToken(token)
+	}
+
+	if nil == err {
+		repo := self.repos.password.GetUserPasswordUpdateRepository()
+		request, err = repo.GetById(requestId)
+
+		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
+			err = cmnerrors.NotFound(cerr.What...)
+		} else if nil != err {
+			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+		}
+	}
+
+	if after := time.Now().After(request.ValidTo); nil == err &&
+		(request.UserId != user.Id || request.Code != code || after) {
+		err = cmnerrors.Authorization(
+			errors.New("Can't verify request"),
+		)
+
+		if after {
+			_ = self.repos.password.
+				GetUserPasswordUpdateRepository().
+				Remove(requestId)
+		}
+	}
+
+	if nil == err {
+		err = self.updatePassword(user, request.NewPassword)
+	}
+
+	if nil == err {
+		repo := self.repos.password.GetUserPasswordUpdateRepository()
+		err = repo.Remove(requestId)
 
 		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
 			err = cmnerrors.NotFound(cerr.What...)

@@ -15,6 +15,23 @@ create table users.users
     modification_source text not null
 );
 
+drop table if exists users.password_update_requests;
+create table users.password_update_requests
+(
+    id uuid primary key,
+    user_id uuid not null unique,
+    password text not null,
+    code text not null,
+    valid_to timestamptz not null,
+    modification_date timestamptz not null default now(),
+    modification_source text not null
+);
+
+alter table users.password_update_requests add
+    constraint "fkey_password_update_requests_user_id"
+    foreign key (user_id)
+    references users.users(id);
+
 drop table if exists users.favorite_pick_up_points;
 create table users.favorite_pick_up_points
 (

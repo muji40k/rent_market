@@ -13,6 +13,7 @@ import (
 	"rent_service/internal/domain/records"
 	"rent_service/internal/domain/requests"
 	"rent_service/internal/repository/implementation/sql/technical/implementations/simple"
+	"rent_service/internal/repository/interfaces/user"
 	"rent_service/misc/nullable"
 	"strings"
 	"time"
@@ -276,6 +277,7 @@ var tables = []string{
 	"instances.reviews",
 
 	"payments.users_methods",
+	"users.password_update_requests",
 	"users.favorite_pick_up_points",
 	"users.profiles",
 	"users.users",
@@ -683,6 +685,15 @@ func (self *Inserter) InsertRevokeRequest(value *requests.Revoke) {
 		value.CreateDate)
 }
 
+var insertUserPasswordUpdateRequest = prepareInsert(
+	"users.password_update_requests",
+	"id", "user_id", "password", "code", "valid_to")
+
+func (self *Inserter) InsertUserPasswordUpdateRequest(value *models.UserPasswordUpdateRequest) {
+	callWrap(self.db, insertUserPasswordUpdateRequest, value.Id, value.UserId,
+		value.NewPassword, value.Code, value.ValidTo)
+}
+
 type Photo struct {
 	Id     *nullable.Nullable[uuid.UUID]
 	Target uuid.UUID
@@ -719,5 +730,11 @@ var insertProductPhotoQuery = prepareInsert("products.photos",
 func (self *Inserter) InsertProductPhoto(pair *Photo) {
 	callWrap(self.db, insertProductPhotoQuery, pair.getId(),
 		pair.Target, pair.Photo)
+}
+
+type UserPasswordUpdateRequestProvider func() user.IPasswordUpdateRepository
+
+func (self UserPasswordUpdateRequestProvider) GetUserPasswordUpdateRepository() user.IPasswordUpdateRepository {
+	return self()
 }
 
