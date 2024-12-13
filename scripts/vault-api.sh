@@ -19,5 +19,5 @@ function get_kv {
         "${VAULT_SERVER_URL}/v1/$2" | jq -r ".data.$3"
 }
 
-apt-get udpate && apt-get install curl jq
+apk add curl jq
 
