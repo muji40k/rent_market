@@ -1,6 +1,7 @@
 
 volumes:
     gitlab-runner-config:
+    vault-file:
 
 services:
   gitlab-runner:
@@ -10,4 +11,16 @@ services:
       - gitlab-runner-config:/etc/gitlab-runner
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
+
+  vault:
+    image: hashicorp/vault
+    ports:
+      - "8200:8200"
+    restart: always
+    volumes:
+      - ./vault/file:/vault/file
+      - ./vault/config:/vault/config
+    cap_add:
+      - IPC_LOCK
+    entrypoint: vault server -config=/vault/config/vault.json
 
