@@ -113,7 +113,6 @@ var _ = ginkgo.AfterSuite(func() {
 	if nil != db {
 		db.Close()
 	}
-	ResetSeen()
 })
 
 var _ = ginkgo.Describe("Changing password with email 2FA", func() {
@@ -138,6 +137,7 @@ var _ = ginkgo.Describe("Changing password with email 2FA", func() {
 	})
 
 	ginkgo.AfterEach(func() {
+		ResetSeen()
 		nullable.UnwrapF(db.Exec("delete from users.password_update_requests where user_id = $1", user.Id))
 		nullable.UnwrapF(db.Exec("delete from users.users where id = $1", user.Id))
 	})

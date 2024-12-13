@@ -1,0 +1,13 @@
+
+{
+  "role_type": "jwt",
+  "policies": ["runner"],
+  "token_explicit_max_ttl": 60,
+  "user_claim": "user_email",
+  "bound_claims": {
+    "project_id": "<YOUR_ID_HERE>",
+    "ref_type": "branch",
+    "ref": "*"
+  }
+}
+

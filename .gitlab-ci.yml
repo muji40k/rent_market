@@ -71,6 +71,18 @@ e2e-tests:
 # BDD E2E tests
 
 build-bdd-e2e-tests:
+    id_tokens:
+      VAULT_ID_TOKEN:
+        aud: $VAULT_SERVER_URL
+    secrets:
+      mailservercrt:
+        token: $VAULT_ID_TOKEN
+        vault:
+          engine:
+            name: kv-v2
+            path: test/email
+          path: crts
+          field: ca
     stage: build
     before_script:
         - cp ${mailservercrt} ./backend/crts/mailserver.crt
