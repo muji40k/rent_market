@@ -2,6 +2,20 @@ stages:
     - build
     - test
 
+bdd-e2e-tests:
+    stage: test
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+    script:
+        - source ./scripts/vault-api.sh
+        - export VAULT_TOKEN="$(login_jwt $CI_JOB_JWT)"
+        - cat ./scripts/get-email-credentials.sh
+        - ./scripts/get-email-credentials.sh
+        - export $(./scripts/get-email-credentials.sh | xargs) \
+          && docker compose -f docker/docker-compose.yml --env-file ${env} run backend_bdd_e2e_tests
+    after_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+
 # Unit tests
 
 build-unit-tests:
@@ -82,16 +96,4 @@ build-bdd-e2e-tests:
     after_script:
         - rm -f ./backend/crts/mailserver.crt
 
-bdd-e2e-tests:
-    stage: test
-    before_script:
-        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
-    script:
-        - source ./scripts/vault-api.sh
-        - export VAULT_TOKEN="$(login_jwt $CI_JOB_JWT)"
-        - ./scripts/get-email-credentials.sh
-        - export $(./scripts/get-email-credentials.sh | xargs) \
-          && docker compose -f docker/docker-compose.yml --env-file ${env} run backend_bdd_e2e_tests
-    after_script:
-        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
 
