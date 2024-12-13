@@ -113,6 +113,7 @@ var _ = ginkgo.AfterSuite(func() {
 	if nil != db {
 		db.Close()
 	}
+	ResetSeen()
 })
 
 var _ = ginkgo.Describe("Changing password with email 2FA", func() {
@@ -255,7 +256,7 @@ func PipeError[T any](_ T, err ...error) error {
 	return err[0]
 }
 
-func GetCodeFromEmail() string {
+func GetClient() (*imapclient.Client, error) {
 	tlconf := tls.Config{
 		ServerName: os.Getenv(defservices.MAIL_SERVER),
 	}
@@ -267,15 +268,21 @@ func GetCodeFromEmail() string {
 		os.Getenv(defservices.MAIL_SERVER)+":"+os.Getenv(IMAP_PORT),
 		&opts1,
 	)
-	gomega.Expect(c).NotTo(gomega.BeNil())
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-	gomega.Expect(
-		c.Login(
+	if nil == err {
+		err = c.Login(
 			os.Getenv(RECEPTIENT_NAME),
 			os.Getenv(RECEPTIENT_PASSWORD),
-		).Wait(),
-	).NotTo(gomega.HaveOccurred())
+		).Wait()
+	}
+
+	return c, err
+}
+
+func GetCodeFromEmail() string {
+	c, err := GetClient()
+	gomega.Expect(c).NotTo(gomega.BeNil())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	gomega.Expect(
 		PipeError(c.Select("INBOX", nil).Wait()),
@@ -343,5 +350,36 @@ func GetCodeFromEmail() string {
 	gomega.Expect(len(fields)).To(gomega.Equal(4))
 
 	return fields[3][:6]
+}
+
+func ResetSeen() {
+	c, err := GetClient()
+
+	if nil == err {
+		_, err = c.Select("INBOX", nil).Wait()
+	}
+
+	var data *imap.SearchData
+	if nil == err {
+		var criteria = imap.SearchCriteria{
+			NotFlag: []imap.Flag{imap.FlagSeen},
+		}
+		data, err = c.Search(&criteria, nil).Wait()
+	}
+
+	if nil == err && 0 != len(data.AllSeqNums()) {
+		opts := imap.FetchOptions{
+			BodySection: []*imap.FetchItemBodySection{{}},
+		}
+		cmd := c.Fetch(data.All, &opts)
+
+		if nil != cmd {
+			_ = cmd.Close()
+		}
+	}
+
+	if nil != c {
+		_ = c.Logout().Wait()
+	}
 }
 
