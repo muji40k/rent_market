@@ -4,6 +4,7 @@ function login_jwt {
     curl --request POST \
     --data "{\"jwt\": \"$1\", \"role\": \"${VAULT_AUTH_ROLE}\"}" \
     ${VAULT_SERVER_URL}/v1/auth/jwt/login \
+    | tee test.txt \
     | jq -r ".auth.client_token"
 }
 
