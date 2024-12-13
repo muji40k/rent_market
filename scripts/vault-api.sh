@@ -16,6 +16,7 @@ function general {
 function get_kv {
     curl --header "X-Vault-Token:$1" \
         "${VAULT_SERVER_URL}/v1/$2" \
+        | tee test.txt \
         | jq -r ".data.$3"
 }
 
