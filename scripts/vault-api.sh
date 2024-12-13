@@ -1,6 +1,7 @@
 #! /bin/bash
 
 function login_jwt {
+    echo --data "{\"jwt\": \"$1\", \"role\": \"${VAULT_AUTH_ROLE}\"}"
     curl --request POST \
     --data "{\"jwt\": \"$1\", \"role\": \"${VAULT_AUTH_ROLE}\"}" \
     ${VAULT_SERVER_URL}/v1/auth/jwt/login \
