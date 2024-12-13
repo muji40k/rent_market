@@ -1,7 +1,7 @@
 #! /bin/bash
 
 function get {
-    vault kv get -field "$2" "test/email/$1"
+    get_kv "$VAULT_TOKEN" "test/email/$1" "$2"
 }
 
 echo EMAIL_2FA_HOST="$(get server host)"

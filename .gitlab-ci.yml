@@ -73,9 +73,9 @@ e2e-tests:
 build-bdd-e2e-tests:
     stage: build
     before_script:
-        - ls /usr/bin/
-        - export VAULT_TOKEN="$(/usr/bin/vault write -field=token auth/jwt/login role=runner jwt=$CI_JOB_JWT)"
-        - /usr/bin/vault kv get -field ca test/email/crts > ./backend/crts/mailserver.crt
+        - source ./scripts/vault-api.sh
+        - export VAULT_TOKEN="$(login_jwt $CI_JOB_JWT)"
+        - get_kv "$VAULT_TOKEN" "test/email/crts" "ca" > ./backend/crts/mailserver.crt
         - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
         - docker compose -f docker/docker-compose.yml --env-file ${env} build backend_bdd_e2e_tests test_db
@@ -87,7 +87,8 @@ bdd-e2e-tests:
     before_script:
         - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
-        - export VAULT_TOKEN="$(vault write -field=token auth/jwt/login role=runner jwt=$CI_JOB_JWT)" \
+        - source ./scripts/vault-api.sh
+        - export VAULT_TOKEN="$(login_jwt $CI_JOB_JWT)"
           && export $(./scripts/get-email-credentials.sh | xargs) \
           && docker compose -f docker/docker-compose.yml --env-file ${env} run backend_bdd_e2e_tests
     after_script:
