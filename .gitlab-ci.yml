@@ -88,12 +88,7 @@ build-bdd-e2e-tests:
     before_script:
         - source ./scripts/vault-api.sh
         - export VAULT_TOKEN="$(login_jwt $CI_JOB_JWT)"
-        - cat ./test.txt
-        - echo $CI_JOB_JWT
-        - echo $VAULT_TOKEN
         - get_kv "$VAULT_TOKEN" "test/email/crts" "ca" > ./backend/crts/mailserver.crt
-        - cat ./test.txt
-        - cat ./backend/crts/mailserver.crt
         - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
     script:
         - docker compose -f docker/docker-compose.yml --env-file ${env} build backend_bdd_e2e_tests test_db
