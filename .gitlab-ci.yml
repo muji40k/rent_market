@@ -10,8 +10,8 @@ bdd-e2e-tests:
         - source ./scripts/vault-api.sh
         - export VAULT_TOKEN="$(login_jwt $CI_JOB_JWT)"
         - cat ./scripts/get-email-credentials.sh
-        - ./scripts/get-email-credentials.sh
-        - export $(./scripts/get-email-credentials.sh | xargs) \
+        - /bin/sh ./scripts/get-email-credentials.sh
+        - export $(/bin/sh ./scripts/get-email-credentials.sh | xargs) \
           && docker compose -f docker/docker-compose.yml --env-file ${env} run backend_bdd_e2e_tests
     after_script:
         - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
