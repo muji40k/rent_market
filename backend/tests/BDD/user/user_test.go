@@ -2,6 +2,7 @@ package user_test
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -20,8 +21,6 @@ import (
 	repouser "rent_service/internal/repository/implementation/sql/repositories/user"
 	simplesetter "rent_service/internal/repository/implementation/sql/technical/implementations/simple"
 	riuser "rent_service/internal/repository/interfaces/user"
-	"rent_service/logger"
-	"rent_service/logger/implementations/writer"
 	"rent_service/misc/nullable"
 	defservicescommon "rent_service/misc/testcommon/defservices"
 	ginkgocommon "rent_service/misc/testcommon/ginkgo"
@@ -269,7 +268,6 @@ func FromENV(name string) SecretENV {
 }
 
 func GetClient() (*imapclient.Client, error) {
-	log, _ := writer.New(os.Stderr, nil, nil)
 	tlconf := tls.Config{
 		ServerName: os.Getenv(defservices.MAIL_SERVER),
 	}
@@ -282,10 +280,10 @@ func GetClient() (*imapclient.Client, error) {
 	user := FromENV(RECEPTIENT_NAME)
 	password := FromENV(RECEPTIENT_PASSWORD)
 
-	logger.Logf(log, logger.INFO, "server: %v", server)
-	logger.Logf(log, logger.INFO, "port: %v", port)
-	logger.Logf(log, logger.INFO, "user: %v", user)
-	logger.Logf(log, logger.INFO, "password: %v", password)
+	fmt.Fprintf(ginkgo.GinkgoWriter, "server: %v", server)
+	fmt.Fprintf(ginkgo.GinkgoWriter, "port: %v", port)
+	fmt.Fprintf(ginkgo.GinkgoWriter, "user: %v", user)
+	fmt.Fprintf(ginkgo.GinkgoWriter, "password: %v", password)
 
 	c, err := imapclient.DialStartTLS(
 		string(server)+":"+string(port),
