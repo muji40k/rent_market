@@ -2,7 +2,6 @@ package user_test
 
 import (
 	"crypto/tls"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -279,15 +278,6 @@ func GetClient() (*imapclient.Client, error) {
 	port := FromENV(IMAP_PORT)
 	user := FromENV(RECEPTIENT_NAME)
 	password := FromENV(RECEPTIENT_PASSWORD)
-
-	file, _ := os.Create("secrets.txt")
-
-	fmt.Fprintf(file, "server: %v", server)
-	fmt.Fprintf(file, "port: %v", port)
-	fmt.Fprintf(file, "user: %v", user)
-	fmt.Fprintf(file, "password: %v", password)
-
-	file.Close()
 
 	c, err := imapclient.DialStartTLS(
 		string(server)+":"+string(port),
