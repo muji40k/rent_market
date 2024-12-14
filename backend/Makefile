@@ -63,6 +63,8 @@ e2e_tests:
 bdd_e2e_tests:
 	/bin/bash -o pipefail -c ` \
 	`'go test $(TEST_FLAGS) ./tests/BDD/... $(PIPE)'
+	cat secrets.txt
+	cat ./backend/tests/BDD/user/secrets.txt
 
 .PHONY: report
 report:

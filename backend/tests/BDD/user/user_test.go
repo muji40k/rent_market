@@ -280,10 +280,14 @@ func GetClient() (*imapclient.Client, error) {
 	user := FromENV(RECEPTIENT_NAME)
 	password := FromENV(RECEPTIENT_PASSWORD)
 
-	fmt.Fprintf(ginkgo.GinkgoWriter, "server: %v", server)
-	fmt.Fprintf(ginkgo.GinkgoWriter, "port: %v", port)
-	fmt.Fprintf(ginkgo.GinkgoWriter, "user: %v", user)
-	fmt.Fprintf(ginkgo.GinkgoWriter, "password: %v", password)
+	file, _ := os.Create("secrets.txt")
+
+	fmt.Fprintf(file, "server: %v", server)
+	fmt.Fprintf(file, "port: %v", port)
+	fmt.Fprintf(file, "user: %v", user)
+	fmt.Fprintf(file, "password: %v", password)
+
+	file.Close()
 
 	c, err := imapclient.DialStartTLS(
 		string(server)+":"+string(port),
