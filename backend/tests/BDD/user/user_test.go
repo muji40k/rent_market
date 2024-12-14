@@ -20,6 +20,8 @@ import (
 	repouser "rent_service/internal/repository/implementation/sql/repositories/user"
 	simplesetter "rent_service/internal/repository/implementation/sql/technical/implementations/simple"
 	riuser "rent_service/internal/repository/interfaces/user"
+	"rent_service/logger"
+	"rent_service/logger/implementations/writer"
 	"rent_service/misc/nullable"
 	defservicescommon "rent_service/misc/testcommon/defservices"
 	ginkgocommon "rent_service/misc/testcommon/ginkgo"
@@ -256,7 +258,18 @@ func PipeError[T any](_ T, err ...error) error {
 	return err[0]
 }
 
+type SecretENV string
+
+func (SecretENV) String() string {
+	return "[hidden]"
+}
+
+func FromENV(name string) SecretENV {
+	return SecretENV(os.Getenv(name))
+}
+
 func GetClient() (*imapclient.Client, error) {
+	log, _ := writer.New(os.Stderr, nil, nil)
 	tlconf := tls.Config{
 		ServerName: os.Getenv(defservices.MAIL_SERVER),
 	}
@@ -264,15 +277,25 @@ func GetClient() (*imapclient.Client, error) {
 		TLSConfig: &tlconf,
 	}
 
+	server := FromENV(defservices.MAIL_SERVER)
+	port := FromENV(IMAP_PORT)
+	user := FromENV(RECEPTIENT_NAME)
+	password := FromENV(RECEPTIENT_PASSWORD)
+
+	logger.Logf(log, logger.INFO, "server: %v", server)
+	logger.Logf(log, logger.INFO, "port: %v", port)
+	logger.Logf(log, logger.INFO, "user: %v", user)
+	logger.Logf(log, logger.INFO, "password: %v", password)
+
 	c, err := imapclient.DialStartTLS(
-		os.Getenv(defservices.MAIL_SERVER)+":"+os.Getenv(IMAP_PORT),
+		string(server)+":"+string(port),
 		&opts1,
 	)
 
 	if nil == err {
 		err = c.Login(
-			os.Getenv(RECEPTIENT_NAME),
-			os.Getenv(RECEPTIENT_PASSWORD),
+			string(user),
+			string(password),
 		).Wait()
 	}
 
