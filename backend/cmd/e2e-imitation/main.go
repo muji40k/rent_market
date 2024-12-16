@@ -229,6 +229,23 @@ func SetQuery(url *url.URL, f func(*url.Values)) {
 	url.RawQuery = values.Encode()
 }
 
+func MapPeriod(i int) *models_b.PeriodBuilder {
+	switch i % 6 {
+	case 1:
+		return models_om.PeriodWeek()
+	case 2:
+		return models_om.PeriodMonth()
+	case 3:
+		return models_om.PeriodQuarter()
+	case 4:
+		return models_om.PeriodHalf()
+	case 5:
+		return models_om.PeriodYear()
+	default:
+		return models_om.PeriodDay()
+	}
+}
+
 func (self *Context) TestStartProvision(base *url.URL) {
 	// Arrange
 	photos := collection.Collect(collection.MapIterator(
@@ -241,22 +258,7 @@ func (self *Context) TestStartProvision(base *url.URL) {
 	periods := collection.Collect(InserterWrap(
 		self.RepoInserter.InsertPeriod,
 		collection.MapIterator(
-			func(i *int) models.Period {
-				switch *i % 6 {
-				case 1:
-					return models_om.PeriodWeek().Build()
-				case 2:
-					return models_om.PeriodMonth().Build()
-				case 3:
-					return models_om.PeriodQuarter().Build()
-				case 4:
-					return models_om.PeriodHalf().Build()
-				case 5:
-					return models_om.PeriodYear().Build()
-				default:
-					return models_om.PeriodDay().Build()
-				}
-			},
+			func(i *int) models.Period { return MapPeriod(*i).Build() },
 			collection.RangeIterator(collection.RangeEnd(6)),
 		),
 	))

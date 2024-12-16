@@ -1,6 +1,18 @@
 stages:
+    - code_quality
     - build
     - test
+
+# Code quality
+code_metrics:
+    stage: code_quality
+    before_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
+        - docker compose -f docker/docker-compose.yml --env-file ${env} build code_metrics
+    script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} run code_metrics
+    after_script:
+        - docker compose -f docker/docker-compose.yml --env-file ${env} down --remove-orphans
 
 # Unit tests
 

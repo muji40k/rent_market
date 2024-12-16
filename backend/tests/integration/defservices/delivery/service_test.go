@@ -65,24 +65,32 @@ func MapDelivery(value *requests.Delivery) delivery.Delivery {
 	}
 }
 
-func CompareDelivery(reference delivery.Delivery, actual delivery.Delivery) bool {
+func compareDeliveryGeneral(reference delivery.Delivery, actual delivery.Delivery) bool {
 	return reference.Id == actual.Id &&
 		reference.CompanyId == actual.CompanyId &&
 		reference.InstanceId == actual.InstanceId &&
 		reference.FromId == actual.FromId &&
 		reference.ToId == actual.ToId &&
-		psqlcommon.CompareTimePtrMicro(
-			psqlcommon.UnwrapDate(reference.BeginDate.Actual),
-			psqlcommon.UnwrapDate(actual.BeginDate.Actual),
-		) &&
+		reference.VerificationCode == actual.VerificationCode
+}
+
+func compareDeliveryTimes(reference delivery.Delivery, actual delivery.Delivery) bool {
+	return psqlcommon.CompareTimePtrMicro(
+		psqlcommon.UnwrapDate(reference.BeginDate.Actual),
+		psqlcommon.UnwrapDate(actual.BeginDate.Actual),
+	) &&
 		psqlcommon.CompareTimeMicro(reference.BeginDate.Scheduled.Time, actual.BeginDate.Scheduled.Time) &&
 		psqlcommon.CompareTimePtrMicro(
 			psqlcommon.UnwrapDate(reference.EndDate.Actual),
 			psqlcommon.UnwrapDate(actual.EndDate.Actual),
 		) &&
 		psqlcommon.CompareTimeMicro(reference.EndDate.Scheduled.Time, actual.EndDate.Scheduled.Time) &&
-		reference.VerificationCode == actual.VerificationCode &&
 		psqlcommon.CompareTimeMicro(reference.CreateDate.Time, actual.CreateDate.Time)
+}
+
+func CompareDelivery(reference delivery.Delivery, actual delivery.Delivery) bool {
+	return compareDeliveryGeneral(reference, actual) &&
+		compareDeliveryTimes(reference, actual)
 }
 
 type DeliveryServiceIntegrationTestSuite struct {

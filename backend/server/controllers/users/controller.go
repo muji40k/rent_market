@@ -11,6 +11,7 @@ import (
 	"rent_service/internal/logic/services/types/token"
 	"rent_service/server"
 	"rent_service/server/authenticator"
+	"rent_service/server/errmap"
 	"rent_service/server/errstructs"
 	"slices"
 
@@ -86,35 +87,36 @@ func (self *controller) get(ctx *gin.Context) {
 		info, err = service.GetSelfUserInfo(token)
 	}
 
-	if nil == err {
+	errmap.MapValue(ctx, func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, info)
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
+	}, err)
+}
+
+type updateForm struct {
+	Data     *service_user.UpdateForm `json:"data"`
+	Password *struct {
+		Old string `json:"old" binding:"required"`
+		New string `json:"new" binding:"required"`
+	} `json:"password"`
+}
+
+func (self *updateForm) check() error {
+	if (nil == self.Data && nil == self.Password) ||
+		(nil != self.Data && nil != self.Password) {
+		return errors.New("User can update only one thing at at time")
 	}
+
+	return nil
 }
 
 func (self *controller) update(ctx *gin.Context) {
 	var token token.Token
-	var form struct {
-		Data     *service_user.UpdateForm `json:"data"`
-		Password *struct {
-			Old string `json:"old" binding:"required"`
-			New string `json:"new" binding:"required"`
-		} `json:"password"`
-	}
+	var form updateForm
 
 	err := ctx.ShouldBindJSON(&form)
 
-	if nil == err &&
-		((nil == form.Data && nil == form.Password) ||
-			(nil != form.Data && nil != form.Password)) {
-		err = errors.New("User can update only one thing at at time")
+	if nil == err {
+		err = form.check()
 	}
 
 	if nil == err {
@@ -133,14 +135,6 @@ func (self *controller) update(ctx *gin.Context) {
 		)
 	}
 
-	if nil == err {
-		ctx.Status(http.StatusOK)
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	errmap.Map(ctx, http.StatusOK, err)
 }
 

@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"errors"
 	"math"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/domain/records"
@@ -17,7 +16,6 @@ import (
 	instance_provider "rent_service/internal/repository/context/providers/instance"
 	rent_provider "rent_service/internal/repository/context/providers/rent"
 	review_provider "rent_service/internal/repository/context/providers/review"
-	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 	instance_repository "rent_service/internal/repository/interfaces/instance"
 	review_repository "rent_service/internal/repository/interfaces/review"
 	"rent_service/misc/mapfuncs"
@@ -112,14 +110,11 @@ func (self *service) ListInstances(
 	sortr, err := mapSort(&sort)
 
 	if nil == err {
-		repo := self.repos.instance.GetInstanceRepository()
-		instance, err = repo.GetWithFilter(mapFilter(&filter), sortr)
-	}
-
-	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-		err = cmnerrors.NotFound(cerr.What...)
-	} else if nil != err {
-		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			repo := self.repos.instance.GetInstanceRepository()
+			instance, err = repo.GetWithFilter(mapFilter(&filter), sortr)
+			return
+		})
 	}
 
 	return MapCollection(mapf, instance), err
@@ -128,14 +123,13 @@ func (self *service) ListInstances(
 func (self *service) GetInstanceById(
 	instanceId uuid.UUID,
 ) (instance.Instance, error) {
-	repo := self.repos.instance.GetInstanceRepository()
-	instance, err := repo.GetById(instanceId)
+	var instance models.Instance
 
-	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-		err = cmnerrors.NotFound(cerr.What...)
-	} else if nil != err {
-		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-	}
+	err := cmnerrors.RepoCallWrap(func() (err error) {
+		repo := self.repos.instance.GetInstanceRepository()
+		instance, err = repo.GetById(instanceId)
+		return
+	})
 
 	return mapf(&instance), err
 }
@@ -151,14 +145,10 @@ func (self *service) UpdateInstance(
 	}
 
 	if nil == err {
-		repo := self.repos.instance.GetInstanceRepository()
-		err = repo.Update(unmapf(&instance))
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() error {
+			repo := self.repos.instance.GetInstanceRepository()
+			return repo.Update(unmapf(&instance))
+		})
 	}
 
 	return err
@@ -209,14 +199,13 @@ func mapPayPlans(value *models.InstancePayPlans) Collection[instance.PayPlan] {
 func (self *payPlansService) GetInstancePayPlans(
 	instanceId uuid.UUID,
 ) (Collection[instance.PayPlan], error) {
-	repo := self.repos.payPlans.GetInstancePayPlansRepository()
-	payPlans, err := repo.GetByInstanceId(instanceId)
+	var payPlans models.InstancePayPlans
 
-	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-		err = cmnerrors.NotFound(cerr.What...)
-	} else if nil != err {
-		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-	}
+	err := cmnerrors.RepoCallWrap(func() (err error) {
+		repo := self.repos.payPlans.GetInstancePayPlansRepository()
+		payPlans, err = repo.GetByInstanceId(instanceId)
+		return
+	})
 
 	return mapPayPlans(&payPlans), err
 }
@@ -226,6 +215,38 @@ func unmapPayPlan(value *instance.PayPlanUpdateForm) models.PayPlan {
 		PeriodId: value.PeriodId,
 		Price:    value.Price,
 	}
+}
+
+func getUpdatedMap(
+	payPlans instance.PayPlansUpdateForm,
+	reference models.InstancePayPlans,
+) (map[uuid.UUID]models.PayPlan, []instance.PayPlanUpdateForm, error) {
+	var err error
+	updated := make(map[uuid.UUID]models.PayPlan)
+	notFound := make([]instance.PayPlanUpdateForm, 0)
+
+	for i := 0; nil == err && len(payPlans) > i; i++ {
+		plan := payPlans[i]
+
+		if id, ok := mapfuncs.FindByValueF(
+			reference.Map,
+			func(v *models.PayPlan) bool {
+				return v.PeriodId == plan.PeriodId
+			},
+		); !ok {
+			notFound = append(notFound, plan)
+		} else {
+			if _, found := updated[id]; found {
+				err = cmnerrors.Incorrect("Duplicate id")
+			} else {
+				v := reference.Map[id]
+				v.Price = plan.Price
+				updated[id] = v
+			}
+		}
+	}
+
+	return updated, notFound, err
 }
 
 func (self *payPlansService) UpdateInstancePayPlans(
@@ -243,38 +264,15 @@ func (self *payPlansService) UpdateInstancePayPlans(
 	}
 
 	if nil == err {
-		reference, err = repo.GetByInstanceId(instanceId)
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			reference, err = repo.GetByInstanceId(instanceId)
+			return
+		})
 	}
 
 	if nil == err {
-		updated := make(map[uuid.UUID]models.PayPlan)
-
-		for i := 0; nil == err && len(payPlans) > i; i++ {
-			plan := payPlans[i]
-
-			if id, ok := mapfuncs.FindByValueF(
-				reference.Map,
-				func(v *models.PayPlan) bool {
-					return v.PeriodId == plan.PeriodId
-				},
-			); !ok {
-				notFound = append(notFound, plan)
-			} else {
-				if _, found := updated[id]; found {
-					err = cmnerrors.Incorrect("Duplicate id")
-				} else {
-					v := reference.Map[id]
-					v.Price = plan.Price
-					updated[id] = v
-				}
-			}
-		}
+		var updated map[uuid.UUID]models.PayPlan
+		updated, notFound, err = getUpdatedMap(payPlans, reference)
 
 		if nil == err {
 			reference.Map = updated
@@ -282,23 +280,16 @@ func (self *payPlansService) UpdateInstancePayPlans(
 	}
 
 	if nil == err {
-		err = repo.Update(reference)
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() error {
+			return repo.Update(reference)
+		})
 	}
 
 	for i := 0; nil == err && len(notFound) > i; i++ {
-		_, err = repo.AddPayPlan(instanceId, unmapPayPlan(&notFound[i]))
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			_, err = repo.AddPayPlan(instanceId, unmapPayPlan(&notFound[i]))
+			return
+		})
 	}
 
 	return err
@@ -336,14 +327,13 @@ func NewPhoto(
 func (self *photoService) ListInstancePhotos(
 	instanceId uuid.UUID,
 ) (Collection[uuid.UUID], error) {
-	repo := self.repos.photo.GetInstancePhotoRepository()
-	photos, err := repo.GetByInstanceId(instanceId)
+	var photos Collection[uuid.UUID]
 
-	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-		err = cmnerrors.NotFound(cerr.What...)
-	} else if nil != err {
-		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-	}
+	err := cmnerrors.RepoCallWrap(func() (err error) {
+		repo := self.repos.photo.GetInstancePhotoRepository()
+		photos, err = repo.GetByInstanceId(instanceId)
+		return
+	})
 
 	return photos, err
 }
@@ -365,15 +355,9 @@ func (self *photoService) AddInstancePhotos(
 		id, err = self.registry.MoveFromTemp(tempPhotos[i])
 
 		if nil == err {
-			err = repo.Create(instanceId, id)
-
-			if cerr := (repo_errors.ErrorDuplicate{}); errors.As(err, &cerr) {
-				err = cmnerrors.AlreadyExists(cerr.What...)
-			} else if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-				err = cmnerrors.NotFound(cerr.What...)
-			} else if nil != err {
-				err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-			}
+			err = cmnerrors.RepoCallWrap(func() error {
+				return repo.Create(instanceId, id)
+			})
 		}
 	}
 
@@ -474,14 +458,11 @@ func (self *reviewService) ListInstanceReviews(
 	}
 
 	if nil == err {
-		repo := self.repos.review.GetReviewRepository()
-		reviews, err = repo.GetWithFilter(filterr, sortr)
-	}
-
-	if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-		err = cmnerrors.NotFound(cerr.What...)
-	} else if nil != err {
-		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			repo := self.repos.review.GetReviewRepository()
+			reviews, err = repo.GetWithFilter(filterr, sortr)
+			return
+		})
 	}
 
 	return MapCollection(mapReview, reviews), err
@@ -506,14 +487,11 @@ func (self *reviewService) PostInstanceReview(
 	}
 
 	if nil == err {
-		repo := self.repos.rent.GetRentRepository()
-		rents, err = repo.GetPastByUserId(user.Id)
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			repo := self.repos.rent.GetRentRepository()
+			rents, err = repo.GetPastByUserId(user.Id)
+			return
+		})
 	}
 
 	if nil == err {
@@ -532,16 +510,11 @@ func (self *reviewService) PostInstanceReview(
 			Rating:     review.Rating,
 			Date:       time.Now(),
 		}
-		repo := self.repos.review.GetReviewRepository()
-		_, err = repo.Create(review)
-
-		if cerr := (repo_errors.ErrorDuplicate{}); errors.As(err, &cerr) {
-			err = cmnerrors.AlreadyExists(cerr.What...)
-		} else if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() error {
+			repo := self.repos.review.GetReviewRepository()
+			_, err := repo.Create(review)
+			return err
+		})
 	}
 
 	return err

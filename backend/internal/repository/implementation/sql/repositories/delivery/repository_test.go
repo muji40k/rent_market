@@ -24,19 +24,27 @@ import (
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 )
 
-func CompareDelivery(reference requests.Delivery, actual requests.Delivery) bool {
+func compareDeliveryGeneral(reference requests.Delivery, actual requests.Delivery) bool {
 	return reference.Id == actual.Id &&
 		reference.CompanyId == actual.CompanyId &&
 		reference.InstanceId == actual.InstanceId &&
 		reference.FromId == actual.FromId &&
 		reference.ToId == actual.ToId &&
 		reference.DeliveryId == actual.DeliveryId &&
-		psqlcommon.CompareTimeMicro(reference.ScheduledBeginDate, actual.ScheduledBeginDate) &&
+		reference.VerificationCode == actual.VerificationCode
+}
+
+func compareDeliveryTimes(reference requests.Delivery, actual requests.Delivery) bool {
+	return psqlcommon.CompareTimeMicro(reference.ScheduledBeginDate, actual.ScheduledBeginDate) &&
 		psqlcommon.CompareTimePtrMicro(reference.ActualBeginDate, actual.ActualBeginDate) &&
 		psqlcommon.CompareTimeMicro(reference.ScheduledEndDate, actual.ScheduledEndDate) &&
 		psqlcommon.CompareTimePtrMicro(reference.ActualEndDate, actual.ActualEndDate) &&
-		reference.VerificationCode == actual.VerificationCode &&
 		psqlcommon.CompareTimeMicro(reference.CreateDate, actual.CreateDate)
+}
+
+func CompareDelivery(reference requests.Delivery, actual requests.Delivery) bool {
+	return compareDeliveryGeneral(reference, actual) &&
+		compareDeliveryTimes(reference, actual)
 }
 
 type DeliveryRepositoryTestSuite struct {
@@ -94,18 +102,26 @@ var describeGetActiveByInstanceId = testcommon.MethodDescriptor(
 	"Get active deliveries for instance",
 )
 
-func CheckCreated(reference requests.Delivery, actual requests.Delivery) bool {
+func checkCreatedGeneral(reference requests.Delivery, actual requests.Delivery) bool {
 	return uuid.UUID{} != actual.Id &&
 		reference.InstanceId == actual.InstanceId &&
 		reference.FromId == actual.FromId &&
 		reference.ToId == actual.ToId &&
 		reference.DeliveryId == actual.DeliveryId &&
-		psqlcommon.CompareTimeMicro(reference.ScheduledBeginDate, actual.ScheduledBeginDate) &&
+		reference.VerificationCode == actual.VerificationCode
+}
+
+func checkCreatedTimes(reference requests.Delivery, actual requests.Delivery) bool {
+	return psqlcommon.CompareTimeMicro(reference.ScheduledBeginDate, actual.ScheduledBeginDate) &&
 		psqlcommon.CompareTimePtrMicro(reference.ActualBeginDate, actual.ActualBeginDate) &&
 		psqlcommon.CompareTimeMicro(reference.ScheduledEndDate, actual.ScheduledEndDate) &&
 		psqlcommon.CompareTimePtrMicro(reference.ActualEndDate, actual.ActualEndDate) &&
-		reference.VerificationCode == actual.VerificationCode &&
 		psqlcommon.CompareTimeMicro(reference.CreateDate, actual.CreateDate)
+}
+
+func CheckCreated(reference requests.Delivery, actual requests.Delivery) bool {
+	return checkCreatedGeneral(reference, actual) &&
+		checkCreatedTimes(reference, actual)
 }
 
 func (self *DeliveryRepositoryTestSuite) TestCreatePositive(t provider.T) {

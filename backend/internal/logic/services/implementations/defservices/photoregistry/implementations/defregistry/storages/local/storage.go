@@ -72,9 +72,85 @@ func generatePath(base string) (string, error) {
 	return path, err
 }
 
+type fileWrap struct {
+	file *os.File
+}
+
+func (self *fileWrap) Read(b []byte) (int, error) {
+	if nil == self.file {
+		return 0, cmnerrors.Internal(errors.New("No file wrapped"))
+	}
+
+	n, err := self.file.Read(b)
+
+	if nil != err && !errors.Is(err, io.EOF) {
+		err = cmnerrors.Internal(err)
+	}
+
+	return n, err
+}
+
+func (self *fileWrap) Write(b []byte) (int, error) {
+	if nil == self.file {
+		return 0, cmnerrors.Internal(errors.New("No file wrapped"))
+	}
+
+	n, err := self.file.Write(b)
+
+	if nil != err {
+		err = cmnerrors.Internal(err)
+	}
+
+	return n, err
+}
+
+func (self *fileWrap) Close() error {
+	if nil == self.file {
+		return nil
+	}
+
+	err := self.file.Close()
+
+	if nil != err {
+		err = cmnerrors.Internal(err)
+	}
+
+	return err
+}
+
+func openWrap(filename string) (*fileWrap, error) {
+	file, err := os.Open(filename)
+
+	if nil != err {
+		err = cmnerrors.Internal(err)
+	}
+
+	return &fileWrap{file}, err
+}
+
+func createWrap(filename string) (*fileWrap, error) {
+	file, err := os.Create(filename)
+
+	if nil != err {
+		err = cmnerrors.Internal(err)
+	}
+
+	return &fileWrap{file}, err
+}
+
+func removeWrap(filename string) error {
+	err := os.Remove(filename)
+
+	if nil != err {
+		err = cmnerrors.Internal(err)
+	}
+
+	return err
+}
+
 // Returns path to temp data
 func (self *storage) WriteTempData(content []byte) (string, error) {
-	var file *os.File
+	var file *fileWrap
 	var path string
 	err := mkdir(self.tempPath)
 
@@ -83,19 +159,11 @@ func (self *storage) WriteTempData(content []byte) (string, error) {
 	}
 
 	if nil == err {
-		file, err = os.Create(path)
-
-		if nil != err {
-			err = cmnerrors.Internal(err)
-		}
+		file, err = createWrap(path)
 	}
 
 	if nil == err {
 		_, err = file.Write(content)
-
-		if nil != err {
-			err = cmnerrors.Internal(err)
-		}
 	}
 
 	if nil != file {
@@ -105,13 +173,32 @@ func (self *storage) WriteTempData(content []byte) (string, error) {
 	return path, err
 }
 
-// Move temp data to persistent storage and return new path
-func (self *storage) SaveTempData(tempPath string) (string, error) {
-	var file *os.File
-	var path string
+func pipe(reader io.Reader, writer io.Writer) error {
 	const BUFSIZE int64 = 4096
 	var chunk [BUFSIZE]byte
-	var tempFile *os.File
+	var err error
+
+	for finish, read := false, 0; nil == err && !finish; {
+		read, err = reader.Read(chunk[:])
+
+		if errors.Is(err, io.EOF) {
+			err = nil
+			finish = true
+		}
+
+		if nil == err && 0 != read {
+			_, err = writer.Write(chunk[:read])
+		}
+	}
+
+	return err
+}
+
+// Move temp data to persistent storage and return new path
+func (self *storage) SaveTempData(tempPath string) (string, error) {
+	var path string
+	var file *fileWrap
+	var tempFile *fileWrap
 
 	err := mkdir(self.persistentPath)
 
@@ -120,11 +207,7 @@ func (self *storage) SaveTempData(tempPath string) (string, error) {
 	}
 
 	if nil == err {
-		tempFile, err = os.Open(tempPath)
-	}
-
-	if nil != err {
-		err = cmnerrors.Internal(err)
+		tempFile, err = openWrap(tempPath)
 	}
 
 	if nil == err {
@@ -132,46 +215,18 @@ func (self *storage) SaveTempData(tempPath string) (string, error) {
 	}
 
 	if nil == err {
-		file, err = os.Create(path)
-
-		if nil != err {
-			err = cmnerrors.Internal(err)
-		}
-	}
-
-	for finish, read := false, 0; nil == err && !finish; {
-		read, err = tempFile.Read(chunk[:])
-
-		if errors.Is(err, io.EOF) {
-			err = nil
-			finish = true
-		} else if nil != err {
-			err = cmnerrors.Internal(err)
-		}
-
-		if nil == err && 0 != read {
-			_, err = file.Write(chunk[:read])
-
-			if nil != err {
-				err = cmnerrors.Internal(err)
-			}
-		}
-	}
-
-	if nil != tempFile {
-		tempFile.Close()
-	}
-
-	if nil != file {
-		file.Close()
+		file, err = createWrap(path)
 	}
 
 	if nil == err {
-		err = os.Remove(tempPath)
+		err = pipe(tempFile, file)
+	}
 
-		if nil != err {
-			err = cmnerrors.Internal(err)
-		}
+	tempFile.Close()
+	file.Close()
+
+	if nil == err {
+		err = removeWrap(tempPath)
 	}
 
 	return path, err

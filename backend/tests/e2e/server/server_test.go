@@ -122,22 +122,7 @@ func (self *ServerE2ETestSuite) TestStartProvision(t provider.T) {
 
 		pergen := psql.GeneratorStepList(t, "periods", &periods,
 			func(i uint) (models.Period, uuid.UUID) {
-				var v models.Period
-				switch i % 6 {
-				case 0:
-					v = models_om.PeriodDay().Build()
-				case 1:
-					v = models_om.PeriodWeek().Build()
-				case 2:
-					v = models_om.PeriodMonth().Build()
-				case 3:
-					v = models_om.PeriodQuarter().Build()
-				case 4:
-					v = models_om.PeriodHalf().Build()
-				case 5:
-					v = models_om.PeriodYear().Build()
-				}
-
+				v := getPeriod(i).Build()
 				return v, v.Id
 			},
 			self.rContext.Inserter.InsertPeriod,
@@ -338,24 +323,8 @@ func (self *ServerE2ETestSuite) TestStartProvision(t provider.T) {
 			// Assert
 			resp.Status(http.StatusCreated).JSON().Object().Decode(&rq)
 			testcommon.Assert[sprovide.ProvideRequest](sCtx).EqualFunc(
-				func(e sprovide.ProvideRequest, a sprovide.ProvideRequest) bool {
-					return uuid.UUID{} != a.Id &&
-						e.ProductId == a.ProductId &&
-						e.UserId == a.UserId &&
-						e.PickUpPointId == a.PickUpPointId &&
-						e.Name == a.Name &&
-						e.Description == a.Description &&
-						e.Condition == a.Condition &&
-						"" != a.VerificationCode &&
-						date.Date{} != a.CreateDate &&
-						testcommon.ElementsMatchFunc(
-							func(e sprovide.PayPlan, a sprovide.PayPlan) bool {
-								return uuid.UUID{} != a.Id &&
-									e.PeriodId == a.PeriodId &&
-									testcommon.CompareCurrency(e.Price, a.Price)
-							}, e.PayPlans, a.PayPlans,
-						)
-				}, refRQ, rq, "Right request")
+				compareCreatedProvideRequest, refRQ, rq, "Right request",
+			)
 		})
 	})
 
@@ -386,24 +355,8 @@ func (self *ServerE2ETestSuite) TestStartProvision(t provider.T) {
 		resp.Status(http.StatusOK).JSON().Decode(&content)
 		sCtx.Assert().Equal(1, len(content), "One request in collection")
 		testcommon.Assert[sprovide.ProvideRequest](sCtx).EqualFunc(
-			func(e sprovide.ProvideRequest, a sprovide.ProvideRequest) bool {
-				return e.Id == a.Id &&
-					e.ProductId == a.ProductId &&
-					e.UserId == a.UserId &&
-					e.PickUpPointId == a.PickUpPointId &&
-					e.Name == a.Name &&
-					e.Description == a.Description &&
-					e.Condition == a.Condition &&
-					e.VerificationCode == a.VerificationCode &&
-					psqlcommon.CompareTimeMicro(e.CreateDate.Time, a.CreateDate.Time) &&
-					testcommon.ElementsMatchFunc(
-						func(e sprovide.PayPlan, a sprovide.PayPlan) bool {
-							return e.Id == a.Id &&
-								e.PeriodId == a.PeriodId &&
-								testcommon.CompareCurrency(e.Price, a.Price)
-						}, e.PayPlans, a.PayPlans,
-					)
-			}, rq, content[0], "Same provide request")
+			compareProvideRequest, rq, content[0], "Same provide request",
+		)
 	})
 
 	// Act -- Create and load temp photos of new instatnce
@@ -575,32 +528,7 @@ func (self *ServerE2ETestSuite) TestStartProvision(t provider.T) {
 					// Assert
 					var content sphoto.Photo
 					resp.Status(http.StatusOK).JSON().Decode(&content)
-
-					if *id != content.Id {
-						sCtx.Errorf("Photo id not match:\nExpected: %v\nGot: %v",
-							*id, content.Id,
-						)
-					}
-
-					if "image/png" != content.Mime {
-						sCtx.Errorf("Photo mime isn't 'image/png'. Got: %v", content.Mime)
-					}
-
-					if "" == content.Placeholder {
-						sCtx.Errorf("Got empty placeholder")
-					}
-
-					if "" == content.Description {
-						sCtx.Errorf("Got empty description")
-					}
-
-					if "" == content.Href {
-						sCtx.Errorf("Got empty href")
-					}
-
-					if d := (date.Date{}); d == content.Date {
-						sCtx.Errorf("Got empty date")
-					}
+					checkPhoto(sCtx, content, *id)
 				},
 			)
 		})
@@ -629,5 +557,104 @@ func (self *ServerE2ETestSuite) TestStartProvision(t provider.T) {
 
 func TestServerE2ETestSuiteRunner(t *testing.T) {
 	suite.RunSuite(t, new(ServerE2ETestSuite))
+}
+
+func getPeriod(i uint) *models_b.PeriodBuilder {
+	switch i % 6 {
+	case 0:
+		return models_om.PeriodDay()
+	case 1:
+		return models_om.PeriodWeek()
+	case 2:
+		return models_om.PeriodMonth()
+	case 3:
+		return models_om.PeriodQuarter()
+	case 4:
+		return models_om.PeriodHalf()
+	case 5:
+		return models_om.PeriodYear()
+	default:
+		panic("No way!")
+	}
+}
+
+func compareCreatedProvideRequestGeneral(e sprovide.ProvideRequest, a sprovide.ProvideRequest) bool {
+	return uuid.UUID{} != a.Id &&
+		e.ProductId == a.ProductId &&
+		e.UserId == a.UserId &&
+		e.PickUpPointId == a.PickUpPointId &&
+		e.Name == a.Name &&
+		e.Description == a.Description &&
+		e.Condition == a.Condition &&
+		"" != a.VerificationCode &&
+		date.Date{} != a.CreateDate
+}
+
+func compareCreatedProvideRequestPayPlans(e sprovide.ProvideRequest, a sprovide.ProvideRequest) bool {
+	return testcommon.ElementsMatchFunc(
+		func(e sprovide.PayPlan, a sprovide.PayPlan) bool {
+			return uuid.UUID{} != a.Id &&
+				e.PeriodId == a.PeriodId &&
+				testcommon.CompareCurrency(e.Price, a.Price)
+		}, e.PayPlans, a.PayPlans,
+	)
+}
+
+func compareCreatedProvideRequest(e sprovide.ProvideRequest, a sprovide.ProvideRequest) bool {
+	return compareCreatedProvideRequestGeneral(e, a) && compareCreatedProvideRequestPayPlans(e, a)
+}
+
+func compareProvideRequestGeneral(e sprovide.ProvideRequest, a sprovide.ProvideRequest) bool {
+	return e.Id == a.Id &&
+		e.ProductId == a.ProductId &&
+		e.UserId == a.UserId &&
+		e.PickUpPointId == a.PickUpPointId &&
+		e.Name == a.Name &&
+		e.Description == a.Description &&
+		e.Condition == a.Condition &&
+		e.VerificationCode == a.VerificationCode &&
+		psqlcommon.CompareTimeMicro(e.CreateDate.Time, a.CreateDate.Time)
+}
+
+func compareProvideRequestPayPlans(e sprovide.ProvideRequest, a sprovide.ProvideRequest) bool {
+	return testcommon.ElementsMatchFunc(
+		func(e sprovide.PayPlan, a sprovide.PayPlan) bool {
+			return e.Id == a.Id &&
+				e.PeriodId == a.PeriodId &&
+				testcommon.CompareCurrency(e.Price, a.Price)
+		}, e.PayPlans, a.PayPlans,
+	)
+}
+
+func compareProvideRequest(e sprovide.ProvideRequest, a sprovide.ProvideRequest) bool {
+	return compareProvideRequestGeneral(e, a) && compareProvideRequestPayPlans(e, a)
+}
+
+func checkPhoto(sCtx provider.StepCtx, content sphoto.Photo, id uuid.UUID) {
+	if id != content.Id {
+		sCtx.Errorf("Photo id not match:\nExpected: %v\nGot: %v",
+			id, content.Id,
+		)
+	}
+
+	if "image/png" != content.Mime {
+		sCtx.Errorf("Photo mime isn't 'image/png'. Got: %v", content.Mime)
+	}
+
+	if "" == content.Placeholder {
+		sCtx.Errorf("Got empty placeholder")
+	}
+
+	if "" == content.Description {
+		sCtx.Errorf("Got empty description")
+	}
+
+	if "" == content.Href {
+		sCtx.Errorf("Got empty href")
+	}
+
+	if d := (date.Date{}); d == content.Date {
+		sCtx.Errorf("Got empty date")
+	}
 }
 

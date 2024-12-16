@@ -1,17 +1,15 @@
 package instances
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	instance_provider "rent_service/internal/logic/context/providers/instance"
-	"rent_service/internal/logic/services/errors/cmnerrors"
 	"rent_service/internal/logic/services/interfaces/instance"
 	"rent_service/internal/logic/services/types/token"
 	"rent_service/internal/misc/types/collection"
 	"rent_service/server"
 	"rent_service/server/authenticator"
-	"rent_service/server/errstructs"
+	"rent_service/server/errmap"
 	getter_uuid "rent_service/server/getters/uuid"
 	"rent_service/server/pagination"
 	"strconv"
@@ -119,15 +117,9 @@ func (self *controller) get(ctx *gin.Context) {
 		iter, err = pagination.Apply(ctx, instances.Iter())
 	}
 
-	if nil == err {
+	errmap.MapValue(ctx, func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, collection.Marshaler(iter))
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	}, err)
 }
 
 func (self *controller) getById(ctx *gin.Context) {
@@ -139,15 +131,9 @@ func (self *controller) getById(ctx *gin.Context) {
 		item, err = service.GetInstanceById(id)
 	}
 
-	if nil == err {
+	errmap.MapValue(ctx, func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, item)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	}, err)
 }
 
 func (self *controller) updateById(ctx *gin.Context) {
@@ -181,19 +167,7 @@ func (self *controller) updateById(ctx *gin.Context) {
 		err = service.UpdateInstance(token, update)
 	}
 
-	if nil == err {
-		ctx.Status(http.StatusOK)
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	errmap.Map(ctx, http.StatusOK, err)
 }
 
 func (self *controller) getPayPlans(ctx *gin.Context) {
@@ -205,15 +179,9 @@ func (self *controller) getPayPlans(ctx *gin.Context) {
 		plans, err = service.GetInstancePayPlans(id)
 	}
 
-	if nil == err {
+	errmap.MapValue(ctx, func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, collection.Marshaler(plans.Iter()))
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	}, err)
 }
 
 func (self *controller) updatePayPlans(ctx *gin.Context) {
@@ -235,21 +203,7 @@ func (self *controller) updatePayPlans(ctx *gin.Context) {
 		err = service.UpdateInstancePayPlans(token, id, form)
 	}
 
-	if nil == err {
-		ctx.Status(http.StatusOK)
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else if cerr := (cmnerrors.ErrorConflict{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusConflict)
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	errmap.Map(ctx, http.StatusOK, err)
 }
 
 func (self *controller) getPhotos(ctx *gin.Context) {
@@ -261,15 +215,9 @@ func (self *controller) getPhotos(ctx *gin.Context) {
 		photos, err = service.ListInstancePhotos(id)
 	}
 
-	if nil == err {
+	errmap.MapValue(ctx, func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, collection.Marshaler(photos.Iter()))
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	}, err)
 }
 
 func (self *controller) addPhotos(ctx *gin.Context) {
@@ -291,19 +239,7 @@ func (self *controller) addPhotos(ctx *gin.Context) {
 		err = service.AddInstancePhotos(token, id, photos)
 	}
 
-	if nil == err {
-		ctx.Status(http.StatusCreated)
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	errmap.Map(ctx, http.StatusCreated, err)
 }
 
 func getReviewSortBy(raw string) (instance.ReviewSort, error) {
@@ -364,15 +300,9 @@ func (self *controller) getReviews(ctx *gin.Context) {
 		iter, err = pagination.Apply(ctx, reviews.Iter())
 	}
 
-	if nil == err {
+	errmap.MapValue(ctx, func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, collection.Marshaler(iter))
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	}, err)
 }
 
 func (self *controller) addReview(ctx *gin.Context) {
@@ -394,18 +324,6 @@ func (self *controller) addReview(ctx *gin.Context) {
 		err = service.PostInstanceReview(token, id, form)
 	}
 
-	if nil == err {
-		ctx.Status(http.StatusCreated)
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	errmap.Map(ctx, http.StatusCreated, err)
 }
 

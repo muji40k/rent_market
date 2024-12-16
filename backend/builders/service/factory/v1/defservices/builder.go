@@ -59,8 +59,7 @@ func (self *Builder) WithPaymentCheckers(checkers map[uuid.UUID]paymentcheckers.
 	return self
 }
 
-func (self *Builder) Build() (*deffactory.Factory, error) {
-	var factory *deffactory.Factory
+func (self *Builder) check() error {
 	var err error
 
 	if nil == self.repositoryContext {
@@ -82,6 +81,13 @@ func (self *Builder) Build() (*deffactory.Factory, error) {
 	if nil == err && 0 == len(self.paymentCheckers) {
 		err = errors.New("DefaultFactoryBuilder: payment checkers not set")
 	}
+
+	return err
+}
+
+func (self *Builder) Build() (*deffactory.Factory, error) {
+	var factory *deffactory.Factory
+	err := self.check()
 
 	if nil == err {
 		factory = deffactory.New(

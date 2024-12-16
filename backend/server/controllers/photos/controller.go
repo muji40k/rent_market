@@ -81,29 +81,22 @@ var ErrorMimeDoesntMatch = errors.New(
 	"Provided mime doesn't match with created instance",
 )
 
-func (self *controller) uploadTemp(ctx *gin.Context) {
-	var photo []byte
-	var token token.Token
+func (self *controller) getPhoto(
+	ctx *gin.Context,
+	token token.Token,
+	id uuid.UUID,
+) ([]byte, error) {
+	var err error
 	var mime string
+	var photo []byte
 	service := self.providers.photo.GetPhotoService()
-	id, err := getter_uuid.Parse(ctx.Params.ByName(PARAM_ID))
 
-	if nil == err {
-		mime = ctx.ContentType()
-
-		if "" == mime {
-			err = errors.New("No mime type provided")
-		}
+	if mime = ctx.ContentType(); "" == mime {
+		err = errors.New("No mime type provided")
 	}
 
 	if nil == err {
-		token, err = authenticator.ExchangeToken(ctx, self.authenticator)
-	}
-
-	if nil == err {
-		data, cerr := service.GetTempPhoto(token, id)
-
-		if nil != cerr {
+		if data, cerr := service.GetTempPhoto(token, id); nil != cerr {
 			err = cerr
 		} else if data.Mime != mime {
 			err = ErrorMimeDoesntMatch
@@ -111,15 +104,30 @@ func (self *controller) uploadTemp(ctx *gin.Context) {
 	}
 
 	if nil == err {
-		photo, err = io.ReadAll(ctx.Request.Body)
-
-		if nil != err {
+		if photo, err = io.ReadAll(ctx.Request.Body); nil != err {
 			err = cmnerrors.Internal(err)
 		}
 	}
 
 	if nil == err && 0 == len(photo) {
 		err = errors.New("No photo was supplied")
+	}
+
+	return photo, err
+}
+
+func (self *controller) uploadTemp(ctx *gin.Context) {
+	var photo []byte
+	var token token.Token
+	service := self.providers.photo.GetPhotoService()
+	id, err := getter_uuid.Parse(ctx.Params.ByName(PARAM_ID))
+
+	if nil == err {
+		token, err = authenticator.ExchangeToken(ctx, self.authenticator)
+	}
+
+	if nil == err {
+		photo, err = self.getPhoto(ctx, token, id)
 	}
 
 	if nil == err {

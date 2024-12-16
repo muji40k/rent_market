@@ -341,9 +341,9 @@ const insert_pay_plan_query string = `
     )
 `
 
-func (self *payPlansRepository) Create(
+func (self *payPlansRepository) checkCreate(
 	payPlans models.InstancePayPlans,
-) (models.InstancePayPlans, error) {
+) error {
 	err := CheckExistsById(self.connection, payPlans.InstanceId)
 
 	if nil == err {
@@ -363,6 +363,14 @@ func (self *payPlansRepository) Create(
 			}
 		}
 	}
+
+	return err
+}
+
+func (self *payPlansRepository) Create(
+	payPlans models.InstancePayPlans,
+) (models.InstancePayPlans, error) {
+	err := self.checkCreate(payPlans)
 
 	if nil == err {
 		for k, v := range payPlans.Map {

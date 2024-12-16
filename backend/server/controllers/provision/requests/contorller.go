@@ -1,17 +1,15 @@
 package requests
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"rent_service/internal/logic/context/providers/provide"
-	"rent_service/internal/logic/services/errors/cmnerrors"
 	provide_service "rent_service/internal/logic/services/interfaces/provide"
 	"rent_service/internal/logic/services/types/token"
 	"rent_service/internal/misc/types/collection"
 	"rent_service/server"
 	"rent_service/server/authenticator"
-	"rent_service/server/errstructs"
+	"rent_service/server/errmap"
 	getter_uuid "rent_service/server/getters/uuid"
 	"rent_service/server/lister"
 	"rent_service/server/pagination"
@@ -101,17 +99,12 @@ func (self *controller) get(ctx *gin.Context) {
 		iter, err = pagination.Apply(ctx, requests.Iter())
 	}
 
-	if nil == err {
-		ctx.JSON(http.StatusOK, collection.Marshaler(iter))
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	errmap.MapValue(ctx,
+		func(ctx *gin.Context) {
+			ctx.JSON(http.StatusOK, collection.Marshaler(iter))
+		},
+		err,
+	)
 }
 
 func (self *controller) create(ctx *gin.Context) {
@@ -129,21 +122,12 @@ func (self *controller) create(ctx *gin.Context) {
 		request, err = service.CreateProvisionRequest(token, form)
 	}
 
-	if nil == err {
-		ctx.JSON(http.StatusCreated, request)
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else if cerr := (cmnerrors.ErrorConflict{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusConflict)
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	errmap.MapValue(ctx,
+		func(ctx *gin.Context) {
+			ctx.JSON(http.StatusCreated, request)
+		},
+		err,
+	)
 }
 
 const (
@@ -221,20 +205,6 @@ func (self *controller) update(ctx *gin.Context) {
 		err = action(token)
 	}
 
-	if nil == err {
-		ctx.Status(http.StatusOK)
-	} else if cerr := (cmnerrors.ErrorAuthentication{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusUnauthorized)
-	} else if cerr := (cmnerrors.ErrorAuthorization{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusForbidden)
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusInternalServerError, errstructs.NewInternalErr(err))
-	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
-		ctx.JSON(http.StatusNotFound, errstructs.NewNotFound(cerr))
-	} else if cerr := (cmnerrors.ErrorConflict{}); errors.As(err, &cerr) {
-		ctx.Status(http.StatusConflict)
-	} else {
-		ctx.JSON(http.StatusBadRequest, errstructs.NewBadRequestErr(err))
-	}
+	errmap.Map(ctx, http.StatusOK, err)
 }
 

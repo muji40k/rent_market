@@ -422,11 +422,9 @@ const insert_request_pay_plan_query string = `
     )
 `
 
-func (self *requestRepository) Create(
+func (self *requestRepository) checkCreate(
 	request requests.Provide,
-) (requests.Provide, error) {
-	var mr Request
-	var mrpp []RequestPayPlans
+) error {
 	err := product.CheckExistsById(self.connection, request.ProductId)
 
 	if nil == err {
@@ -444,6 +442,16 @@ func (self *requestRepository) Create(
 			}
 		}
 	}
+
+	return err
+}
+
+func (self *requestRepository) Create(
+	request requests.Provide,
+) (requests.Provide, error) {
+	var mr Request
+	var mrpp []RequestPayPlans
+	err := self.checkCreate(request)
 
 	if nil == err {
 		request.Id, err = gen_uuid.GenerateAvailable(

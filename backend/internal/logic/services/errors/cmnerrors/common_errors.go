@@ -1,6 +1,10 @@
 package cmnerrors
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"rent_service/internal/repository/errors/cmnerrors"
+)
 
 type ErrorAuthentication struct{ Err error }
 type ErrorAuthorization struct{ Err error }
@@ -65,6 +69,21 @@ func AlreadyExists(what ...string) ErrorAlreadyExists {
 
 func Conflict(what string) ErrorConflict {
 	return ErrorConflict{what}
+}
+
+// Helpers
+func RepoCallWrap(f func() error) error {
+	err := f()
+
+	if cerr := (cmnerrors.ErrorDuplicate{}); errors.As(err, &cerr) {
+		err = AlreadyExists(cerr.What...)
+	} else if cerr := (cmnerrors.ErrorNotFound{}); errors.As(err, &cerr) {
+		err = NotFound(cerr.What...)
+	} else if nil != err {
+		err = Internal(DataAccess(err))
+	}
+
+	return err
 }
 
 // Error implementation

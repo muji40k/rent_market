@@ -59,25 +59,26 @@ func Collect[T any](
 	}
 
 	for j := 0; nil == err && len(params) > j; j++ {
-		param := &params[j]
+		err = collectIteration(
+			func(param *Param) (*T, error) {
+				var err error
 
-		if separator(param) {
-			err = checker(&out[i])
+				if separator(param) {
+					err = checker(&out[i])
 
-			if nil == err {
-				var n T
-				out = append(out, n)
-				i++
-			}
-		}
+					if nil == err {
+						var n T
+						out = append(out, n)
+						i++
+					}
+				}
 
-		if nil == err {
-			if setter := setters[param.Key]; nil != setter {
-				err = setter(param.Value, &out[i])
-			} else if !skipUnknown {
-				err = fmt.Errorf("Unknown key '%v'", param.Key)
-			}
-		}
+				return &out[i], err
+			},
+			setters,
+			&params[j],
+			skipUnknown,
+		)
 	}
 
 	if nil == err {
@@ -93,5 +94,24 @@ func Collect[T any](
 	} else {
 		return nil, err
 	}
+}
+
+func collectIteration[T any](
+	separator func(*Param) (*T, error),
+	setters map[string]func(string, *T) error,
+	param *Param,
+	skipUnknown bool,
+) error {
+	dst, err := separator(param)
+
+	if nil == err {
+		if setter := setters[param.Key]; nil != setter {
+			err = setter(param.Value, dst)
+		} else if !skipUnknown {
+			err = fmt.Errorf("Unknown key '%v'", param.Key)
+		}
+	}
+
+	return err
 }
 

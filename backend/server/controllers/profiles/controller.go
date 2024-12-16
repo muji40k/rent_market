@@ -85,50 +85,56 @@ func updateFavorite(
 	return err
 }
 
-func updatePayMethods(
-	ctx *gin.Context,
-	token token.Token,
-	service payment_service.IUserPayMethodService,
-) error {
-	var methods struct {
-		Delete []uuid.UUID `json:"delete"`
-		Keep   []struct {
-			Move     *uuid.UUID                                 `json:"move"`
-			Register *payment_service.PayMethodRegistrationForm `json:"register"`
-		} `json:"items"`
-	}
+type form struct {
+	Delete []uuid.UUID `json:"delete"`
+	Keep   []struct {
+		Move     *uuid.UUID                                 `json:"move"`
+		Register *payment_service.PayMethodRegistrationForm `json:"register"`
+	} `json:"items"`
+}
 
-	err := ctx.ShouldBindJSON(&methods)
+func (self *form) check() error {
+	var err error
 
-	// Check form correctness first
-	for i := 0; nil == err && len(methods.Keep) > i; i++ {
-		item := methods.Keep[i]
+	for i := 0; nil == err && len(self.Keep) > i; i++ {
+		item := self.Keep[i]
 
 		if (nil == item.Move && nil == item.Register) ||
 			(nil != item.Move && nil != item.Register) {
 			err = errors.New(
-				"Item must specify only one of methods: 'move' or 'register'",
+				"Item must specify only one of self: 'move' or 'register'",
 			)
 		} else if nil == item.Register &&
-			slices.Contains(methods.Delete, *item.Move) {
+			slices.Contains(self.Delete, *item.Move) {
 			err = errors.New("Move of deleted method")
 		}
 	}
 
-	// Delete
-	for i := 0; nil == err && len(methods.Delete) > i; i++ {
-		err = service.RemovePayMethod(token, methods.Delete[i])
+	return err
+}
+
+func (self *form) delete(
+	token token.Token,
+	service payment_service.IUserPayMethodService,
+) error {
+	var err error
+
+	for i := 0; nil == err && len(self.Delete) > i; i++ {
+		err = service.RemovePayMethod(token, self.Delete[i])
 	}
 
-	// Compose new order of methods and register new ones
-	var order []uuid.UUID
+	return err
+}
 
-	if nil == err {
-		order = make([]uuid.UUID, len(methods.Keep))
-	}
+func (self *form) apply(
+	token token.Token,
+	service payment_service.IUserPayMethodService,
+) error {
+	var err error
+	order := make([]uuid.UUID, len(self.Keep))
 
-	for i := 0; nil == err && len(methods.Keep) > i; i++ {
-		item := methods.Keep[i]
+	for i := 0; nil == err && len(self.Keep) > i; i++ {
+		item := self.Keep[i]
 
 		if nil != item.Move {
 			order[i] = *item.Move
@@ -145,6 +151,33 @@ func updatePayMethods(
 	// Apply new order
 	if nil == err {
 		err = service.UpdatePayMethodsPriority(token, order)
+	}
+
+	return err
+}
+
+func updatePayMethods(
+	ctx *gin.Context,
+	token token.Token,
+	service payment_service.IUserPayMethodService,
+) error {
+	var methods form
+
+	err := ctx.ShouldBindJSON(&methods)
+
+	// Check form correctness first
+	if nil == err {
+		err = methods.check()
+	}
+
+	// Delete
+	if nil == err {
+		err = methods.delete(token, service)
+	}
+
+	// Compose new order of methods and register new ones
+	if nil == err {
+		err = methods.apply(token, service)
 	}
 
 	return err

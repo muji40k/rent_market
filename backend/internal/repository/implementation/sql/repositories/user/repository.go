@@ -102,7 +102,7 @@ const insert_query string = `
     )
 `
 
-func (self *repository) Create(user models.User) (models.User, error) {
+func (self *repository) checkCreate(user models.User) error {
 	err := CheckExistsByEmail(self.connection, user.Email)
 
 	if nil == err {
@@ -120,6 +120,12 @@ func (self *repository) Create(user models.User) (models.User, error) {
 			err = nil
 		}
 	}
+
+	return err
+}
+
+func (self *repository) Create(user models.User) (models.User, error) {
+	err := self.checkCreate(user)
 
 	if nil == err {
 		user.Id, err = gen_uuid.GenerateAvailable(
@@ -157,7 +163,7 @@ const update_query string = `
     where id=:id
 `
 
-func (self *repository) Update(user models.User) error {
+func (self *repository) checkUserExists(user models.User) error {
 	err := CheckExistsById(self.connection, user.Id)
 
 	if nil == err {
@@ -191,6 +197,12 @@ func (self *repository) Update(user models.User) error {
 			user.Token = models.Token(token)
 		}
 	}
+
+	return err
+}
+
+func (self *repository) Update(user models.User) error {
+	err := self.checkUserExists(user)
 
 	if nil == err {
 		mapped := unmapf(&user)

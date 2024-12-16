@@ -39,6 +39,25 @@ func NewInstance(
 	}
 }
 
+func check[T any](
+	userId uuid.UUID,
+	instanceId uuid.UUID,
+	auth func(uuid.UUID) (T, error),
+	access func(T, uuid.UUID) error,
+) (bool, error) {
+	if v, verr := auth(userId); nil == verr {
+		if err := access(v, instanceId); nil == err {
+			return false, nil
+		} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
+			return false, err
+		}
+	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(verr, &cerr) {
+		return false, verr
+	}
+
+	return true, nil
+}
+
 func (self *iaccess) Access(userId uuid.UUID, instanceId uuid.UUID) error {
 	repo := self.repos.instance.GetInstanceRepository()
 	if _, err := repo.GetById(instanceId); nil != err {
@@ -49,37 +68,30 @@ func (self *iaccess) Access(userId uuid.UUID, instanceId uuid.UUID) error {
 		return cmnerrors.Internal(cmnerrors.DataAccess(err))
 	}
 
-	if admin, aerr := self.authorizer.IsAdministrator(userId); nil == aerr {
-		if err := self.accessAdministrator(admin, instanceId); nil == err {
-			return nil
-		} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-			return err
-		}
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(aerr, &cerr) {
-		return aerr
+	c, err := check(userId, instanceId,
+		self.authorizer.IsAdministrator,
+		self.accessAdministrator,
+	)
+
+	if c {
+		c, err = check(userId, instanceId,
+			self.authorizer.IsRenter,
+			self.accessRenter,
+		)
 	}
 
-	if renter, rerr := self.authorizer.IsRenter(userId); nil == rerr {
-		if err := self.accessRenter(renter, instanceId); nil == err {
-			return nil
-		} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-			return err
-		}
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(rerr, &cerr) {
-		return rerr
+	if c {
+		c, err = check(userId, instanceId,
+			self.authorizer.IsStorekeeper,
+			self.accessStorekeeper,
+		)
 	}
 
-	if sk, rerr := self.authorizer.IsStorekeeper(userId); nil == rerr {
-		if err := self.accessStorekeeper(sk, instanceId); nil == err {
-			return nil
-		} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(err, &cerr) {
-			return err
-		}
-	} else if cerr := (cmnerrors.ErrorInternal{}); errors.As(rerr, &cerr) {
-		return rerr
+	if c {
+		err = cmnerrors.Authorization(cmnerrors.NoAccess("instance"))
 	}
 
-	return cmnerrors.Authorization(cmnerrors.NoAccess("instance"))
+	return err
 }
 
 func (self *iaccess) accessAdministrator(

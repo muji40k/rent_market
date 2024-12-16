@@ -16,7 +16,6 @@ import (
 	payment_provider "rent_service/internal/repository/context/providers/payment"
 	paymethod_provider "rent_service/internal/repository/context/providers/paymethod"
 	user_provider "rent_service/internal/repository/context/providers/user"
-	repo_errors "rent_service/internal/repository/errors/cmnerrors"
 	"rent_service/misc/mapfuncs"
 
 	"github.com/google/uuid"
@@ -43,12 +42,13 @@ func mapPayMethod(value *models.PayMethod) payment.PayMethod {
 }
 
 func (self *payMethodService) GetPayMethods() (Collection[payment.PayMethod], error) {
-	repo := self.repos.payMethod.GetPayMethodRepository()
-	methods, err := repo.GetAll()
+	var methods Collection[models.PayMethod]
 
-	if nil != err {
-		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-	}
+	err := cmnerrors.RepoCallWrap(func() (err error) {
+		repo := self.repos.payMethod.GetPayMethodRepository()
+		methods, err = repo.GetAll()
+		return
+	})
 
 	return MapCollection(mapPayMethod, methods), err
 }
@@ -106,14 +106,11 @@ func (self *userPayMethodService) GetPayMethods(
 	user, err := self.authenticator.LoginWithToken(token)
 
 	if nil == err {
-		repo := self.repos.payMethod.GetUserPayMethodsRepository()
-		mpaymethods, err = repo.GetByUserId(user.Id)
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			repo := self.repos.payMethod.GetUserPayMethodsRepository()
+			mpaymethods, err = repo.GetByUserId(user.Id)
+			return
+		})
 	}
 
 	if nil == err {
@@ -149,20 +146,15 @@ func (self *userPayMethodService) RegisterPayMethod(
 	}
 
 	if nil == err {
-		repo := self.repos.payMethod.GetUserPayMethodsRepository()
-		paymethods, err = repo.CreatePayMethod(user.Id, models.UserPayMethod{
-			Name:     method.Name,
-			MethodId: method.MethodId,
-			PayerId:  method.PayerId,
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			repo := self.repos.payMethod.GetUserPayMethodsRepository()
+			paymethods, err = repo.CreatePayMethod(user.Id, models.UserPayMethod{
+				Name:     method.Name,
+				MethodId: method.MethodId,
+				PayerId:  method.PayerId,
+			})
+			return
 		})
-
-		if cerr := (repo_errors.ErrorDuplicate{}); errors.As(err, &cerr) {
-			err = cmnerrors.AlreadyExists(cerr.What...)
-		} else if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
 	}
 
 	if nil == err {
@@ -190,13 +182,10 @@ func (self *userPayMethodService) UpdatePayMethodsPriority(
 	user, err := self.authenticator.LoginWithToken(token)
 
 	if nil == err {
-		paymethods, err = repo.GetByUserId(user.Id)
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			paymethods, err = repo.GetByUserId(user.Id)
+			return
+		})
 	}
 
 	if nil == err && len(paymethods.Map) != len(methodsOrder) {
@@ -222,11 +211,9 @@ func (self *userPayMethodService) UpdatePayMethodsPriority(
 	}
 
 	if nil == err {
-		err = repo.Update(paymethods)
-
-		if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() error {
+			return repo.Update(paymethods)
+		})
 	}
 
 	return err
@@ -241,13 +228,10 @@ func (self *userPayMethodService) RemovePayMethod(
 	user, err := self.authenticator.LoginWithToken(token)
 
 	if nil == err {
-		paymethods, err = repo.GetByUserId(user.Id)
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			paymethods, err = repo.GetByUserId(user.Id)
+			return
+		})
 	}
 
 	if nil == err {
@@ -259,11 +243,9 @@ func (self *userPayMethodService) RemovePayMethod(
 	}
 
 	if nil == err {
-		err = repo.Update(paymethods)
-
-		if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() error {
+			return repo.Update(paymethods)
+		})
 	}
 
 	return err
@@ -336,14 +318,11 @@ func (self *rentPaymentService) GetPaymentsByInstance(
 	}
 
 	if nil == err {
-		repo := self.repos.payment.GetPaymentRepository()
-		payments, err = repo.GetByInstanceId(instanceId)
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			repo := self.repos.payment.GetPaymentRepository()
+			payments, err = repo.GetByInstanceId(instanceId)
+			return
+		})
 	}
 
 	return MapCollection(mapPayment, payments), err
@@ -361,14 +340,11 @@ func (self *rentPaymentService) GetPaymentsByRentId(
 	}
 
 	if nil == err {
-		repo := self.repos.payment.GetPaymentRepository()
-		payments, err = repo.GetByRentId(rentId)
-
-		if cerr := (repo_errors.ErrorNotFound{}); errors.As(err, &cerr) {
-			err = cmnerrors.NotFound(cerr.What...)
-		} else if nil != err {
-			err = cmnerrors.Internal(cmnerrors.DataAccess(err))
-		}
+		err = cmnerrors.RepoCallWrap(func() (err error) {
+			repo := self.repos.payment.GetPaymentRepository()
+			payments, err = repo.GetByRentId(rentId)
+			return
+		})
 	}
 
 	return MapCollection(mapPayment, payments), err

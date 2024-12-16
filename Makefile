@@ -76,6 +76,22 @@ e2e_tests:
 	-$(MAKE) e2e_tests_run
 	$(MAKE) e2e_tests_clean
 
+.PHONY: code_metrics code_metrics_run code_metrics_build code_metrics_clean
+code_metrics_build:
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build --no-cache code_metrics
+
+code_metrics_clean:
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) down --remove-orphans
+
+code_metrics_run:
+	-docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) run code_metrics
+
+code_metrics:
+	$(MAKE) code_metrics_clean
+	$(MAKE) code_metrics_build
+	-$(MAKE) code_metrics_run
+	$(MAKE) code_metrics_clean
+
 .PHONY: sandbox sandbox_down
 sandbox:
 	docker compose -f docker/docker-compose.yml --env-file .env/sandbox build backend_sandbox debug_db

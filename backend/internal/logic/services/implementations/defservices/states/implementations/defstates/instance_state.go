@@ -422,6 +422,40 @@ func (self *InstanceStateMachine) CreateRentReturn(
 	return request, err
 }
 
+func (self *InstanceStateMachine) transmitAcceptRentReturn(
+	instance instance,
+	rl *recordsList,
+	comment *string,
+) (records.Storage, error) {
+	var storage records.Storage
+	err := self.actionStopRent(*rl.rent)
+
+	if nil == err {
+		storage, err = self.actionCreateStorage(
+			instance.instance,
+			rl.rentReturn.PickUpPointId,
+		)
+	}
+
+	if nil == err && STATE_RETURN_FORCED_AWAIT == instance.state &&
+		storage.PickUpPointId != rl.provisionRevoke.PickUpPointId {
+		_, err = self.actionCreateDelivery(
+			instance.instance,
+			storage,
+			rl.provisionRevoke.PickUpPointId,
+		)
+	}
+
+	if nil == err {
+		err = self.actionUpdateInstance(
+			instance.instance,
+			instanceUpdateDescription(comment),
+		)
+	}
+
+	return storage, err
+}
+
 func (self *InstanceStateMachine) AcceptRentReturn(
 	instanceId uuid.UUID,
 	returnId uuid.UUID,
@@ -450,30 +484,7 @@ func (self *InstanceStateMachine) AcceptRentReturn(
 
 	// Transmit
 	if nil == err {
-		err = self.actionStopRent(*rl.rent)
-	}
-
-	if nil == err {
-		storage, err = self.actionCreateStorage(
-			instance.instance,
-			rl.rentReturn.PickUpPointId,
-		)
-	}
-
-	if nil == err && STATE_RETURN_FORCED_AWAIT == instance.state &&
-		storage.PickUpPointId != rl.provisionRevoke.PickUpPointId {
-		_, err = self.actionCreateDelivery(
-			instance.instance,
-			storage,
-			rl.provisionRevoke.PickUpPointId,
-		)
-	}
-
-	if nil == err {
-		err = self.actionUpdateInstance(
-			instance.instance,
-			instanceUpdateDescription(comment),
-		)
+		storage, err = self.transmitAcceptRentReturn(instance, &rl, comment)
 	}
 
 	return storage, err

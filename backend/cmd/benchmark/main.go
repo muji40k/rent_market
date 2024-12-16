@@ -68,12 +68,7 @@ func getReporter(realisation string, method string) utils.Reporter {
 	})
 }
 
-func main() {
-	testing.Init()
-
-	config := db.FromEnv()
-	engine := gin.Default()
-
+func initRoutes(engine *gin.Engine, config db.Config) {
 	engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	engine.GET("/call/gorm", func(ctx *gin.Context) {
 		db, err := gorm.Open(
@@ -152,6 +147,15 @@ func main() {
 			getReporter("GORMProductRepository", "GetWithFilter"),
 		),
 	)
+}
+
+func main() {
+	testing.Init()
+
+	config := db.FromEnv()
+	engine := gin.Default()
+
+	initRoutes(engine, config)
 
 	serv := &http.Server{
 		Addr:    "0.0.0.0:2112",

@@ -88,8 +88,7 @@ func (self *Registry) SaveTempPhoto(tempId uuid.UUID, content []byte) error {
 	return err
 }
 
-func (self *Registry) MoveFromTemp(tempId uuid.UUID) (uuid.UUID, error) {
-	var photo models.Photo
+func (self *Registry) getTempPhoto(tempId uuid.UUID) (models.TempPhoto, error) {
 	trepo := self.repos.temp.GetTempPhotoRepository()
 	temp, err := trepo.GetById(tempId)
 
@@ -99,7 +98,14 @@ func (self *Registry) MoveFromTemp(tempId uuid.UUID) (uuid.UUID, error) {
 		err = cmnerrors.Internal(cmnerrors.DataAccess(err))
 	}
 
-	if nil == err && nil == temp.Path {
+	return temp, err
+}
+
+func (self *Registry) savePhoto(temp models.TempPhoto) (models.Photo, error) {
+	var photo models.Photo
+	var err error
+
+	if nil == temp.Path {
 		err = cmnerrors.Unknown("photo_data")
 	}
 
@@ -124,7 +130,19 @@ func (self *Registry) MoveFromTemp(tempId uuid.UUID) (uuid.UUID, error) {
 		}
 	}
 
+	return photo, err
+}
+
+func (self *Registry) MoveFromTemp(tempId uuid.UUID) (uuid.UUID, error) {
+	var photo models.Photo
+	temp, err := self.getTempPhoto(tempId)
+
 	if nil == err {
+		photo, err = self.savePhoto(temp)
+	}
+
+	if nil == err {
+		trepo := self.repos.temp.GetTempPhotoRepository()
 		err = trepo.Remove(tempId)
 
 		if nil != err {

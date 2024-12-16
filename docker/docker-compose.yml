@@ -103,6 +103,13 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
 ### TESTS #####################################################################
+  code_metrics:
+    build:
+      context: ../backend/
+      dockerfile: ./metrics.Dockerfile
+    environment:
+      CYCLOMATIC: ${CYCLOMATIC}
+
   backend_unit_tests:
     build:
       context: ../backend/
