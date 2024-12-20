@@ -7,12 +7,20 @@ import (
 	"os"
 	"os/signal"
 	"rent_service/logger"
+	"rent_service/misc/contextholder"
+	"rent_service/server/errstructs"
 	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swag "github.com/go-openapi/runtime/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+
+	// "go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Server struct {
@@ -108,6 +116,49 @@ func WithLogger(log logger.ILogger) Configurator {
 				status, method, path, client, bodySize, duration,
 			)
 		})
+	}
+}
+
+func WithTracer(tr trace.TracerProvider, hl *contextholder.Holder) Configurator {
+	return func(server *Server) {
+		server.engine.Use(otelgin.Middleware(
+			"rent_service",
+			otelgin.WithTracerProvider(tr),
+		))
+
+		if nil != hl {
+			tracer := tr.Tracer("rent_service")
+			server.engine.Use(func(ctx *gin.Context) {
+				var span trace.Span
+				err := hl.Start(ctx)
+				defer func() {
+					hl.Pop()
+
+					if nil != span {
+						span.End()
+					}
+				}()
+
+				if nil == err {
+					err = hl.Parallel(func(ctx context.Context) error {
+						_, span = tracer.Start(ctx, "Context binder wrap")
+						return nil
+					})
+				}
+
+				if nil == err {
+					ctx.Next()
+					span.SetStatus(codes.Ok, "No error occured")
+				} else {
+					span.SetStatus(codes.Error, "Wrap error")
+					span.SetAttributes(attribute.String("Error", err.Error()))
+					ctx.JSON(
+						http.StatusInternalServerError,
+						errstructs.NewInternalErr(err),
+					)
+				}
+			})
+		}
 	}
 }
 
