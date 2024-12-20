@@ -9,9 +9,11 @@ PERSONAL_FLAGS=-p ${USER}
 endif
 
 BACKEND_BUILD_FLAGS=
+TEST_BUILD_FLAGS=
 
 ifeq ($(NO_CACHE), 1)
 BACKEND_BUILD_FLAGS += --no-cache
+TEST_BUILD_FLAGS += --no-cache
 endif
 
 .PHONY: default
@@ -27,7 +29,7 @@ backend:
 
 .PHONY: unit_tests unit_tests_run unit_tests_build unit_tests_clean
 unit_tests_build:
-	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build --no-cache backend_unit_tests test_db
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build $(TEST_BUILD_FLAGS) backend_unit_tests test_db
 
 unit_tests_clean:
 	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) down --remove-orphans
@@ -44,7 +46,7 @@ unit_tests:
 
 .PHONY: integration_tests integration_tests_run integration_tests_build integration_tests_clean
 integration_tests_build:
-	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build --no-cache backend_integration_tests test_db
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build $(TEST_BUILD_FLAGS) backend_integration_tests test_db
 
 integration_tests_clean:
 	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) down --remove-orphans
@@ -61,7 +63,7 @@ integration_tests:
 
 .PHONY: e2e_tests e2e_tests_run e2e_tests_build e2e_tests_clean
 e2e_tests_build:
-	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build --no-cache backend_e2e_tests test_db
+	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) build $(TEST_BUILD_FLAGS) backend_e2e_tests test_db
 
 e2e_tests_clean:
 	docker compose -f docker/docker-compose.yml $(DOCKER_ENV) $(PERSONAL_FLAGS) down --remove-orphans
