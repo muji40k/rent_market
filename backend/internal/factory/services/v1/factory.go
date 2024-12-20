@@ -1,4 +1,4 @@
-package deffactory
+package v1
 
 import "rent_service/internal/logic/context/v1"
 
