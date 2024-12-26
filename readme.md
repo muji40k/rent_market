@@ -167,3 +167,6 @@
 > _Перемещение между пунктами выдачи_
 >
 
+## Ссылка на макет
+[Тык](https://www.figma.com/design/DWNDDjS8fvzvweIHeJAbaY/WEB%3A-Rent-Market?node-id=2-3&t=q6ORGZ8zbwPoO8ZO-1)
+
