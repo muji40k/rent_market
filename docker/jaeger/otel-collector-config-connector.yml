@@ -1,0 +1,55 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+        endpoint: "0.0.0.0:4318"
+
+  hostmetrics:
+    collection_interval: 3s
+    scrapers:
+      # CPU utilization metrics
+      cpu:
+      # Disk I/O metrics
+      disk:
+      # File System utilization metrics
+      filesystem:
+      # CPU load metrics
+      load:
+      # Memory utilization metrics
+      memory:
+      # Network interface I/O metrics & TCP connection metrics
+      network:
+      # Paging/Swap space utilization and I/O metrics
+      paging:
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
+  otlp:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+
+connectors:
+  spanmetrics:
+
+processors:
+  batch:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [spanmetrics, otlp]
+
+    metrics:
+      receivers: [otlp, hostmetrics]
+      exporters: [prometheus]
+
+    metrics/spanmetrics:
+      receivers: [spanmetrics]
+      exporters: [prometheus]
+

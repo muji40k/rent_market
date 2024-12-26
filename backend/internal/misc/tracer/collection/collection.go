@@ -57,17 +57,33 @@ func TraceIterator[T any](
 
 func (self *traceIterator[T]) Next() (T, bool) {
 	var span trace.Span
-	err := self.hl.Parallel(func(ctx context.Context) error {
-		_, span = self.tracer.Start(
+	err := self.hl.Push(func(ctx context.Context) (context.Context, error) {
+		var nctx context.Context
+		nctx, span = self.tracer.Start(
 			ctx,
 			fmt.Sprintf("Iterator [%v] Next: %v", self.id, self.i),
 		)
-		return nil
+		return nctx, nil
 	})
-	defer span.End()
+	defer func() {
+		if nil != span {
+			span.End()
+		}
+
+		if nil == err {
+			self.hl.Pop()
+		}
+	}()
 	self.i++
 
+	if nil != span {
+		span.SetAttributes(attribute.String(
+			"Type", fmt.Sprintf("%T", *(new(T))),
+		))
+		span.AddEvent("Actual start")
+	}
 	value, next := self.iter.Next()
+	span.AddEvent("Actual end")
 	span.SetAttributes(attribute.Bool("Next", next))
 
 	if nil == err {
@@ -86,24 +102,42 @@ func (self *traceIterator[T]) Next() (T, bool) {
 
 func (self *traceIterator[T]) Skip() bool {
 	var span trace.Span
-	err := self.hl.Parallel(func(ctx context.Context) error {
-		_, span = self.tracer.Start(
+	err := self.hl.Push(func(ctx context.Context) (context.Context, error) {
+		var nctx context.Context
+		nctx, span = self.tracer.Start(
 			ctx,
 			fmt.Sprintf("Iterator [%v] Skip: %v", self.id, self.i),
 		)
-		return nil
+		return nctx, nil
 	})
-	defer span.End()
+	defer func() {
+		if nil == err {
+			self.hl.Pop()
+		}
+
+		if nil != span {
+			span.End()
+		}
+	}()
 	self.i++
 
+	if nil != span {
+		span.SetAttributes(attribute.String(
+			"Type", fmt.Sprintf("%T", *(new(T))),
+		))
+		span.AddEvent("Actual start")
+	}
 	next := self.iter.Skip()
-	span.SetAttributes(attribute.Bool("Next", next))
+	if nil != span {
+		span.AddEvent("Actual end")
+		span.SetAttributes(attribute.Bool("Next", next))
 
-	if nil == err {
-		span.SetStatus(codes.Ok, "Wrap success")
-	} else {
-		span.SetStatus(codes.Error, "Wrap error")
-		span.SetAttributes(attribute.String("Error", err.Error()))
+		if nil == err {
+			span.SetStatus(codes.Ok, "Wrap success")
+		} else {
+			span.SetStatus(codes.Error, "Wrap error")
+			span.SetAttributes(attribute.String("Error", err.Error()))
+		}
 	}
 
 	return next

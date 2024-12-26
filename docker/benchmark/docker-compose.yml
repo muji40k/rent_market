@@ -3,7 +3,7 @@ services:
   prometheus:
     image: prom/prometheus
     ports:
-      - "127.0.0.1:9090:9090"
+      - "127.0.0.1:9091:9090"
     volumes:
       - ./prometheus:/prometheus
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
@@ -26,6 +26,8 @@ services:
       TEST_DB_NAME: ${DB_MAIN_NAME}
       TEST_DB_USERNAME: ${DB_USER}
       TEST_DB_PASSWORD: ${DB_PASSWORD}
+      TRACER_ENDPOINT: ${TRACER_ENDPOINT}
+      METER_ENDPOINT: ${METER_ENDPOINT}
     volumes:
       - /etc/localtime:/etc/localtime:ro
 

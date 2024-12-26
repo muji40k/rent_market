@@ -1,19 +1,24 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"rent_service/builders/mothers/test/tracer"
 	"rent_service/cmd/benchmark/utils"
 	"rent_service/cmd/benchmark/utils/db"
 	"rent_service/cmd/benchmark/utils/metrics"
 	product_bench "rent_service/cmd/benchmark/utils/product"
 	"rent_service/cmd/benchmark/utils/router"
+	"rent_service/internal/misc/tracer/cleanstack"
 	gormrepo "rent_service/internal/repository/implementation/gorm/repositories/product"
 	sqlxrepo "rent_service/internal/repository/implementation/sql/repositories/product"
+	tracerrepo "rent_service/internal/repository/implementation/tracer/product"
 	"rent_service/internal/repository/interfaces/product"
+	"rent_service/misc/contextholder"
 	"sync"
 	"syscall"
 	"testing"
@@ -23,6 +28,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel/trace"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -70,9 +76,32 @@ func getReporter(realisation string, method string) utils.Reporter {
 
 func main() {
 	testing.Init()
+	var mu sync.Mutex
 
 	config := db.FromEnv()
 	engine := gin.Default()
+
+	clener := cleanstack.New()
+	holder := contextholder.New()
+	provider := tracer.JaegerTracer(clener)
+	tracer := provider.Tracer("rent_service")
+
+	engine.Use(func(ctx *gin.Context) {
+		// Context is wrapped around, so asyncronous execution isn't possible
+		mu.Lock()
+		defer mu.Unlock()
+		var span trace.Span
+		holder.Start(ctx.Request.Context())
+		holder.Push(func(ictx context.Context) (context.Context, error) {
+			var nctx context.Context
+			nctx, span = tracer.Start(ictx, fmt.Sprintf("Handler: %v", ctx.Request.URL.String()))
+			return nctx, nil
+		})
+		ctx.Next()
+		span.End()
+		holder.Pop()
+		holder.Pop()
+	})
 
 	engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	engine.GET("/call/gorm", func(ctx *gin.Context) {
@@ -94,7 +123,11 @@ func main() {
 			}
 		}()
 
-		c, s := product_bench.SingleCall(gormrepo.New(db))
+		c, s := product_bench.SingleCall(tracerrepo.New(
+			gormrepo.New(db),
+			holder,
+			tracer,
+		))
 		ctx.Data(http.StatusOK, "text", []byte(fmt.Sprintf("%v %v", c, s)))
 	})
 	engine.GET("/call/sqlx", func(ctx *gin.Context) {
@@ -110,20 +143,25 @@ func main() {
 			}
 		}()
 
-		c, s := product_bench.SingleCall(sqlxrepo.New(db))
+		c, s := product_bench.SingleCall(tracerrepo.New(
+			sqlxrepo.New(db),
+			holder,
+			tracer,
+		))
 		ctx.Data(http.StatusOK, "text", []byte(fmt.Sprintf("%v %v", c, s)))
 	})
 	engine.GET(
 		fmt.Sprintf("/bench/sqlx/:%v", router.ITER),
 		router.BenchmarkRunnerRoute(
 			product_bench.New(func() (product.IRepository, func()) {
+
 				db, err := sqlx.Connect("pgx", getPgxConnectionString(config))
 
 				if nil != err {
 					panic(err)
 				}
 
-				return sqlxrepo.New(db), func() { db.Close() }
+				return tracerrepo.New(sqlxrepo.New(db), holder, tracer), func() { db.Close() }
 			}),
 			getReporter("PSQLProductRepository", "GetWithFilter"),
 		),
@@ -141,7 +179,7 @@ func main() {
 					panic(err)
 				}
 
-				return gormrepo.New(db), func() {
+				return tracerrepo.New(gormrepo.New(db), holder, tracer), func() {
 					sqldb, _ := db.DB()
 
 					if nil != sqldb {
@@ -198,5 +236,6 @@ func main() {
 	exit = true
 	serv.Close()
 	wg.Wait()
+	clener.Clean(context.Background())
 }
 

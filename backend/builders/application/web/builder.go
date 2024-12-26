@@ -78,7 +78,9 @@ func (self *Builder) Build() (*server.Server, error) {
 		collection.ChainIterator(
 			collection.MapIterator(
 				func(url *string) server.Configurator {
-					return server.WithSwaggerSpecification(*url)
+					return server.WithExtender(
+						server.SwaggerSpecificationExtender(*url),
+					)
 				},
 				collection.FilterIterator(
 					func(url *string) bool {
@@ -97,7 +99,9 @@ func (self *Builder) Build() (*server.Server, error) {
 				collection.ChainIterator(
 					collection.MapIterator(
 						func(cors *[]server.CorsFiller) server.Configurator {
-							return server.WithCors(*cors...)
+							return server.WithExtender(
+								server.CorsExtender(*cors...),
+							)
 						},
 						collection.SingleIterator(self.corsFillers),
 					),

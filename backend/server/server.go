@@ -9,6 +9,7 @@ import (
 	"rent_service/logger"
 	"rent_service/misc/contextholder"
 	"rent_service/server/errstructs"
+	"sync"
 	"syscall"
 	"time"
 
@@ -37,6 +38,7 @@ type IController interface {
 }
 
 type Configurator func(server *Server)
+type EngineExtender func(engine *gin.Engine)
 
 func WithHost(host string) Configurator {
 	return func(server *Server) {
@@ -53,15 +55,21 @@ func WithController(controller IController) Configurator {
 		server.Extend(controller)
 	}
 }
-func WithSwaggerSpecification(url string) Configurator {
+func WithExtender(ext EngineExtender) Configurator {
 	return func(server *Server) {
+		ext(server.engine)
+	}
+}
+
+func SwaggerSpecificationExtender(url string) EngineExtender {
+	return func(engine *gin.Engine) {
 		h := swag.SwaggerUI(swag.SwaggerUIOpts{
 			BasePath: "/",
 			Path:     "docs", // AAAAAAAAAAAAAA
 			SpecURL:  url,
 		}, nil)
 
-		server.engine.GET("/", func(c *gin.Context) {
+		engine.GET("/", func(c *gin.Context) {
 			c.Request.URL.Path = "/docs" // So... where is no other context to create deep copy
 			h.ServeHTTP(c.Writer, c.Request)
 		})
@@ -70,8 +78,8 @@ func WithSwaggerSpecification(url string) Configurator {
 
 type CorsFiller func(config *cors.Config)
 
-func WithCors(fillers ...CorsFiller) Configurator {
-	return func(server *Server) {
+func CorsExtender(fillers ...CorsFiller) EngineExtender {
+	return func(engine *gin.Engine) {
 		config := cors.Config{
 			AllowHeaders: []string{
 				"Origin",
@@ -87,7 +95,7 @@ func WithCors(fillers ...CorsFiller) Configurator {
 			filler(&config)
 		}
 
-		server.engine.Use(cors.New(config))
+		engine.Use(cors.New(config))
 	}
 }
 
@@ -119,35 +127,62 @@ func WithLogger(log logger.ILogger) Configurator {
 	}
 }
 
-func WithTracer(tr trace.TracerProvider, hl *contextholder.Holder) Configurator {
-	return func(server *Server) {
-		server.engine.Use(otelgin.Middleware(
+func TracerExtender(tr trace.TracerProvider, hl *contextholder.Holder) EngineExtender {
+	return func(engine *gin.Engine) {
+		if nil != hl {
+			// Context holder is going to be wrapped around, so asyncronous
+			// execution will break the stack
+			var mu sync.Mutex
+			engine.Use(func(ctx *gin.Context) {
+				mu.Lock()
+				defer mu.Unlock()
+				ctx.Next()
+			})
+		}
+
+		engine.Use(otelgin.Middleware(
 			"rent_service",
 			otelgin.WithTracerProvider(tr),
 		))
 
 		if nil != hl {
 			tracer := tr.Tracer("rent_service")
-			server.engine.Use(func(ctx *gin.Context) {
+			engine.Use(func(ctx *gin.Context) {
 				var span trace.Span
-				err := hl.Start(ctx)
+				var err error
+				var perr error
+				serr := hl.Start(ctx.Request.Context())
 				defer func() {
-					hl.Pop()
-
 					if nil != span {
 						span.End()
 					}
+
+					if nil == perr {
+						hl.Pop()
+					}
+
+					if nil == serr {
+						hl.Pop()
+					}
 				}()
 
-				if nil == err {
-					err = hl.Parallel(func(ctx context.Context) error {
-						_, span = tracer.Start(ctx, "Context binder wrap")
-						return nil
-					})
+				if nil != serr {
+					err = serr
 				}
 
 				if nil == err {
+					perr = hl.Push(func(ctx context.Context) (context.Context, error) {
+						var nctx context.Context
+						nctx, span = tracer.Start(ctx, "HTTP handler")
+						return nctx, nil
+					})
+					err = perr
+				}
+
+				if nil == err {
+					span.AddEvent("Actual start")
 					ctx.Next()
+					span.AddEvent("Actual end")
 					span.SetStatus(codes.Ok, "No error occured")
 				} else {
 					span.SetStatus(codes.Error, "Wrap error")

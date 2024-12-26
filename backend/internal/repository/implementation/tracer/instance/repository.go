@@ -197,7 +197,7 @@ func (self *photoRepository) Create(
 	instanceId uuid.UUID,
 	photoId uuid.UUID,
 ) error {
-	return wrap.SpanCall(self.hl, self.tracer, "Repository.Instance.Create",
+	return wrap.SpanCall(self.hl, self.tracer, "Repository.InstancePhoto.Create",
 		func(span trace.Span) error {
 			span.SetAttributes(
 				attribute.Stringer("InstanceId", instanceId),
@@ -212,7 +212,7 @@ func (self *photoRepository) Create(
 func (self *photoRepository) GetByInstanceId(
 	instanceId uuid.UUID,
 ) (collection.Collection[uuid.UUID], error) {
-	return wrap.SpanCallValue(self.hl, self.tracer, "Repository.Instance.GetByInstanceId",
+	return wrap.SpanCallValue(self.hl, self.tracer, "Repository.InstancePhoto.GetByInstanceId",
 		func(span trace.Span) (collection.Collection[uuid.UUID], error) {
 			col, err := self.wrapped.GetByInstanceId(instanceId)
 			span.SetAttributes(

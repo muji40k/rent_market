@@ -7,6 +7,7 @@ import (
 	"rent_service/builders/application/web/authenticator/apikey/repository/psql"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/logic/context/v1"
+	"rent_service/misc/contextholder"
 	"rent_service/server"
 	"rent_service/server/authenticator"
 	"rent_service/server/controllers/categories"
@@ -35,6 +36,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -76,11 +78,14 @@ func parse() dbConfig {
 	}
 }
 
+type ServerExtender interface{}
+
 type ControllerCreator func(authenticator.IAuthenticator, *v1.Context) server.IController
+type EngindeExtender func(*gin.Engine)
 
 func TestServer(
 	factories v1.Factories,
-	controllers ...ControllerCreator,
+	extenders ...ServerExtender,
 ) *gin.Engine {
 	ctx := v1.New(factories)
 	config := parse()
@@ -109,8 +114,15 @@ func TestServer(
 
 	engine := gin.New()
 
-	for _, cotroller := range controllers {
-		cotroller(a, ctx).Register(engine)
+	for _, ext := range extenders {
+		switch ext := ext.(type) {
+		case ControllerCreator:
+			ext(a, ctx).Register(engine)
+		case EngindeExtender:
+			ext(engine)
+		default:
+			panic("Unknown extender")
+		}
 	}
 
 	return engine
@@ -173,12 +185,23 @@ func (self *Inserter) InsertSession(user models.User, access string, renew strin
 	}
 }
 
-func DefaultControllers() []ControllerCreator {
-	return []ControllerCreator{
-		Categories, Deliveries, DeliveryCompanies, Instances, Payments,
-		PayMethods, Periods, Photos, PickUpPoints, Products, Profiles,
-		ProvisionRequests, ProvisionReturns, Provisions, RentRequests,
-		RentReturns, Rents, Roles, Sessions, StoredInstances, Users,
+func TracerExtender(tr trace.TracerProvider, hl *contextholder.Holder) ServerExtender {
+	return EngindeExtender(server.TracerExtender(tr, hl))
+}
+
+func DefaultControllers() []ServerExtender {
+	return []ServerExtender{
+		ControllerCreator(Categories), ControllerCreator(Deliveries),
+		ControllerCreator(DeliveryCompanies), ControllerCreator(Instances),
+		ControllerCreator(Payments), ControllerCreator(PayMethods),
+		ControllerCreator(Periods), ControllerCreator(Photos),
+		ControllerCreator(PickUpPoints), ControllerCreator(Products),
+		ControllerCreator(Profiles), ControllerCreator(ProvisionRequests),
+		ControllerCreator(ProvisionReturns), ControllerCreator(Provisions),
+		ControllerCreator(RentRequests), ControllerCreator(RentReturns),
+		ControllerCreator(Rents), ControllerCreator(Roles),
+		ControllerCreator(Sessions), ControllerCreator(StoredInstances),
+		ControllerCreator(Users),
 	}
 }
 

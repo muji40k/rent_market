@@ -1,6 +1,7 @@
 package server_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	models_b "rent_service/builders/domain/models"
@@ -11,15 +12,20 @@ import (
 	requests_om "rent_service/builders/mothers/domain/requests"
 	mserver "rent_service/builders/mothers/test/application/server"
 	"rent_service/builders/mothers/test/repository/psql"
+	"rent_service/builders/mothers/test/tracer"
 	"rent_service/internal/domain/models"
 	"rent_service/internal/domain/requests"
+	rv1t "rent_service/internal/factory/repositories/v1/tracer"
+	sv1t "rent_service/internal/factory/services/v1/tracer"
 	sinstance "rent_service/internal/logic/services/interfaces/instance"
 	sphoto "rent_service/internal/logic/services/interfaces/photo"
 	sprovide "rent_service/internal/logic/services/interfaces/provide"
 	sstorage "rent_service/internal/logic/services/interfaces/storage"
 	suser "rent_service/internal/logic/services/interfaces/user"
 	"rent_service/internal/logic/services/types/date"
+	"rent_service/internal/misc/tracer/cleanstack"
 	"rent_service/internal/misc/types/collection"
+	"rent_service/misc/contextholder"
 	"rent_service/misc/nullable"
 	"rent_service/misc/testcommon"
 	"rent_service/misc/testcommon/defservices"
@@ -34,6 +40,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
+	// "go.opentelemetry.io/otel"
+	// "go.opentelemetry.io/otel/trace"
 )
 
 func MapProvisionRequest(value *requests.Provide, userId uuid.UUID) sprovide.ProvideRequest {
@@ -62,22 +70,39 @@ func MapProvisionRequest(value *requests.Provide, userId uuid.UUID) sprovide.Pro
 
 type ServerE2ETestSuite struct {
 	suite.Suite
+	clener    *cleanstack.Cleaner
 	seContext server.Context
 	sContext  defservices.Context
 	rContext  psqlcommon.Context
 }
 
 func (self *ServerE2ETestSuite) BeforeAll(t provider.T) {
+	self.clener = cleanstack.New()
+	holder := contextholder.New()
+	provider := tracer.JaegerTracer(self.clener)
+	tracer := provider.Tracer("rent_service")
+
 	self.rContext.SetUp(t)
-	self.sContext.SetUp(t, self.rContext.Factory.ToFactories())
-	self.seContext.SetUp(t, self.sContext.Factory.ToFactories(),
-		mserver.DefaultControllers()...)
+
+	rcw := rv1t.New(self.rContext.Factory, holder, tracer)
+	self.sContext.SetUp(t, rcw.ToFactories())
+
+	scw := sv1t.New(self.sContext.Factory, holder, tracer)
+	self.seContext.SetUp(t, scw.ToFactories(),
+		append(
+			[]mserver.ServerExtender{
+				mserver.TracerExtender(provider, holder),
+			},
+			mserver.DefaultControllers()...,
+		)...,
+	)
 }
 
 func (self *ServerE2ETestSuite) AfterAll(t provider.T) {
 	self.seContext.TearDown(t)
 	self.sContext.TearDown(t)
 	self.rContext.TearDown(t)
+	self.clener.Clean(context.Background())
 }
 
 func (self *ServerE2ETestSuite) BeforeEach(t provider.T) {

@@ -19,7 +19,7 @@ type Context struct {
 func (self *Context) SetUp(
 	t provider.T,
 	factories v1.Factories,
-	controllers ...server.ControllerCreator,
+	controllers ...server.ServerExtender,
 ) {
 	t.WithNewStep("Create server", func(sCtx provider.StepCtx) {
 		self.Server = server.TestServer(factories, controllers...)

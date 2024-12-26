@@ -4,7 +4,25 @@ services:
     image: jaegertracing/all-in-one
     environment:
       COLLECTOR_ZIPKIN_HOST_PORT: :9411
+      METRICS_STORAGE_TYPE: prometheus
+      PROMETHEUS_SERVER_URL: http://prometheus:9090
     ports:
       - "16686:16686"
+
+  otel_collector:
+    image: otel/opentelemetry-collector-contrib
+    volumes:
+      - "./otel-collector-config-connector.yml:/etc/otelcol/otel-collector-config.yml"
+    command: --config /etc/otelcol/otel-collector-config.yml
+    depends_on:
+      - jaeger
+    ports:
       - "4318:4318"
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
 

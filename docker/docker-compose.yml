@@ -157,6 +157,7 @@ services:
       TEST_DB_AUTH_NAME: ${DB_AUTH_NAME}
       TEST_DB_USERNAME: ${DB_USER}
       TEST_DB_PASSWORD: ${DB_PASSWORD}
+      TRACER_ENDPOINT: ${TRACER_ENDPOINT}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ../backend/allure-report/allure-results/:/go/allure-report/allure-results/
